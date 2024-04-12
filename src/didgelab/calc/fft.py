@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.io import wavfile
+import scipy
 
 # compute fft from a wavfile
 def do_fft(infile, maxfreq=1000):
@@ -59,3 +60,33 @@ def sling_window_average_spectrum(freq, spectrum, window_size=5):
         new_spectrum.append(np.mean(spectrum[i-window_size:i]))
     return np.array(new_freqs), np.array(new_spectrum)
 
+# get the fundamental frequency as the maximual impedance
+# between 50 and 120 hz
+def get_fundamental(fft_freq, fft, minfreq=50, maxfreq=120, order=40):
+    i = scipy.signal.argrelextrema(fft, np.greater, order=order)
+    freqs = fft_freq[i]
+    freqs = freqs[freqs>minfreq]
+    freqs = freqs[freqs<maxfreq]
+    assert len(freqs) == 1
+
+    fundamental_freq = freqs[0]
+    fundamental_freq_i = np.argmin(np.abs(fft_freq-fundamental_freq))
+    return fundamental_freq, fundamental_freq_i
+
+def get_peaks(fft_freq, fft, return_indizes = False):
+    fundamental_freq, fundamental_freq_i = get_fundamental(fft_freq, fft)
+    order = 1
+    while fft_freq[fundamental_freq_i+order] < fundamental_freq*1.3:
+        order += 1
+    peaks = [fundamental_freq]
+    indizes = []
+    for i in scipy.signal.argrelextrema(fft, np.greater, order=order)[0]:
+        freq = fft_freq[i]
+        indizes.append(i)
+        if freq>fundamental_freq:
+            peaks.append(freq)
+
+    if return_indizes:
+        return np.array(peaks), indizes
+    else:
+        return np.array(peaks)
