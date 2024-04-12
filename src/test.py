@@ -1,37 +1,10 @@
-import numpy as np
-import json
-import os
-import matplotlib.pyplot as plt
+from didgelab.calc.sim.sim import compute_impedance_iteratively, get_notes, compute_impedance, create_segments, get_log_simulation_frequencies
+from didgelab.calc.geo import Geo, geotools
 
-from didgelab.calc.sim.cadsd import CADSD
-from didgelab.app import get_app
-from didgelab.initializer import init_console_no_output
-from didgelab.calc.geo import Geo
-
-
-init_console_no_output()
-
-get_app().get_config()["sim.correction"] = "none"
-get_app().get_config()["sim.grid"] = "even"
-get_app().get_config()["sim.grid_size"] = 1
-get_app().get_config()
-
-da_path = "/Users/jane03/workspaces/music/didge/didge-archive"
-didge_archive = json.load(open(os.path.join(da_path, "didge-archive.json")))
-didge_archive = list(filter(lambda x:x["shape"] == "straight", didge_archive))
-didge = didge_archive[1]
-
-geo = Geo(json.load(open(os.path.join(da_path, didge["geometry"]))))
-cadsd = CADSD(geo)
-
-freq, impedance = cadsd.compute_raw_impedance()
-ground = cadsd.compute_ground_spektrum(freq, impedance)
-
-impedance /= impedance.max()
-ground /= ground.max()
-
-plt.plot(freq, impedance, label="Impedance")
-plt.plot(freq, ground, label="Ground")
-plt.legend()
-
-plt.show()
+geo = [[0,32], [1000, 64]]
+geo = Geo(geo)
+freqs = get_log_simulation_frequencies(1, 1000, 5)
+segments = create_segments(geo)
+impedances = compute_impedance(segments, freqs)
+notes = get_notes(freqs, impedances)
+print(notes)

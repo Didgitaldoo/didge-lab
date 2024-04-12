@@ -310,9 +310,9 @@ def evolve():
         # generation_size = 5,
         # num_generations = 5,
         # population_size = 10,
-        generation_size = 100,
-        num_generations = 500,
-        population_size = 1000,
+        generation_size = 500,
+        num_generations = 100,
+        population_size = 5000,
     )
 
     schedulers = [

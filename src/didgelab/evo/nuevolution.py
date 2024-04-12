@@ -402,6 +402,7 @@ class Nuevolution():
 
         # initialize
         num_workers = multiprocessing.cpu_count()
+        logging.info(f"initialize threadpoolexecutor with {num_workers} workers")
         pool = ThreadPoolExecutor(max_workers=num_workers)
 
         self.population = []
