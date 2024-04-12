@@ -1,5 +1,6 @@
 #!/bin/bash
-# /netscratch/nehring/projects/music/didgelab2/src/slurm/init.sh
+# ./usrun.sh -p RTXA6000 --gpus 0 -c32 /netscratch/nehring/projects/music/didgelab2/src/slurm/database.sh
+
 
 export PIP_INDEX_URL=http://pypi-cache/index
 export PIP_TRUSTED_HOST=pypi-cache
@@ -15,4 +16,4 @@ python setup.py build_ext --inplace
 
 cd ../../../
 
-python -m experiments.nuevolution.evolve
+python -m experiments.arusha.evolve_arusha

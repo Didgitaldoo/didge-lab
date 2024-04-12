@@ -218,7 +218,7 @@ class MbeyaLoss(LossFunction):
             "octave_loss": 4,
             "n_note_loss": 5,
             "diameter_loss": 0.1,
-            "fundamental_loss": 8,
+            "fundamental_loss": 16,
         }
         for key, value in weights.items():
             if key not in self.weights:
@@ -314,9 +314,6 @@ def evolve():
         num_generations = 100,
         population_size = 1000,
     )
-
-    #infile = "../evolutions/2024-04-09T21-27-38_evolve_arusha/population45.json"
-    #evo.load_from_file(infile)
 
     schedulers = [
         LinearDecreasingCrossover(),
