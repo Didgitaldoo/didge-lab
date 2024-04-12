@@ -311,7 +311,7 @@ def evolve():
         # num_generations = 5,
         # population_size = 10,
         generation_size = 100,
-        num_generations = 100,
+        num_generations = 500,
         population_size = 1000,
     )
 
