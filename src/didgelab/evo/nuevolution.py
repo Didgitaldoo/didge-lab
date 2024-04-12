@@ -509,7 +509,7 @@ class Nuevolution():
 
         get_app().publish("evolution_ended", (self.population))
         return self.population
-    
+
 class NuevolutionProgressBar:
 
     def __init__(self):

@@ -1,8 +1,8 @@
 import math
 
 # note number to frequency (e.g. 0 -> 440)
-def note_to_freq(note):
-    return 440*pow(2, note/12)
+def note_to_freq(note, base_freq=440):
+    return base_freq*pow(2, note/12)
 
 
 # note number to name (e.g. 0->A4)
@@ -17,16 +17,16 @@ def note_name(note):
 
 
 # frequency to note number (e.g. 440 -> 0)
-def freq_to_note(freq):
-    return 12* (math.log2(freq) - math.log2(440))
+def freq_to_note(freq, base_freq=440):
+    return 12* (math.log2(freq) - math.log2(base_freq))
 
 
 # frequency to note and cent difference from that note (e.g. 440 -> 0,0)
-def freq_to_note_and_cent(freq):
+def freq_to_note_and_cent(freq, base_freq=440):
     
-    note_fuzzy=freq_to_note(freq)
+    note_fuzzy=freq_to_note(freq, base_freq=base_freq)
     note=round(note_fuzzy)
-    diff=note-note_fuzzy
+    diff=note_fuzzy-note
     return note, diff*100
 
 

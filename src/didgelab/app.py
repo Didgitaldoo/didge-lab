@@ -70,12 +70,6 @@ class App:
         if self.config is None:
             p = configargparse.ArgParser(default_config_files=['./*.conf'])
             
-            p.add('-sim.grid', type=str, default="log", choices=("log", "even"), help='The frequencies of the acoustic simulation can be in distributed even (1,2,3,..) or log (with the same number of samples per octave)')
-            p.add('-sim.correction', type=str, default="svm", choices=("none", "svm"), help='correct the impedance spektrum using a model')
-            p.add('-sim.grid_size', type=int, default=2, help='spacing of the frequency grid')
-            p.add('-sim.fmin', type=int, default=30, help='minimal frequency for acoustic simulation')
-            p.add('-sim.fmax', type=int, default=1000, help='maximal frequency for acoustic simulation')
-
             p.add('-log_level', type=str, choices=["info", "error", "debug", "warn"], default="info", help='log level ')
 
             options = p.parse_known_args()[0]

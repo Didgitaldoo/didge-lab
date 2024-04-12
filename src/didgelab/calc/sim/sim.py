@@ -202,10 +202,10 @@ def interpolate_spectrum(freqs, impedances):
     return freq_interpolated, np.array(impedance_interpolated)
 
 
-def get_notes(freqs, impedances):
+def get_notes(freqs, impedances, base_freq=440):
     extrema = argrelextrema(impedances, np.greater)
     peak_freqs = freqs[extrema]
-    note_and_cent = [freq_to_note_and_cent(f) for f in peak_freqs]
+    note_and_cent = [freq_to_note_and_cent(f, base_freq=base_freq) for f in peak_freqs]
 
     peaks = {
         "note_name": [note_name(n[0]) for n in note_and_cent],
