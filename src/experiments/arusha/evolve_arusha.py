@@ -6,7 +6,7 @@ from didgelab.calc.conv import note_to_freq
 from didgelab.evo.loss import LossFunction
 
 from didgelab.evo.evolution import MultiEvolution
-from didgelab.initializer import init_console
+#from didgelab.initializer import init_console
 from didgelab.app import get_config, get_app
 
 from didgelab.calc.sim.sim import compute_impedance_iteratively, get_notes, compute_impedance, create_segments, get_log_simulation_frequencies
