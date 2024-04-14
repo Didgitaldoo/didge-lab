@@ -214,7 +214,7 @@ class MbeyaLoss(LossFunction):
 
         self.weights={
             "tuning_loss": 8,
-            "volume_loss": 0.001,
+            "volume_loss": 12,
             "octave_loss": 4,
             "n_note_loss": 5,
             "diameter_loss": 0.1,
@@ -272,7 +272,8 @@ class MbeyaLoss(LossFunction):
                 closest_target_index=np.argmin([abs(x-f1) for x in self.target_peaks])
                 f2=self.target_peaks[closest_target_index]
                 tuning_loss += math.sqrt(abs(f1-f2))
-                volume_loss += math.sqrt(1/(note["impedance"]/1e6))
+                imp = note["rel_imp"] / notes.impedance.max()
+                volume_loss += imp
 
         tuning_loss*=self.weights["tuning_loss"]
         volume_loss*=self.weights["volume_loss"]
@@ -286,7 +287,7 @@ class MbeyaLoss(LossFunction):
 
         loss={
             "tuning_loss": tuning_loss,
-            #"volume_loss": volume_loss,
+            "volume_loss": volume_loss,
             "n_note_loss": n_note_loss,
             "diameter_loss": d_loss,
             "fundamental_loss": fundamental,
@@ -311,7 +312,7 @@ def evolve():
         # num_generations = 5,
         # population_size = 10,
         generation_size = 500,
-        num_generations = 100,
+        num_generations = 1000,
         population_size = 5000,
     )
 

@@ -8,11 +8,12 @@ from didgelab.evo.evolution import MultiEvolution
 
 class LossWriter:
     
-    def __init__(self, interval=100):
+    def __init__(self, interval=100, write_loss=False):
 
         self.interval = interval
         self.writer = None
         self.format = None
+        self.write_loss = write_loss
 
         def write_loss(i_generation, population):
             self.write_loss(i_generation, population)
@@ -29,7 +30,7 @@ class LossWriter:
         
     def write_loss(self, i_generation, population : list[Shape]):
 
-        if self.writer is None:
+        if self.writer is None and self.write_loss:
             outfile = os.path.join(get_app().get_output_folder(), "losses.csv")
             self.csvfile = open(outfile, "a")
             self.writer = csv.writer(self.csvfile)

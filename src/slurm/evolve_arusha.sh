@@ -1,6 +1,5 @@
 #!/bin/bash
-# ./usrun.sh -p batch --gpus 0 /netscratch/nehring/projects/music/didgelab2/src/slurm/evolve_tamaki3.sh
-
+# ./usrun.sh -p  batch /netscratch/nehring/projects/music/didgelab2/src/slurm/evolve_arusha.sh
 
 export PIP_INDEX_URL=http://pypi-cache/index
 export PIP_TRUSTED_HOST=pypi-cache
@@ -16,4 +15,4 @@ python setup.py build_ext --inplace
 
 cd ../../../
 
-python -m experiments.Tamaki.evolve_tamaki3
+python -m experiments.arusha.evolve_arusha

@@ -5,7 +5,6 @@ python -m experiments.tamaki.evolve_tamaki3
 from didgelab.calc.conv import note_to_freq
 
 from didgelab.evo.evolution import MultiEvolution
-from didgelab.initializer import init_console
 from didgelab.app import get_config, get_app
 
 from didgelab.calc.sim.sim import compute_impedance_iteratively, get_notes, compute_impedance, create_segments, get_log_simulation_frequencies
@@ -21,7 +20,8 @@ import json
 import pandas as pd
 import logging
 
-base_freq = 456
+base_freq = 440
+
 
 class Tamaki3Loss(LossFunction):
 
@@ -42,7 +42,8 @@ class Tamaki3Loss(LossFunction):
         
         tuning_loss = []
         imp_loss = []
-        wobble_loss = []
+        wobble_freq_loss = []
+        wobble_vol_loss = []
 
         i_harmonic = 1
 
@@ -57,20 +58,23 @@ class Tamaki3Loss(LossFunction):
 
             if i_harmonic == 5 or i_harmonic == 6:
                 target_freq = base_freq*i_harmonic
-                wobble_loss.append(np.abs(np.log2(target_freq) - peak.logfreq))
+                wobble_freq_loss.append(np.abs(np.log2(target_freq) - peak.logfreq))
+                wobble_vol_loss.append(1-peak.rel_imp)
 
             i_harmonic += 1
 
         fundamental_loss = tuning_loss[0]*10
         tuning_loss = np.sum(tuning_loss) / len(tuning_loss)
         imp_loss = np.sum(imp_loss) / len(imp_loss)
-        wobble_loss = np.sum(wobble_loss) / len(wobble_loss)
+        wobble_freq_loss = np.sum(wobble_freq_loss) / len(wobble_freq_loss)
+        wobble_vol_loss = np.sum(wobble_vol_loss) / len(wobble_vol_loss)
 
         losses =  {
             "fundamental_loss": 5*fundamental_loss,
             "tuning_loss": 10*tuning_loss,
             "imp_loss": 10*imp_loss,
-            "wobble_loss": 10*wobble_loss
+            "wobble_freq_loss": 10*wobble_freq_loss,
+            "wobble_vol_loss": 3*wobble_vol_loss
         }
 
         losses["total"] = np.sum(list(losses.values()))
@@ -137,7 +141,7 @@ def evolve():
     get_config()["log_folder_suffix"] = "nuevolution_test"
     loss = Tamaki3Loss()
 
-    writer = NuevolutionWriter(write_population_interval=5)
+    writer = NuevolutionWriter(write_population_interval=20)
 
     n_segments = 10
 
@@ -148,7 +152,7 @@ def evolve():
         # num_generations = 5,
         # population_size = 10,
         generation_size = 500,
-        num_generations = 300,
+        num_generations = 600,
         population_size = 1000,
     )
 
