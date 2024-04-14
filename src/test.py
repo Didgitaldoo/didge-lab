@@ -1,10 +1,17 @@
-from didgelab.calc.sim.sim import compute_impedance_iteratively, get_notes, compute_impedance, create_segments, get_log_simulation_frequencies
-from didgelab.calc.geo import Geo, geotools
+import json
+import gzip
+import numpy as np
 
-geo = [[0,32], [1000, 64]]
-geo = Geo(geo)
-freqs = get_log_simulation_frequencies(1, 1000, 5)
-segments = create_segments(geo)
-impedances = compute_impedance(segments, freqs)
-notes = get_notes(freqs, impedances)
-print(notes)
+outfile = "test.json.gzip"
+with gzip.open(outfile, "w") as f:
+
+    for i in range(1000):
+        
+        r = np.random.sample(100)
+        f.write(np.array2string(r).encode())
+
+with gzip.open(outfile, "r") as f:
+
+    for line in f.readlines():
+        print(line.decode("utf-8"))
+        break

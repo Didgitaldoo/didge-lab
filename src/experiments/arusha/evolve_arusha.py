@@ -308,12 +308,12 @@ def evolve():
     evo = Nuevolution(
         loss, 
         MbeyaGemome(n_bubbles=3, add_bubble_prob=0.7),
-        # generation_size = 5,
-        # num_generations = 5,
-        # population_size = 10,
-        generation_size = 500,
-        num_generations = 1000,
-        population_size = 5000,
+        generation_size = 5,
+        num_generations = 5,
+        population_size = 10,
+        # generation_size = 500,
+        # num_generations = 1000,
+        # population_size = 5000,
     )
 
     schedulers = [

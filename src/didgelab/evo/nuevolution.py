@@ -21,6 +21,7 @@ import threading
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+import gzip
 
 class Genome(ABC):
 
@@ -200,17 +201,19 @@ class NuevolutionWriter:
     
     def __init__(self, 
         interval=20,
-        write_loss = True,
+        write_loss = False,
         write_population_interval=100, # log best individual at this interval
         log_operations = True):
 
         self.interval = interval
         self.writer = None
         self.format = None
-        self.write_loss = self.write_loss
+        self.write_loss = write_loss
         self.write_population_interval = write_population_interval
         self.log_operations = log_operations
         self.log_evolutions_file = None
+        self.write_population_writer = None
+        self.csvfile = None
 
         def generation_ended(i_generation, population):
             if self.write_loss:
@@ -227,10 +230,13 @@ class NuevolutionWriter:
             get_app().subscribe("generation_ended", generation_ended)
 
         def evolution_ended(population):
-            self.csvfile.close()
+
+            if self.csvfile is not None:
+                self.csvfile.close()
             self.log_evolutions_file.close()
             self.writer = None
             self.write_population(population)
+            self.write_population_writer.close()
 
         get_app().subscribe("evolution_ended", evolution_ended)
         get_app().subscribe("log_evolution_operations", self.log_evolution_operations)
@@ -239,8 +245,8 @@ class NuevolutionWriter:
     def log_evolution_operations(self, i_generation, individuals, mutation_operations, crossover_operations):
 
         if self.log_evolutions_file is None:
-            outfile = os.path.join(get_app().get_output_folder(), "evolution_operations.jsonl")
-            self.log_evolutions_file = open(outfile, "w")
+            outfile = os.path.join(get_app().get_output_folder(), "evolution_operations.jsonl.gz")
+            self.log_evolutions_file = gzip.open(outfile, "w")
 
         def flatten_dicts(list_of_dicts):
             flattened = DefaultDict(list)
@@ -259,14 +265,14 @@ class NuevolutionWriter:
             "date": datetime.now().isoformat(),
         }
         
-        self.log_evolutions_file.write(json.dumps(data))
-        self.log_evolutions_file.write("\n")
+        self.log_evolutions_file.write(json.dumps(data).encode())
+        self.log_evolutions_file.write("\n".encode())
 
     def log_evolution_operations_old(self, i_generation, new_genome_ids, mutation_parent, crossover_parent1, crossover_parent2, operations, losses):
 
         if self.evolution_operations_stream is None:
-            outfile = os.path.join(get_app().get_output_folder(), "evolution_operations.csv")
-            self.evolution_operations_f = open(outfile, "w")
+            outfile = os.path.join(get_app().get_output_folder(), "evolution_operations.csv.gz")
+            self.evolution_operations_f = gzip.open(outfile, "w")
             self.evolution_operations_stream = csv.writer(self.evolution_operations_f)
             
             self.evolution_operations_format = ["generation", "new_genome_id", "mutation_parent", "crossover_parent_1", "crossover_parent_2", "mutation", "crossover"]
@@ -300,9 +306,12 @@ class NuevolutionWriter:
     def write_population(self, population : List[Genome], generation=None):
 
         if generation is None:
-            generation = f"_{generation}"
-        outfile = os.path.join(get_app().get_output_folder(), f"population{generation}.json")
-        f = open(outfile, "w")
+            generation = 0
+
+        if self.write_population_writer is None:
+            outfile = os.path.join(get_app().get_output_folder(), f"population{generation}.json.gz")
+            self.write_population_writer = gzip.open(outfile, "w")
+
         data = []
         max_individuals = 20
         i=0
@@ -318,14 +327,15 @@ class NuevolutionWriter:
                 "representation": p.representation()
             })
 
-        f.write(json.dumps(data, indent=4))
-        f.close()
+        data2 = {"generation": 0, "population": data}
+        self.write_population_writer.write(json.dumps(data2).encode())
+        self.write_population_writer.write("\n".encode())
 
     def write_loss(self, i_generation, population : List[Genome]):
 
-        if self.writer is None:
-            outfile = os.path.join(get_app().get_output_folder(), "losses.csv")
-            self.csvfile = open(outfile, "a")
+        if self.writer is None and self.write_loss:
+            outfile = os.path.join(get_app().get_output_folder(), "losses.csv.gz")
+            self.csvfile = gzip.open(outfile, "a")
             self.writer = csv.writer(self.csvfile)
 
         if self.format is None:
