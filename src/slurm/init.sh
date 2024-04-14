@@ -1,5 +1,5 @@
 #!/bin/bash
-# ./usrun.sh -p  batch -c32 /netscratch/nehring/projects/music/didgelab2/src/slurm/init.sh
+# ./usrun.sh -p  batch --gpus 0 /netscratch/nehring/projects/music/didgelab2/src/slurm/init.sh
 
 export PIP_INDEX_URL=http://pypi-cache/index
 export PIP_TRUSTED_HOST=pypi-cache

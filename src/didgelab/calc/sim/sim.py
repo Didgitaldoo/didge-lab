@@ -218,11 +218,11 @@ def get_notes(freqs, impedances, base_freq=440):
     peaks["rel_imp"] = peaks.impedance / peaks.impedance.max()
     return peaks
 
-def quick_analysis(geo : Geo):
-    freqs = get_log_simulation_frequencies(1, 1000, 1)
+def quick_analysis(geo : Geo, fmin=1, fmax=1000, max_error=5, base_freq=440):
+    freqs = get_log_simulation_frequencies(fmin, fmax, max_error)
     segments = create_segments(geo)
     impedance = compute_impedance(segments, freqs)
-    notes = get_notes(freqs, impedance)
+    notes = get_notes(freqs, impedance, base_freq=base_freq)
     ground_freqs, imp_ip = interpolate_spectrum(freqs, impedance)
     ground = compute_ground_spektrum(ground_freqs, imp_ip)
     result = {
