@@ -159,11 +159,12 @@ class SimpleMutation(MutationOperator):
         if mp is None:
             mp = 0.5
 
+        print(mr, mp)
         mutation = np.random.uniform(low=-mr, high=mr, size=len(genome.genome))
         mutation *= (np.random.sample(size=len(mutation))<mp).astype(int)
         mutation = genome.genome + mutation
         mutation[mutation<0] = 0
-        mutation[mutation>0] = 1
+        mutation[mutation>1] = 1
 
         new_genome = genome.clone()
         new_genome.genome = mutation
