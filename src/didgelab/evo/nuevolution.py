@@ -186,7 +186,7 @@ class RandomCrossover(CrossoverOperator):
         offspring = parent1.clone()
         offspring.genome = new_genome
         return offspring, self.describe(parent1, parent2, offspring)
-    
+
 class AverageCrossover(CrossoverOperator):
 
     def apply(self, parent1 : Genome, parent2 : Genome, evolution_parameters : Dict) -> Genome:
@@ -214,8 +214,10 @@ class NuevolutionWriter:
         self.log_evolutions_file = None
         self.write_population_writer = None
         self.csvfile = None
+        self.current_generation = None
 
         def generation_ended(i_generation, population):
+            self.current_generation = i_generation
             if self.write_loss:
                 self.write_loss(i_generation, population)
             if self.write_population_interval > 0 and i_generation % self.write_population_interval == 0:
@@ -230,12 +232,12 @@ class NuevolutionWriter:
             get_app().subscribe("generation_ended", generation_ended)
 
         def evolution_ended(population):
+            self.write_population(population)
 
             if self.csvfile is not None:
                 self.csvfile.close()
             self.log_evolutions_file.close()
             self.writer = None
-            self.write_population(population)
             self.write_population_writer.close()
 
         get_app().subscribe("evolution_ended", evolution_ended)
@@ -306,10 +308,10 @@ class NuevolutionWriter:
     def write_population(self, population : List[Genome], generation=None):
 
         if generation is None:
-            generation = 0
+            generation = self.current_generation
 
         if self.write_population_writer is None:
-            outfile = os.path.join(get_app().get_output_folder(), f"population{generation}.json.gz")
+            outfile = os.path.join(get_app().get_output_folder(), f"population.json.gz")
             self.write_population_writer = gzip.open(outfile, "w")
 
         data = []
@@ -327,7 +329,7 @@ class NuevolutionWriter:
                 "representation": p.representation()
             })
 
-        data2 = {"generation": 0, "population": data}
+        data2 = {"generation": generation, "population": data}
         self.write_population_writer.write(json.dumps(data2).encode())
         self.write_population_writer.write("\n".encode())
 
