@@ -371,7 +371,7 @@ class Nuevolution():
             "crossover_prob": 0.5
         },
         crossover_operators = [RandomCrossover(), AverageCrossover()],
-        mutation_operators = [SimpleMutation(), RandomMutation()]):
+        mutation_operators = [SimpleMutation()]):
 
         self.loss = loss
         self.father_genome = father_genome
