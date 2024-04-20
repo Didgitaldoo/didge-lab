@@ -27,6 +27,7 @@ class Tamaki3Loss(LossFunction):
 
     def __init__(self):
         self.reference = '{"impedance": {"0": 1.0, "1": 0.8576649663048393, "2": 0.6066206728881713, "3": 0.8420721962421757, "4": 0.8373902860195547, "5": 0.8084926830620255, "6": 0.7780097302125277, "7": 0.6681873008986587, "8": 0.6864601376736074, "9": 0.8340840526459629, "10": 0.44992931052124463}, "freq": {"0": 91.91400470014798, "1": 184.52432761772133, "2": 276.4383323178693, "3": 368.3523370180173, "4": 440.2663417181653, "5": 572.1803464183132, "6": 644.7906693358866, "7": 736.7046740360346, "8": 827.9223605187572, "9": 921.2290016537559, "10": 999.2166420053966}, "harmonic_series": {"0": 91.91400470014798, "1": 183.82800940029597, "2": 275.74201410044395, "3": 367.65601880059194, "4": 459.5700235007399, "5": 551.4840282008879, "6": 643.3980329010359, "7": 735.3120376011839, "8": 827.2260423013319, "9": 919.1400470014798, "10": 1011.0540517016278}, "diff": {"0": 0.0, "1": -0.6963182174253575, "2": -0.6963182174253575, "3": -0.6963182174253575, "4": 19.303681782574643, "5": -20.6963182174253, "6": -1.392636434850715, "7": -1.392636434850715, "8": -0.6963182174253006, "9": -2.0889546522760156, "10": 11.837409696231248}}'
+        self.target_peaks = [4,5]
         self.reference = pd.DataFrame(json.loads(self.reference))        
         self.reference["impedance_normalized"] = self.reference.impedance / self.reference.impedance.max()
         self.reference["logfreq"] = np.log2(self.reference.freq)
@@ -45,8 +46,9 @@ class Tamaki3Loss(LossFunction):
         wobble_freq_loss = []
         wobble_vol_loss = []
 
-        i_harmonic = 1
+        # i_harmonic = 1
 
+        # difference to target peaks loss
         base_freq = peaks.freq.iloc[0]
         for ix, peak in peaks.iterrows():
             mini = np.argmin([np.abs(peak.logfreq-f) for f in self.reference.logfreq])
@@ -55,13 +57,18 @@ class Tamaki3Loss(LossFunction):
             il = np.abs(peak.impedance_normalized - self.reference.impedance_normalized[mini])
             tuning_loss.append(tl)
             imp_loss.append(il)
+        
+        # wobble freq losses
+        for target_peak in self.target_peaks:
+            f_target = self.reference.logfreq[target_peak]
+            closest_peak_i = np.argmin(np.abs(f_target-peaks.logfreq))
+            
+            tuning_diff = np.abs(peaks.logfreq[closest_peak_i]-f_target)
+            wobble_freq_loss.append(tuning_diff)
 
-            if i_harmonic == 5 or i_harmonic == 6:
-                target_freq = base_freq*i_harmonic
-                wobble_freq_loss.append(np.abs(np.log2(target_freq) - peak.logfreq))
-                wobble_vol_loss.append(1-peak.rel_imp)
-
-            i_harmonic += 1
+            imp_target = self.reference.impedance[target_peak]
+            imp_diff = np.abs(peak.impedance - imp_target)
+            wobble_vol_loss.append(imp_diff)
 
         fundamental_loss = tuning_loss[0]*10
         tuning_loss = np.sum(tuning_loss) / len(tuning_loss)
