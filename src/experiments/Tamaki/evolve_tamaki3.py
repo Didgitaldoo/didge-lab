@@ -73,8 +73,8 @@ class Tamaki3Loss(LossFunction):
             "fundamental_loss": 5*fundamental_loss,
             "tuning_loss": 10*tuning_loss,
             "imp_loss": 10*imp_loss,
-            "wobble_freq_loss": 10*wobble_freq_loss,
-            "wobble_vol_loss": 3*wobble_vol_loss
+            "wobble_freq_loss": 30*wobble_freq_loss,
+            "wobble_vol_loss": 8*wobble_vol_loss
         }
 
         losses["total"] = np.sum(list(losses.values()))
