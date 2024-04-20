@@ -159,7 +159,6 @@ class SimpleMutation(MutationOperator):
         if mp is None:
             mp = 0.5
 
-        print(mr, mp)
         mutation = np.random.uniform(low=-mr, high=mr, size=len(genome.genome))
         mutation *= (np.random.sample(size=len(mutation))<mp).astype(int)
         mutation = genome.genome + mutation
