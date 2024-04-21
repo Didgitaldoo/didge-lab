@@ -164,7 +164,7 @@ def evolve():
     )
 
     schedulers = [
-        LinearDecreasingCrossover(),
+        # LinearDecreasingCrossover(),
         LinearDecreasingMutation()
     ]
 

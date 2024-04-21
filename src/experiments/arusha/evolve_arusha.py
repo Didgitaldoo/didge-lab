@@ -317,7 +317,7 @@ def evolve():
     )
 
     schedulers = [
-        LinearDecreasingCrossover(),
+        # LinearDecreasingCrossover(),
         LinearDecreasingMutation()
     ]
 
@@ -338,7 +338,7 @@ def evolve():
     get_app().subscribe("generation_ended", generation_ended)
 
     pbar = NuevolutionProgressBar()
-    population = evo.evolve() 
+    population = evo.evolve()
 
 if __name__ == "__main__":
     evolve()

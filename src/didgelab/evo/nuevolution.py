@@ -593,6 +593,9 @@ class LinearDecreasingCrossover:
                 self.i += 1
                 rate = self.rates[self.i]
                 nuevolution.evolution_parameters["crossover_prob"] = rate
+                print("#############")
+                print("recompute_loss", i_generation, rate)
+                print("#############")
                 get_app().publish("recompute_loss")
         get_app().subscribe("generation_started", update)
 
@@ -607,5 +610,11 @@ if __name__ == "__main__":
         num_generations=1000,
         population_size=1000,
         generation_size=200)
+
+    schedulers = [
+        LinearDecreasingCrossover(),
+        LinearDecreasingMutation()
+    ]
+
     evo.evolve()
 
