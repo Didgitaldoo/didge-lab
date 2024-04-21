@@ -218,6 +218,7 @@ class NuevolutionWriter:
 
         def generation_ended(i_generation, population):
             self.current_generation = i_generation
+
             if self.write_loss:
                 self.write_loss(i_generation, population)
             if self.write_population_interval > 0 and i_generation % self.write_population_interval == 0:
@@ -333,6 +334,10 @@ class NuevolutionWriter:
         self.write_population_writer.write(json.dumps(data2).encode())
         self.write_population_writer.write("\n".encode())
 
+        outfile = os.path.join(get_app().get_output_folder(), "latest_population.json")
+        with open(outfile, "w") as f:
+            json.dump(data2, f)
+
     def write_loss(self, i_generation, population : List[Genome]):
 
         if self.writer is None and self.write_loss:
@@ -436,7 +441,7 @@ class Nuevolution():
         get_app().publish("log_evolution_operations", (self.i_generation, self.population, [], []))
 
         # evolve
-        for i_generation in range(self.num_generations):
+        for i_generation in range(1, self.num_generations+1):
             
             get_app().publish("generation_started", (self.i_generation, self.population))
 

@@ -1,5 +1,5 @@
 """
-python -m experiments.arusha.evolve_arusha
+python -m experiments.arusha.evolve_arusha_test
 """
 
 from didgelab.calc.conv import note_to_freq
@@ -18,8 +18,9 @@ from didgelab.evo.nuevolution import NuevolutionProgressBar, LinearDecreasingCro
 
 import math
 import numpy as np
-
+import os
 import logging
+import json
 
 base_freq = 456
 
@@ -310,7 +311,7 @@ def evolve():
         MbeyaGemome(n_bubbles=3, add_bubble_prob=0.7),
         generation_size = 5,
         num_generations = 2,
-        population_size = 3,
+        population_size = 5,
         # generation_size = 500,
         # num_generations = 1000,
         # population_size = 5000,
@@ -340,5 +341,6 @@ def evolve():
     pbar = NuevolutionProgressBar()
     population = evo.evolve() 
 
+    
 if __name__ == "__main__":
     evolve()
