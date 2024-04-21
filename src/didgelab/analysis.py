@@ -3,10 +3,11 @@ import sys
 import os
 import gzip 
 import logging
-
-from didgelab.calc.geo import Geo, geotools
+import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 
+from didgelab.calc.geo import Geo, geotools
 import didgelab.calc.fft
 from didgelab.calc.sim.sim import *
 from didgelab.calc.fft import *
@@ -96,6 +97,10 @@ class Nodes:
             for edge in node.children:
                 yield edge
 
+    def iterate_nodes(self):
+        for node in self.nodes.values():
+            yield node
+
     def connect(self, nodeid_parent, nodeid_child, edge_name, edge_params):
         parent = self.get_node(nodeid_parent)
         child = self.get_node(nodeid_child)
@@ -163,8 +168,7 @@ def build_graph(infile):
     return nodes
 
 # get the loss improvements from  evolution_operations.jsonl.gz
-def get_deltas(infile):
-    nodes = build_graph(infile)
+def get_deltas(nodes):
     deltas = []
     for edge in nodes.iterate_edges():
         for key in edge.parent.losses.keys():
@@ -193,3 +197,67 @@ def get_success_probs(deltas):
     success_probs = success_probs.sort_values("success_prob", ascending=False)
     return success_probs
 
+
+def plot_success_probs_over_time(deltas):
+    deltas = deltas.query("loss_type=='total'").sort_values(by="generation")
+
+    generation = -1
+    operations = deltas.operation.unique()
+    
+    total_operations = None
+    success_operations = None
+    result = []
+    for ix, row in deltas.iterrows():
+        if row["generation"] != generation:
+
+            if generation>0:
+                for operation in operations:
+                    if total_operations[operation] > 0:
+                        prob = success_operations[operation] / total_operations[operation]
+                        result.append([generation, operation, prob])
+
+            generation = row["generation"]
+            total_operations = {o:0 for o in operations}
+            success_operations = {o:0 for o in operations}
+
+        total_operations[row["operation"]] += 1
+        if row["delta"] > 0:
+            success_operations[row["operation"]] += 1
+
+    for operation in operations:
+        if total_operations[operation] > 0:
+            prob = success_operations[operation] / total_operations[operation]
+            result.append([generation, operation, prob])
+
+    result = pd.DataFrame(result, columns=["generation", "operation", "success_prob"])
+    sns.lineplot(data=result, x="generation", y="success_prob", hue="operation")
+    plt.title("Success probabilities over time")
+
+
+def plot_loss_over_time(nodes):
+    generations = {}
+    for node in nodes.iterate_nodes():
+        if node.generation not in generations:
+            generations[node.generation] = []
+        generations[node.generation].append(node.losses)
+
+    indizes = sorted(generations.keys())
+    best_loss = None
+    losses = []
+    for i in indizes:
+
+        besti = np.argmin([x["total"] for x in generations[i]])
+        loss = generations[i][besti]
+
+        if best_loss is None:
+            best_loss = loss
+
+        if loss["total"] < best_loss["total"]:
+            best_loss = loss
+        
+        for key, value in best_loss.items():
+            losses.append([i, key, value])
+
+    losses = pd.DataFrame(losses, columns=["generation", "loss_type", "loss"])
+    sns.lineplot(data=losses, x="generation", y="loss", hue="loss_type")
+    plt.title("Loss over time")

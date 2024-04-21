@@ -266,6 +266,7 @@ class NuevolutionWriter:
             "mutations_operations": flatten_dicts(mutation_operations),
             "crossover_operations": flatten_dicts(crossover_operations),
             "date": datetime.now().isoformat(),
+            "generation": i_generation
         }
         
         self.log_evolutions_file.write(json.dumps(data).encode())
@@ -546,7 +547,7 @@ class TestLossFunction(LossFunction):
 
     def loss(self, genome : Genome):
         l = int(len(genome.genome)/2)
-        return {"total": np.sum(genome.genome[0:l]) / np.sum(genome.genome[l:])}
+        return {"total": np.sum(genome.genome[0:l]) / np.sum(genome.genome[l:]), "test": -5, "test2": 10}
 
 class LinearDecreasingMutation:
 
@@ -593,9 +594,6 @@ class LinearDecreasingCrossover:
                 self.i += 1
                 rate = self.rates[self.i]
                 nuevolution.evolution_parameters["crossover_prob"] = rate
-                print("#############")
-                print("recompute_loss", i_generation, rate)
-                print("#############")
                 get_app().publish("recompute_loss")
         get_app().subscribe("generation_started", update)
 
@@ -607,12 +605,11 @@ if __name__ == "__main__":
     evo = Nuevolution(
         TestLossFunction(), 
         GeoGenomeA.build(5),
-        num_generations=1000,
+        num_generations=20,
         population_size=1000,
         generation_size=200)
 
     schedulers = [
-        LinearDecreasingCrossover(),
         LinearDecreasingMutation()
     ]
 
