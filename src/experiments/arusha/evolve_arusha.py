@@ -258,7 +258,7 @@ class MbeyaLoss(LossFunction):
         progress = evo.i_generation / evo.num_generations
         max_error = 20 - int(17*progress)
 
-        freqs = get_log_simulation_frequencies(1, 1000, progress)
+        freqs = get_log_simulation_frequencies(1, 1000, max_error)
         segments = create_segments(geo)
         impedances = compute_impedance(segments, freqs)
         notes = get_notes(freqs, impedances, base_freq=base_freq)
