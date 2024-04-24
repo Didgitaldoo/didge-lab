@@ -253,7 +253,12 @@ class MbeyaLoss(LossFunction):
         # evolution_nr = get_app().get_service(MultiEvolution).evolution_nr
 
         geo = genome.genome2geo()
-        freqs = get_log_simulation_frequencies(1, 1000, 5)
+
+        evo = get_app().get_service(Nuevolution)
+        progress = evo.i_generation / evo.num_generations
+        max_error = 20 - int(17*progress)
+
+        freqs = get_log_simulation_frequencies(1, 1000, progress)
         segments = create_segments(geo)
         impedances = compute_impedance(segments, freqs)
         notes = get_notes(freqs, impedances, base_freq=base_freq)
