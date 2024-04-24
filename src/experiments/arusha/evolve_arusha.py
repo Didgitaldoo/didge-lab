@@ -74,7 +74,7 @@ class MbeyaGemome(GeoGenome):
 
         evo = get_app().get_service(Nuevolution)
         progress = evo.i_generation / evo.num_generations
-        n_segments=np.max(1, int(progress*11))
+        n_segments=np.max((1, int(progress*11)))
 
         i=self.get_index(shape, pos-0.5*width)
 
