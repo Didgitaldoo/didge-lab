@@ -198,7 +198,7 @@ def get_success_probs(deltas):
     return success_probs
 
 
-def plot_success_probs_over_time(deltas):
+def plot_success_probs_over_time(deltas, do_not_plot=False):
     deltas = deltas.query("loss_type=='total'").sort_values(by="generation")
 
     generation = -1
@@ -230,11 +230,15 @@ def plot_success_probs_over_time(deltas):
             result.append([generation, operation, prob])
 
     result = pd.DataFrame(result, columns=["generation", "operation", "success_prob"])
+
+    if do_not_plot:
+        return result
+    
     sns.lineplot(data=result, x="generation", y="success_prob", hue="operation")
     plt.title("Success probabilities over time")
 
 
-def plot_loss_over_time(nodes):
+def plot_loss_over_time(nodes, do_not_plot=False):
     generations = {}
     for node in nodes.iterate_nodes():
         if node.generation not in generations:
@@ -259,5 +263,8 @@ def plot_loss_over_time(nodes):
             losses.append([i, key, value])
 
     losses = pd.DataFrame(losses, columns=["generation", "loss_type", "loss"])
+
+    if do_not_plot:
+        return losses
     sns.lineplot(data=losses, x="generation", y="loss", hue="loss_type")
     plt.title("Loss over time")

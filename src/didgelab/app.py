@@ -45,6 +45,7 @@ class App:
             self.init_logging(filename=log_file, log_to_file=create_output_folder)
 
             self.start_message()
+            logging.info(f"output folder: {outfolder}")
             
             conf = self.get_config()
             conf_str = "Configuration:"

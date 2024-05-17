@@ -199,6 +199,57 @@ class AverageCrossover(CrossoverOperator):
         offspring.genome = new_genome
         return offspring, self.describe(parent1, parent2, offspring)
 
+class PartSwapCrossover(CrossoverOperator):
+
+    def apply(self, parent1 : Genome, parent2 : Genome, evolution_parameters : Dict = {}) -> Genome:
+        assert type(parent1) == type(parent2)
+
+        indizes = np.random.choice(np.arange(len(parent1.genome)), size=2, replace=False)
+        i1 = np.min(indizes)
+        i2 = np.max(indizes)
+
+        offspring = parent1.clone()
+        offspring.genome = np.concatenate(
+            (parent1.genome[0:i1], 
+             parent2.genome[i1:i2], 
+             parent1.genome[i2:]))
+
+        assert len(offspring.genome) == len(parent1.genome)
+        return offspring, self.describe(parent1, parent2, offspring)
+
+class PartAverageCrossover(CrossoverOperator):
+
+    def apply(self, parent1 : Genome, parent2 : Genome, evolution_parameters : Dict = {}) -> Genome:
+        assert type(parent1) == type(parent2)
+
+        indizes = np.random.choice(np.arange(len(parent1.genome)), size=2, replace=False)
+        i1 = np.min(indizes)
+        i2 = np.max(indizes)
+
+        offspring = parent1.clone()
+        offspring.genome = np.concatenate(
+            (parent1.genome[0:i1], 
+             (parent1.genome[i1:i2] + parent2.genome[i1:i2]) / 2, 
+             parent1.genome[i2:]))
+
+        assert len(offspring.genome) == len(parent1.genome)
+        return offspring, self.describe(parent1, parent2, offspring)
+
+class SingleMutation(MutationOperator):
+
+    def apply(self, genome : Genome, evolution_parameters : Dict) -> Tuple[Genome, Dict]:
+        new_genome = genome.clone()
+
+        i = np.random.randint(0, len(new_genome.genome))
+        v = new_genome.genome[i]
+        v += np.random.uniform(-1, 1)
+        if v<0:
+            v=0
+        if v>1:
+            v=1
+        new_genome.genome[i] = v
+        return new_genome, self.describe(genome, new_genome)
+
 class NuevolutionWriter:
     
     def __init__(self, 
@@ -349,7 +400,14 @@ class Nuevolution():
             "mutation_rate": 0.5,
             "gene_mutation_prob": 0.5,
         },
-        evolution_operators = [RandomCrossover(), AverageCrossover(), SimpleMutation()],
+        evolution_operators = [
+            RandomCrossover(), 
+            AverageCrossover(), 
+            SimpleMutation(),
+            SingleMutation(),
+            PartAverageCrossover(),
+            PartSwapCrossover()
+        ],
         evolution_operator_probs = None):
 
         self.loss = loss
@@ -552,6 +610,8 @@ class NuevolutionProgressBar:
                 num_generations = get_app().get_service(Nuevolution).num_generations
                 self.pbar = tqdm(total=num_generations)
             self.pbar.update(1)
+            best_loss = population[0].loss['total']
+            self.pbar.set_description(f"best loss: {best_loss:.2f}")
 
         get_app().subscribe("generation_ended", update)
 
