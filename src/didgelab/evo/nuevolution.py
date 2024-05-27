@@ -38,6 +38,7 @@ class Genome(ABC):
         self.loss = None
 
         self.id = Genome.generate_id()
+        self.named_parameters = {}
 
     def representation(self):
         return self.genome.tolist()
