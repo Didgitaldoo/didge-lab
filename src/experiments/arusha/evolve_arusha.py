@@ -21,7 +21,7 @@ import numpy as np
 
 import logging
 
-base_freq = 456
+base_freq = 425
 
 class MbeyaGemome(GeoGenome):
 
