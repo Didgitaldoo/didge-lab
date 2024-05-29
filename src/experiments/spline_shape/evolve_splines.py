@@ -238,6 +238,7 @@ class MbeyaLoss(LossFunction):
 
         evo = get_app().get_service(Nuevolution)
         progress = evo.i_generation / evo.num_generations
+
         max_error = 20 - int(17*progress)
 
         freqs = get_log_simulation_frequencies(1, 1000, max_error)
@@ -285,6 +286,10 @@ class MbeyaLoss(LossFunction):
         loss["total"]=sum(loss.values())
         return loss
 
+errors = [20, 15, 10, 3]
+last_max_error = errors[0]
+
+
 def evolve():
 
     get_config()["log_folder_suffix"] = "nuevolution_test"
@@ -310,8 +315,23 @@ def evolve():
         LinearDecreasingMutation()
     ]
 
-
     def generation_ended(i_generation, population):
+        # update max error if necessary
+        global last_max_error, errors
+
+        evo = get_app().get_service(Nuevolution)
+        progress = evo.i_generation / evo.num_generations
+        max_error = errors[int(progress*len(errors))]
+
+        if last_max_error != max_error:
+            evo.recompute_losses = True
+
+            # also double the resolution
+            for i in range(len(population)):
+                population[i].double_resolution()
+
+        last_max_error = max_error
+
         genome = population[0]
         losses = [f"{key}: {value}" for key, value in genome.loss.items()]
         msg = "\n".join(losses)

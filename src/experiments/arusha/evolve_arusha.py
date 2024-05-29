@@ -231,6 +231,7 @@ class MbeyaLoss(LossFunction):
         self.fundamental=fundamental
         self.add_octave=add_octave
         self.n_notes=n_notes
+        self.max_error = 10
 
         if target_peaks is not None:
             self.target_peaks=target_peaks
@@ -254,11 +255,7 @@ class MbeyaLoss(LossFunction):
 
         geo = genome.genome2geo()
 
-        evo = get_app().get_service(Nuevolution)
-        progress = evo.i_generation / evo.num_generations
-        max_error = 20 - int(17*progress)
-
-        freqs = get_log_simulation_frequencies(1, 1000, max_error)
+        freqs = get_log_simulation_frequencies(1, 1000, self.max_error)
         segments = create_segments(geo)
         impedances = compute_impedance(segments, freqs)
         notes = get_notes(freqs, impedances, base_freq=base_freq)
@@ -303,6 +300,9 @@ class MbeyaLoss(LossFunction):
         loss["total"]=sum(loss.values())
         return loss
 
+errors = [20, 15, 10, 3]
+last_max_error = errors[0]
+
 def evolve():
 
     get_config()["log_folder_suffix"] = "nuevolution_test"
@@ -328,8 +328,19 @@ def evolve():
         LinearDecreasingMutation()
     ]
 
-
     def generation_ended(i_generation, population):
+        global last_max_error, errors
+
+        # update max error if necessary
+        evo = get_app().get_service(Nuevolution)
+        progress = evo.i_generation / evo.num_generations
+        max_error = errors[int(progress*len(errors))]
+
+        if last_max_error != max_error:
+            evo.recompute_losses = True
+        last_max_error = max_error
+
+        # debug output
         genome = population[0]
         losses = [f"{key}: {value}" for key, value in genome.loss.items()]
         msg = "\n".join(losses)
