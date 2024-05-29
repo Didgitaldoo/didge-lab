@@ -15,4 +15,4 @@ python setup.py build_ext --inplace
 
 cd ../../../
 
-python -m experiments.arusha.evolve_splines
+python -m experiments.spline_shape.evolve_splines
