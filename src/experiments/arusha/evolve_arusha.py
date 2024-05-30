@@ -368,6 +368,8 @@ def evolve():
 
         if last_max_error != max_error:
             evo.recompute_losses = True
+            loss.max_error = max_error
+
         last_max_error = max_error
 
         # debug output
