@@ -23,6 +23,8 @@ import logging
 
 base_freq = 425
 
+
+
 class MbeyaGemome(GeoGenome):
 
     def add_param(self, name, minval, maxval):
@@ -38,7 +40,7 @@ class MbeyaGemome(GeoGenome):
         v = v*(p["max"]-p["min"]) + p["min"]
         return v
 
-    def __init__(self, n_bubbles=1, add_bubble_prob=0.7):
+    def __init__(self, n_bubbles=1, add_bubble_prob=0.9):
 
         self.named_params = {}
 
@@ -57,9 +59,9 @@ class MbeyaGemome(GeoGenome):
         self.add_param("opening_length", 700, 1000)
 
         # bell
-        self.add_param("d_pre_bell", 40, 50)
+        self.add_param("d_pre_bell", 5, 20)
         self.add_param("l_bell", 20, 50)
-        self.add_param("bellsize", 5, 30)
+        self.add_param("bellsize", 5, 20)
 
         # bubble
         for i in range(self.n_bubbles):
@@ -72,11 +74,8 @@ class MbeyaGemome(GeoGenome):
 
     def make_bubble(self, shape, pos, width, height):
 
-        evo = get_app().get_service(Nuevolution)
-        progress = evo.i_generation / evo.num_generations
-        n_segments=np.max((1, int(progress*11)))
-
         i=self.get_index(shape, pos-0.5*width)
+        n_segments = 11
 
         bubbleshape=shape[0:i]
 
@@ -165,6 +164,35 @@ class MbeyaGemome(GeoGenome):
         geo=Geo(shape)
         geo=geotools.fix_zero_length_segments(geo)
         return geo
+
+# a loss that deviates 
+def single_note_loss(note, peaks, i_note=0, filter_rel_imp=0.1):
+    peaks=peaks[peaks.rel_imp>filter_rel_imp]
+    if len(peaks)<=i_note:
+        return 1000000
+    f_target=note_to_freq(note, base_freq=base_freq)
+    f_fundamental=peaks.iloc[i_note]["freq"]
+    return np.sqrt(abs(math.log(f_target, 2)-math.log(f_fundamental, 2)))
+
+# add loss if the didge gets smaller
+def diameter_loss(geo):
+
+    if type(geo)==Geo:
+        shape=geo.geo
+    elif type(geo) == list:
+        shape=geo
+    else:
+        raise Exception("unknown type " + str(type(geo)))
+
+    loss=0
+    for i in range(1, len(shape)):
+        delta_y=shape[i-1][1]-shape[i][1]
+        if delta_y < 0:
+            loss+=-1*delta_y
+
+    loss*=0.005
+    return loss
+
 
 # a loss that deviates 
 def single_note_loss(note, peaks, i_note=0, filter_rel_imp=0.1):

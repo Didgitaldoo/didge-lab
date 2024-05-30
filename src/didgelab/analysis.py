@@ -112,59 +112,63 @@ def build_graph(infile):
     generation_counter = 0
     nodes = Nodes()
     num_errors = 0
-    for line in gzip.open(infile):
-        try:
-            data = json.loads(line)
-        except Exception as e:
-            num_errors += 1
-            if num_errors >= 3:
-                break
-            logging.error(e)
-            continue
-        for i in range(len(data["genome_ids"])):
 
-            losses = {key: data["losses"][key][i] for key in data["losses"].keys()}
-            node = Node(
-                data["genome_ids"][i], 
-                losses,
-                generation_counter
-            )
-            nodes.add_node(node)
-        generation_counter += 1
+    try:
+        for line in gzip.open(infile):
+            try:
+                data = json.loads(line)
+            except Exception as e:
+                num_errors += 1
+                if num_errors >= 3:
+                    break
+                logging.error(e)
+                continue
+            for i in range(len(data["genome_ids"])):
 
-        mo = data["mutations_operations"]
-        if len(mo)>0:
-            for i in range(len(mo["operation"])):
-                father_id = mo["father_id"][i]
-                child_id = mo["child_id"][i]
+                losses = {key: data["losses"][key][i] for key in data["losses"].keys()}
+                node = Node(
+                    data["genome_ids"][i], 
+                    losses,
+                    generation_counter
+                )
+                nodes.add_node(node)
+            generation_counter += 1
 
-                if nodes.has_node_id(child_id) and nodes.has_node_id(father_id):
-                    nodes.connect(
-                        father_id,
-                        child_id,
-                        mo["operation"][i],
-                        {}
-                    )
+            mo = data["mutations_operations"]
+            if len(mo)>0:
+                for i in range(len(mo["operation"])):
+                    father_id = mo["father_id"][i]
+                    child_id = mo["child_id"][i]
 
-        co = data["crossover_operations"]
-        if len(co)>0:
-            for i in range(len(co["operation"])):
-                parent1 = co["parent1_genome"][i]
-                parent2 = co["parent2_genome"][i]
-                child_id = co["child_id"][i]
-                if nodes.has_node_id(child_id) and nodes.has_node_id(parent1) and nodes.has_node_id(parent2):
+                    if nodes.has_node_id(child_id) and nodes.has_node_id(father_id):
                         nodes.connect(
-                            parent1,
+                            father_id,
                             child_id,
-                            co["operation"][i],
+                            mo["operation"][i],
                             {}
                         )
-                        nodes.connect(
-                            parent2,
-                            child_id,
-                            co["operation"][i],
-                            {}
-                        )
+
+            co = data["crossover_operations"]
+            if len(co)>0:
+                for i in range(len(co["operation"])):
+                    parent1 = co["parent1_genome"][i]
+                    parent2 = co["parent2_genome"][i]
+                    child_id = co["child_id"][i]
+                    if nodes.has_node_id(child_id) and nodes.has_node_id(parent1) and nodes.has_node_id(parent2):
+                            nodes.connect(
+                                parent1,
+                                child_id,
+                                co["operation"][i],
+                                {}
+                            )
+                            nodes.connect(
+                                parent2,
+                                child_id,
+                                co["operation"][i],
+                                {}
+                            )
+    except Exception as e:
+        logging.exception(e)
     return nodes
 
 # get the loss improvements from  evolution_operations.jsonl.gz

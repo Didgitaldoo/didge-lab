@@ -89,6 +89,9 @@ class Geo:
     def length(self):
         return self.geo[-1][0]
 
+    def bellsize(self):
+        return self.geo[-1][1]
+
     def segments_to_str(self):
         df={}
         for x in ["x", "y"]:
