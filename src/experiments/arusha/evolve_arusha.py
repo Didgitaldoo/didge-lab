@@ -330,6 +330,8 @@ class MbeyaLoss(LossFunction):
 
 errors = [20, 15, 10, 3]
 last_max_error = errors[0]
+best_loss = None
+last_loss_update = -1
 
 def evolve():
 
@@ -380,6 +382,16 @@ def evolve():
         notes = get_notes(freqs, impedances, base_freq=base_freq).to_string()
         msg += "\n" + notes
         logging.info(msg)
+
+        # stop evolution if there is no progress
+        global last_loss_update, best_loss
+        thisloss = population[0].loss["total"]
+        if thisloss is None or thisloss < best_loss:
+            best_loss = thisloss
+            last_loss_update = i_generation
+        elif i_generation-last_loss_update > 30:
+            logging.info("stop evolution because it did not improve")
+            evo.continue_evolution = False
 
     get_app().subscribe("generation_ended", generation_ended)
 

@@ -428,6 +428,8 @@ class Nuevolution():
         
         self.recompute_losses = False
 
+        self.continue_evolution
+
         get_app().register_service(self)
 
         def recompute_loss():
@@ -477,6 +479,9 @@ class Nuevolution():
 
         # evolve
         for i_generation in range(1, self.num_generations+1):
+            
+            if not self.continue_evolution:
+                break
             
             get_app().publish("generation_started", (self.i_generation, self.population))
 
