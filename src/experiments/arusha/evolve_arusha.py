@@ -369,6 +369,7 @@ def evolve():
         if last_max_error != max_error:
             evo.recompute_losses = True
             loss.max_error = max_error
+            logging.info(f"set max_error to {max_error}")
 
         last_max_error = max_error
 
