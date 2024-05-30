@@ -330,7 +330,7 @@ class MbeyaLoss(LossFunction):
 
 errors = [20, 15, 10, 3]
 last_max_error = errors[0]
-best_loss = None
+best_loss = 9999999999
 last_loss_update = -1
 
 def evolve():
@@ -348,7 +348,7 @@ def evolve():
         #generation_size = 5,
         #num_generations = 5,
         #population_size = 10,
-        generation_size = 500,
+        generation_size = 3,
         num_generations = 1000,
         population_size = 1000,
     )
@@ -389,6 +389,7 @@ def evolve():
         # stop evolution if there is no progress
         global last_loss_update, best_loss
         thisloss = population[0].loss["total"]
+        print(thisloss)
         if thisloss is None or thisloss < best_loss:
             best_loss = thisloss
             last_loss_update = i_generation
