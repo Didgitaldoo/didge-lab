@@ -428,7 +428,7 @@ class Nuevolution():
         
         self.recompute_losses = False
 
-        self.continue_evolution
+        self.continue_evolution = True
 
         get_app().register_service(self)
 
@@ -482,7 +482,7 @@ class Nuevolution():
             
             if not self.continue_evolution:
                 break
-            
+
             get_app().publish("generation_started", (self.i_generation, self.population))
 
             if len(probs) != len(self.population):
