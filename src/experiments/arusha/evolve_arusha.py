@@ -356,7 +356,7 @@ def evolve():
         LinearDecreasingMutation()
     ]
 
-    pbi = PrintBestIndividual()
+    pbi = PrintEvolutionInformation()
     es = EarlyStopping()
 
     def generation_ended(i_generation, population):
