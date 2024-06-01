@@ -773,6 +773,11 @@ class PrintEvolutionInformation:
 
         def generation_ended(i_generation, population):
 
+            duration = None
+            if self.last_generation_time is not None:
+                duration = time.time()-self.last_generation_time
+            self.last_generation_time = time.time()
+    
             if i_generation>1 or i_generation%self.interval == 0:
                 genome = population[0]
                 losses = [f"{key}: {value}" for key, value in genome.loss.items()]
@@ -785,10 +790,8 @@ class PrintEvolutionInformation:
                 notes = get_notes(freqs, impedances, base_freq=self.base_freq).to_string()
                 msg += "\n" + notes
 
-                if self.last_generation_time is not None:
-                    duration = time.time()-self.last_generation_time
+                if duration is not None:
                     msg += f"\nTime per generation: {duration:.2f} seconds"
-                self.last_generation_time = time.time()
 
                 logging.info(msg)
 
