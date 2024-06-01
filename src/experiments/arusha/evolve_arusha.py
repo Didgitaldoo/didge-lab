@@ -304,7 +304,7 @@ class MbeyaLoss(LossFunction):
 
         tuning_loss*=self.weights["tuning_loss"]
         volume_loss = notes.rel_imp.mean() * self.weights["volume_loss"]
-        
+
         n_notes=self.n_notes+1
         if self.add_octave:
             n_notes+=1
@@ -343,7 +343,7 @@ def evolve():
         #generation_size = 5,
         #num_generations = 5,
         #population_size = 10,
-        generation_size = 5,
+        generation_size = 250,
         num_generations = 1000,
         population_size = 1000,
     )
