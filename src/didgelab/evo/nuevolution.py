@@ -763,12 +763,13 @@ class AdaptiveProbabilities:
         nuevo.evolution_operator_probs = probs
 
 # print information about the best individual at regular intervals
-class PrintBestIndividual:
+class PrintEvolutionInformation:
 
     def __init__(self, interval=5, base_freq=440):
 
         self.base_freq = base_freq
         self.interval = interval
+        self.last_generation_time = None
 
         def generation_ended(i_generation, population):
 
@@ -783,6 +784,12 @@ class PrintBestIndividual:
                 impedances = compute_impedance(segments, freqs)
                 notes = get_notes(freqs, impedances, base_freq=self.base_freq).to_string()
                 msg += "\n" + notes
+
+                if self.last_generation_time is not None:
+                    duration = time.time()-self.last_generation_time
+                    msg += f"\nTime per generation: {duration:.2f} seconds"
+                self.last_generation_time = time.time()
+
                 logging.info(msg)
 
 
