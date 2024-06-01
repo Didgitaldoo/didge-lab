@@ -12,9 +12,7 @@ from didgelab.app import get_config, get_app
 from didgelab.calc.sim.sim import compute_impedance_iteratively, get_notes, compute_impedance, create_segments, get_log_simulation_frequencies
 from didgelab.calc.geo import Geo, geotools
 
-from didgelab.evo.nuevolution import Genome, LossFunction, Nuevolution
-from didgelab.evo.nuevolution import GeoGenomeA, NuevolutionWriter, GeoGenome
-from didgelab.evo.nuevolution import NuevolutionProgressBar, LinearDecreasingCrossover,LinearDecreasingMutation
+from didgelab.evo.nuevolution import *
 
 import math
 import numpy as np
@@ -244,7 +242,7 @@ class MbeyaLoss(LossFunction):
 
         self.weights={
             "tuning_loss": 8,
-            "volume_loss": 12,
+            "volume_loss": 36,
             "octave_loss": 4,
             "n_note_loss": 5,
             "diameter_loss": 0.1,
@@ -330,7 +328,7 @@ class MbeyaLoss(LossFunction):
 
 errors = [20, 15, 10, 3]
 last_max_error = errors[0]
-best_loss = 9999999999
+best_loss = 9999999999  
 last_loss_update = -1
 
 def evolve():
@@ -358,6 +356,9 @@ def evolve():
         LinearDecreasingMutation()
     ]
 
+    pbi = PrintBestIndividual()
+    es = EarlyStopping()
+
     def generation_ended(i_generation, population):
         global last_max_error, errors
 
@@ -373,34 +374,36 @@ def evolve():
 
         last_max_error = max_error
 
-        # debug output
-        genome = population[0]
-        losses = [f"{key}: {value}" for key, value in genome.loss.items()]
-        msg = "\n".join(losses)
+        # # debug output
+        # genome = population[0]
+        # losses = [f"{key}: {value}" for key, value in genome.loss.items()]
+        # msg = "\n".join(losses)
         
-        geo = genome.genome2geo()
-        freqs = get_log_simulation_frequencies(1, 1000, 5)
-        segments = create_segments(geo)
-        impedances = compute_impedance(segments, freqs)
-        notes = get_notes(freqs, impedances, base_freq=base_freq).to_string()
-        msg += "\n" + notes
-        logging.info(msg)
+        # geo = genome.genome2geo()
+        # freqs = get_log_simulation_frequencies(1, 1000, 5)
+        # segments = create_segments(geo)
+        # impedances = compute_impedance(segments, freqs)
+        # notes = get_notes(freqs, impedances, base_freq=base_freq).to_string()
+        # msg += "\n" + notes
+        # logging.info(msg)
 
-        # stop evolution if there is no progress
-        global last_loss_update, best_loss
-        thisloss = population[0].loss["total"]
-        print(thisloss)
-        if thisloss is None or thisloss < best_loss:
-            best_loss = thisloss
-            last_loss_update = i_generation
-        elif i_generation-last_loss_update > 30:
-            logging.info("stop evolution because it did not improve")
-            evo.continue_evolution = False
+        # # stop evolution if there is no progress
+        # global last_loss_update, best_loss
+        # thisloss = population[0].loss["total"]
+        # if thisloss is None or thisloss < best_loss:
+        #     best_loss = thisloss
+        #     last_loss_update = i_generation
+        # elif i_generation-last_loss_update > 100:
+        #     logging.info("stop evolution because it did not improve")
+        #     evo.continue_evolution = False
 
     get_app().subscribe("generation_ended", generation_ended)
 
     pbar = NuevolutionProgressBar()
     population = evo.evolve()
+
+
+
 
 if __name__ == "__main__":
     evolve()

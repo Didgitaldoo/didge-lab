@@ -16,9 +16,20 @@ from didgelab.util.didge_visualizer import vis_didge
 
 # open population.json.gz file and return latest generation
 def get_latest_population(infile):
-    for line in gzip.open(infile):
-        continue
-    return json.loads(line)
+    try:
+        for line in gzip.open(infile):
+            continue
+    except Exception as e:
+        logging.error(e)
+    finally:
+        return json.loads(line)
+
+# get the newest subfolder of saved_evolutions folder
+def get_latest_evolution_folder(basefolder = "../../../saved_evolutions/"):
+    dirs = list(filter(lambda f:os.path.isdir(os.path.join(basefolder, f)), os.listdir(basefolder)))
+    dirs = sorted(dirs, reverse=True)
+    dirs = [os.path.join(basefolder, f) for f in dirs]
+    return dirs[0]
 
 # print various information about the population
 def visualize_individuals(population, n=None, base_freq=440):
@@ -48,7 +59,6 @@ def visualize_individuals(population, n=None, base_freq=440):
         print(f"Bell diameter: {geo.geo[-1][1]/10:.2f} cm")
         print()
 
-# a node in the parent / children hierarchy of evolution_operations.jsonl.gz
 class Node:
 
     def __init__(self, genome_id, losses, generation):
@@ -66,7 +76,6 @@ class Node:
         con = Edge(edge_name, edge_params, parent_node, self)
         self.parents.append(con)
 
-# an edge in the parent / children hierarchy of evolution_operations.jsonl.gz
 class Edge:
 
     def __init__(self, name, params, parent, child):
@@ -107,12 +116,10 @@ class Nodes:
         parent.add_child(child, edge_name, edge_params)
         child.add_parent(parent, edge_name, edge_params)
 
-# build the parent / children hierarchy of evolution_operations.jsonl.gz
 def build_graph(infile):
     generation_counter = 0
     nodes = Nodes()
     num_errors = 0
-
     try:
         for line in gzip.open(infile):
             try:
@@ -168,20 +175,20 @@ def build_graph(infile):
                                 {}
                             )
     except Exception as e:
-        logging.exception(e)
-    return nodes
+        logging.error(e)
+    finally:
+        return nodes
 
-# get the loss improvements from  evolution_operations.jsonl.gz
-def get_deltas(nodes):
+def get_deltas(infile):
+    nodes = build_graph(infile)
     deltas = []
-    for edge in nodes.iterate_edges():
+    for edge in nodes.iterate_nodes():
         for key in edge.parent.losses.keys():
             loss_delta = edge.parent.losses[key] - edge.child.losses[key]
             deltas.append([edge.name, key, np.max((0, loss_delta)), edge.child.losses[key], edge.child.generation])
     deltas = pd.DataFrame(deltas, columns=["operation", "loss_type", "delta", "loss_value", "generation"])
     return deltas
 
-# convert deltas to the probabilities that a mutation operation is succesful
 def get_success_probs(deltas):
     success_probs = []
     for loss in deltas.loss_type.unique():
@@ -200,7 +207,6 @@ def get_success_probs(deltas):
     success_probs = pd.DataFrame(success_probs, columns=["operation", "loss_type", "success_prob"])
     success_probs = success_probs.sort_values("success_prob", ascending=False)
     return success_probs
-
 
 def plot_success_probs_over_time(deltas, do_not_plot=False):
     deltas = deltas.query("loss_type=='total'").sort_values(by="generation")

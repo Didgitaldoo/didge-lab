@@ -762,6 +762,50 @@ class AdaptiveProbabilities:
             probs.append(p)
         nuevo.evolution_operator_probs = probs
 
+# print information about the best individual at regular intervals
+class PrintBestIndividual:
+
+    def __init__(self, interval=5, base_freq=440):
+
+        self.base_freq = base_freq
+        self.interval = interval
+
+        def generation_ended(i_generation, population):
+
+            if i_generation>1 or i_generation%self.interval == 0:
+                genome = population[0]
+                losses = [f"{key}: {value}" for key, value in genome.loss.items()]
+                msg = "\n".join(losses)
+                
+                geo = genome.genome2geo()
+                freqs = get_log_simulation_frequencies(1, 1000, 5)
+                segments = create_segments(geo)
+                impedances = compute_impedance(segments, freqs)
+                notes = get_notes(freqs, impedances, base_freq=self.base_freq).to_string()
+                msg += "\n" + notes
+                logging.info(msg)
+
+
+# stop the evolution is the loss did not improve for duration generations
+class EarlyStopping:
+
+    def __init_(self, duration=100):
+        self.duration = 100
+        self.best_loss = None
+        self.last_loss_update = None
+
+        def generation_ended(i_generation, population):
+            thisloss = population[0].loss["total"]
+            if thisloss is None or thisloss < best_loss:
+                best_loss = thisloss
+                last_loss_update = i_generation
+            elif i_generation-last_loss_update > 100:
+                logging.info("stop evolution because it did not improve")
+                evo = get_app().get_service(Nuevolution)
+                evo.continue_evolution = False
+
+        get_app().subscribe("generation_ended", generation_ended)
+
 # test method
 if __name__ == "__main__":
     # np.seterr(invalid='raise')
