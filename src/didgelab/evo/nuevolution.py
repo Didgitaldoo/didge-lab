@@ -775,10 +775,12 @@ class PrintEvolutionInformation:
 
             duration = None
             if self.last_generation_time is not None:
-                duration = time.time()-self.last_generation_time
-            self.last_generation_time = time.time()
+                duration = time()-self.last_generation_time
+            self.last_generation_time = time()
     
+            print(i_generation)
             if i_generation>1 or i_generation%self.interval == 0:
+                print("test")
                 genome = population[0]
                 losses = [f"{key}: {value}" for key, value in genome.loss.items()]
                 msg = "\n".join(losses)
@@ -794,6 +796,8 @@ class PrintEvolutionInformation:
                     msg += f"\nTime per generation: {duration:.2f} seconds"
 
                 logging.info(msg)
+
+        get_app().subscribe("generation_ended", generation_ended)
 
 
 # stop the evolution is the loss did not improve for duration generations

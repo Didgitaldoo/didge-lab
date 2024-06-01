@@ -16,6 +16,7 @@ from didgelab.util.didge_visualizer import vis_didge
 
 # open population.json.gz file and return latest generation
 def get_latest_population(infile):
+    line = None
     try:
         for line in gzip.open(infile):
             continue

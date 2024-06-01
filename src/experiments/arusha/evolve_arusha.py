@@ -291,7 +291,6 @@ class MbeyaLoss(LossFunction):
 
         #notes=geo.get_cadsd().get_notes()
         tuning_loss=0
-        volume_loss=0
 
         start_index=1
         if self.add_octave:
@@ -302,11 +301,9 @@ class MbeyaLoss(LossFunction):
                 closest_target_index=np.argmin([abs(x-f1) for x in self.target_peaks])
                 f2=self.target_peaks[closest_target_index]
                 tuning_loss += math.sqrt(abs(f1-f2))
-                imp = note["rel_imp"] / notes.impedance.max()
-                volume_loss += imp
 
         tuning_loss*=self.weights["tuning_loss"]
-        volume_loss*=self.weights["volume_loss"]
+        volume_loss = notes.rel_imp.mean() * self.weights["volume_loss"]
         
         n_notes=self.n_notes+1
         if self.add_octave:
@@ -346,7 +343,7 @@ def evolve():
         #generation_size = 5,
         #num_generations = 5,
         #population_size = 10,
-        generation_size = 500,
+        generation_size = 5,
         num_generations = 1000,
         population_size = 1000,
     )
@@ -356,7 +353,7 @@ def evolve():
         LinearDecreasingMutation()
     ]
 
-    pbi = PrintEvolutionInformation()
+    pbi = PrintEvolutionInformation(interval=1)
     es = EarlyStopping()
 
     def generation_ended(i_generation, population):
@@ -374,35 +371,10 @@ def evolve():
 
         last_max_error = max_error
 
-        # # debug output
-        # genome = population[0]
-        # losses = [f"{key}: {value}" for key, value in genome.loss.items()]
-        # msg = "\n".join(losses)
-        
-        # geo = genome.genome2geo()
-        # freqs = get_log_simulation_frequencies(1, 1000, 5)
-        # segments = create_segments(geo)
-        # impedances = compute_impedance(segments, freqs)
-        # notes = get_notes(freqs, impedances, base_freq=base_freq).to_string()
-        # msg += "\n" + notes
-        # logging.info(msg)
-
-        # # stop evolution if there is no progress
-        # global last_loss_update, best_loss
-        # thisloss = population[0].loss["total"]
-        # if thisloss is None or thisloss < best_loss:
-        #     best_loss = thisloss
-        #     last_loss_update = i_generation
-        # elif i_generation-last_loss_update > 100:
-        #     logging.info("stop evolution because it did not improve")
-        #     evo.continue_evolution = False
-
     get_app().subscribe("generation_ended", generation_ended)
 
     pbar = NuevolutionProgressBar()
     population = evo.evolve()
-
-
 
 
 if __name__ == "__main__":
