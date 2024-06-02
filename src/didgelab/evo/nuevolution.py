@@ -218,6 +218,7 @@ class PartSwapCrossover(CrossoverOperator):
         assert len(offspring.genome) == len(parent1.genome)
         return offspring, self.describe(parent1, parent2, offspring)
 
+# average crossover a consecutive sublist of the genome
 class PartAverageCrossover(CrossoverOperator):
 
     def apply(self, parent1 : Genome, parent2 : Genome, evolution_parameters : Dict = {}) -> Genome:
@@ -236,6 +237,7 @@ class PartAverageCrossover(CrossoverOperator):
         assert len(offspring.genome) == len(parent1.genome)
         return offspring, self.describe(parent1, parent2, offspring)
 
+# mutate a single number of the genome
 class SingleMutation(MutationOperator):
 
     def apply(self, genome : Genome, evolution_parameters : Dict) -> Tuple[Genome, Dict]:
@@ -251,6 +253,18 @@ class SingleMutation(MutationOperator):
         new_genome.genome[i] = v
         return new_genome, self.describe(genome, new_genome)
 
+# helper class to json encode numpy data types
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+# write different log files for the nuevolution
 class NuevolutionWriter:
     
     def __init__(self, 
@@ -360,7 +374,8 @@ class NuevolutionWriter:
             })
 
         data2 = {"generation": generation, "population": data}
-        self.write_population_writer.write(json.dumps(data2).encode())
+        data2 = json.dumps(data2, cls=NumpyEncoder)
+        self.write_population_writer.write(data2.encode())
         self.write_population_writer.write("\n".encode())
 
         outfile = os.path.join(get_app().get_output_folder(), "latest_population.json")
@@ -457,7 +472,7 @@ class Nuevolution():
     def evolve(self):
 
         # initialize
-        num_workers = multiprocessing.cpu_count()
+        num_workers = np.min((40, multiprocessing.cpu_count()))
         logging.info(f"initialize threadpoolexecutor with {num_workers} workers")
         pool = ThreadPoolExecutor(max_workers=num_workers)
 
