@@ -778,19 +778,17 @@ class PrintEvolutionInformation:
                 duration = time()-self.last_generation_time
             self.last_generation_time = time()
     
-            print(i_generation)
             if i_generation>1 or i_generation%self.interval == 0:
-                print("test")
                 genome = population[0]
                 losses = [f"{key}: {value}" for key, value in genome.loss.items()]
-                msg = "\n".join(losses)
+                msg = "Losses:\n" + "\n".join(losses)
                 
                 geo = genome.genome2geo()
                 freqs = get_log_simulation_frequencies(1, 1000, 5)
                 segments = create_segments(geo)
                 impedances = compute_impedance(segments, freqs)
                 notes = get_notes(freqs, impedances, base_freq=self.base_freq).to_string()
-                msg += "\n" + notes
+                msg += "\n" + notes.round(2)
 
                 if duration is not None:
                     msg += f"\nTime per generation: {duration:.2f} seconds"

@@ -68,6 +68,7 @@ class MbeyaGemome(GeoGenome):
             self.add_param(f"bubble_pos_{i}", 0, 1)
             self.add_param(f"bubble_width_{i}", 150, 300)
 
+        self.min_d = 24
         GeoGenome.__init__(self, n_genes = len(self.named_params))
 
     def make_bubble(self, shape, pos, width, height):
@@ -158,6 +159,10 @@ class MbeyaGemome(GeoGenome):
                 if pos+width/2+10>shape[-1][0]:
                     pos=shape[-1][0]-width/2 - 10
                 shape=self.make_bubble(shape, pos, width, height)
+
+        # enforce minimum diameter
+        for i in range(len(shape)):
+            shape[i][1] = np.max((self.min_d, shape[i][1]))
 
         geo=Geo(shape)
         geo=geotools.fix_zero_length_segments(geo)
@@ -353,7 +358,7 @@ def evolve():
         LinearDecreasingMutation()
     ]
 
-    pbi = PrintEvolutionInformation(interval=1)
+    pbi = PrintEvolutionInformation(interval=1, base_freq=base_freq)
     es = EarlyStopping()
 
     def generation_ended(i_generation, population):

@@ -180,8 +180,12 @@ def build_graph(infile):
     finally:
         return nodes
 
-def get_deltas(infile):
-    nodes = build_graph(infile)
+def get_deltas(infile=None, nodes=None):
+    assert infile is not None or nodes is not None
+
+    if infile is None:
+        nodes = build_graph(infile)
+        
     deltas = []
     for edge in nodes.iterate_nodes():
         for key in edge.parent.losses.keys():
