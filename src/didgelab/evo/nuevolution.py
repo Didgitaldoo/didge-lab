@@ -787,8 +787,8 @@ class PrintEvolutionInformation:
                 freqs = get_log_simulation_frequencies(1, 1000, 5)
                 segments = create_segments(geo)
                 impedances = compute_impedance(segments, freqs)
-                notes = get_notes(freqs, impedances, base_freq=self.base_freq).to_string()
-                msg += "\n" + notes.round(2)
+                notes = get_notes(freqs, impedances, base_freq=self.base_freq).round(2).to_string()
+                msg += "\n" + notes
 
                 if duration is not None:
                     msg += f"\nTime per generation: {duration:.2f} seconds"
