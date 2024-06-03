@@ -21,8 +21,6 @@ import logging
 
 base_freq = 425
 
-
-
 class MbeyaGemome(GeoGenome):
 
     def add_param(self, name, minval, maxval):
@@ -168,16 +166,87 @@ class MbeyaGemome(GeoGenome):
         geo=geotools.fix_zero_length_segments(geo)
         return geo
 
+# a loss that deviates 
+def single_note_loss(note, peaks, i_note=0, filter_rel_imp=0.1):
+    peaks=peaks[peaks.rel_imp>filter_rel_imp]
+    if len(peaks)<=i_note:
+        return 1000000
+    f_target=note_to_freq(note, base_freq=base_freq)
+    f_fundamental=peaks.iloc[i_note]["freq"]
+    return np.sqrt(abs(math.log(f_target, 2)-math.log(f_fundamental, 2)))
 
-class TagangaLoss(LossFunction):
+# add loss if the didge gets smaller
+def diameter_loss(geo):
 
-    def __init__(self, fundamental=-31, add_octave=True, n_notes=-1, scale=[0,2,3,5,7,9,10], target_peaks=None, weights={}):
+    if type(geo)==Geo:
+        shape=geo.geo
+    elif type(geo) == list:
+        shape=geo
+    else:
+        raise Exception("unknown type " + str(type(geo)))
+
+    loss=0
+    for i in range(1, len(shape)):
+        delta_y=shape[i-1][1]-shape[i][1]
+        if delta_y < 0:
+            loss+=-1*delta_y
+
+    loss*=0.005
+    return loss
+
+
+# a loss that deviates 
+def single_note_loss(note, peaks, i_note=0, filter_rel_imp=0.1):
+    peaks=peaks[peaks.rel_imp>filter_rel_imp]
+    if len(peaks)<=i_note:
+        return 1000000
+    f_target=note_to_freq(note, base_freq=base_freq)
+    f_fundamental=peaks.iloc[i_note]["freq"]
+    return np.sqrt(abs(math.log(f_target, 2)-math.log(f_fundamental, 2)))
+
+# add loss if the didge gets smaller
+def diameter_loss(geo):
+
+    if type(geo)==Geo:
+        shape=geo.geo
+    elif type(geo) == list:
+        shape=geo
+    else:
+        raise Exception("unknown type " + str(type(geo)))
+
+    loss=0
+    for i in range(1, len(shape)):
+        delta_y=shape[i-1][1]-shape[i][1]
+        if delta_y < 0:
+            loss+=-1*delta_y
+
+    loss*=0.005
+    return loss
+
+
+class MbeyaLoss(LossFunction):
+
+    # fundamental: note number of the fundamental
+    # add_octave: the first toot is one octave above the fundamental
+    # scale: define the scale of the toots of the didgeridoo as semitones relative from the fundamental
+    # target_peaks: define the target peaks as list of math.log(frequency, 2). overrides scale 
+    # n_notes: set > 0 to determine the number of impedance peaks (above fundamental and add_octave)
+    # weights: override the default weights
+    # {
+    #     "tuning_loss": 8,
+    #     "volume_loss": 0.5,
+    #     "octave_loss": 4,
+    #     "n_note_loss": 5,
+    #     "diameter_loss": 0.1,
+    #     "fundamental_loss": 8,
+    # }
+    def __init__(self, fundamental=-31, add_octave=True, n_notes=-1, scale=None, target_peaks=None, weights={}):
         LossFunction.__init__(self)
 
         self.weights={
             "tuning_loss": 8,
             "volume_loss": 36,
-            "octave_loss": 4,
+            "octave_loss": 16,
             "n_note_loss": 5,
             "diameter_loss": 0.1,
             "fundamental_loss": 16,
@@ -209,5 +278,117 @@ class TagangaLoss(LossFunction):
                     freq=math.log(freq, 2)
                     self.target_peaks.append(freq)
 
-    def loss(self, genome):
+    def loss(self, genome, context=None):
 
+        # evolution_nr = get_app().get_service(MultiEvolution).evolution_nr
+
+        geo = genome.genome2geo()
+
+        freqs = get_log_simulation_frequencies(1, 1000, self.max_error)
+        segments = create_segments(geo)
+        impedances = compute_impedance(segments, freqs)
+        notes = get_notes(freqs, impedances, base_freq=base_freq)
+
+        fundamental=single_note_loss(-31, notes)*self.weights["fundamental_loss"]
+        octave=single_note_loss(-19, notes, i_note=1)*self.weights["octave_loss"]
+
+        #notes=geo.get_cadsd().get_notes()
+        tuning_loss=0
+
+        start_index=1
+        if self.add_octave:
+            start_index+=1
+        if len(notes)>start_index:
+            for ix, note in notes[start_index:].iterrows():
+                f1=math.log(note["freq"],2)
+                closest_target_index=np.argmin([abs(x-f1) for x in self.target_peaks])
+                f2=self.target_peaks[closest_target_index]
+                tuning_loss += math.sqrt(abs(f1-f2))
+
+        tuning_loss*=self.weights["tuning_loss"]
+        volume_loss = notes.rel_imp.mean() * self.weights["volume_loss"]
+
+        n_notes=self.n_notes+1
+        if self.add_octave:
+            n_notes+=1
+        n_note_loss=max(n_notes-len(notes), 0)*self.weights["n_note_loss"]
+
+        d_loss = diameter_loss(geo)*self.weights["diameter_loss"]
+
+        loss={
+            "tuning_loss": tuning_loss,
+            "volume_loss": volume_loss,
+            "n_note_loss": n_note_loss,
+            "diameter_loss": d_loss,
+            "fundamental_loss": fundamental,
+            "octave_loss": octave,
+        }
+        loss["total"]=sum(loss.values())
+        return loss
+
+errors = [20, 15, 10, 3]
+last_max_error = errors[0]
+best_loss = 9999999999  
+last_loss_update = -1
+
+def evolve():
+
+    target_peaks = []
+    base_freq = note_to_freq(-31, base_freq=base_freq)
+    target_peaks.append(base_freq/2)
+    freq = base_freq
+    i=1
+    while freq<1000:
+        target_peaks.append(freq)
+        i+=1
+        freq = base_freq*i
+
+    loss = MbeyaLoss(n_notes=7, target_peaks=target_peaks)
+
+    writer = NuevolutionWriter(write_population_interval=5)
+
+    n_segments = 10
+
+    evo = Nuevolution(
+        loss, 
+        MbeyaGemome(n_bubbles=3, add_bubble_prob=0.7),
+        #generation_size = 5,
+        #num_generations = 5,
+        #population_size = 10,
+        generation_size = 30,
+        num_generations = 1000,
+        population_size = 1000,
+        max_n_threads=40
+    )
+
+    schedulers = [
+        # LinearDecreasingCrossover(),
+        LinearDecreasingMutation()
+    ]
+
+    pbi = PrintEvolutionInformation(interval=1, base_freq=base_freq)
+    es = EarlyStopping()
+
+    def generation_ended(i_generation, population):
+        global last_max_error, errors
+
+        # update max error if necessary
+        evo = get_app().get_service(Nuevolution)
+        progress = evo.i_generation / evo.num_generations
+        max_error = errors[int(progress*len(errors))]
+
+        if last_max_error != max_error:
+            evo.recompute_losses = True
+            loss.max_error = max_error
+            logging.info(f"set max_error to {max_error}")
+
+        last_max_error = max_error
+
+    get_app().subscribe("generation_ended", generation_ended)
+
+    pbar = NuevolutionProgressBar()
+    population = evo.evolve()
+
+
+if __name__ == "__main__":
+    evolve()

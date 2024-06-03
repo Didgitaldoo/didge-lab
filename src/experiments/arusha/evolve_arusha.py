@@ -351,6 +351,7 @@ def evolve():
         generation_size = 30,
         num_generations = 1000,
         population_size = 1000,
+        max_n_threads=40
     )
 
     schedulers = [
