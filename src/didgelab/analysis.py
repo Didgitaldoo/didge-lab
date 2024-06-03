@@ -33,7 +33,7 @@ def get_latest_evolution_folder(basefolder = "../../../saved_evolutions/"):
     return dirs[0]
 
 # print various information about the population
-def visualize_individuals(population, n=None, base_freq=440):
+def visualize_individuals(population, n=None, base_freq=440, max_error=1):
 
     if n is not None and n<len(population):
         population = population[0:n]
@@ -41,7 +41,7 @@ def visualize_individuals(population, n=None, base_freq=440):
     for i in range(len(population)):
         geo = population[i]["representation"]["geo"]
         geo = Geo(geo)
-        freqs = get_log_simulation_frequencies(1, 1000, 5)
+        freqs = get_log_simulation_frequencies(1, 1000, 1)
         segments = create_segments(geo)
         impedance = compute_impedance(segments, freqs)
         notes = get_notes(freqs, impedance, base_freq=base_freq)

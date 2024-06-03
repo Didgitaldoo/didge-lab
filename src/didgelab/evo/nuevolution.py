@@ -412,6 +412,7 @@ class Nuevolution():
         generation_size = 5,
         num_generations = 10,
         population_size = 10,
+        max_n_threads = None,
         evolution_parameters = {
             "mutation_rate": 0.5,
             "gene_mutation_prob": 0.5,
@@ -433,6 +434,7 @@ class Nuevolution():
         self.population_size = population_size
         self.evolution_parameters = evolution_parameters
         self.evolution_operators = evolution_operators
+        self.max_n_threads = None
 
         if evolution_operator_probs is None:
             evolution_operator_probs = [1/len(evolution_operators)]*len(evolution_operators)
@@ -472,7 +474,10 @@ class Nuevolution():
     def evolve(self):
 
         # initialize
-        num_workers = np.min((40, multiprocessing.cpu_count()))
+        num_workers = multiprocessing.cpu_count()
+        if self.max_n_threads is not None:
+            num_workers = np.min((self.max_n_threads, num_workers))
+
         logging.info(f"initialize threadpoolexecutor with {num_workers} workers")
         pool = ThreadPoolExecutor(max_workers=num_workers)
 
