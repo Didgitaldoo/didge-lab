@@ -334,8 +334,8 @@ last_loss_update = -1
 def evolve():
     global base_freq
     target_peaks = []
-    base_freq = note_to_freq(-31, base_freq=base_freq)
-    target_peaks.append(base_freq/2)
+    base_freq = note_to_freq(-31, base_freq=base_freq)/2
+    #target_peaks.append(base_freq/2)
     freq = base_freq
     i=1
     while freq<1000:
