@@ -368,7 +368,9 @@ def evolve():
         # update max error if necessary
         evo = get_app().get_service(Nuevolution)
         progress = evo.i_generation / evo.num_generations
-        max_error = errors[int(progress*len(errors))]
+        i = int(progress*len(errors))
+        i = min(i, len(errors)-1)
+        max_error = errors[i]
 
         if last_max_error != max_error:
             evo.recompute_losses = True
