@@ -1,5 +1,5 @@
 """
-python -m experiments.arusha.evolve_arusha
+python -m experiments.taganga.evolve_taganga
 """
 
 from didgelab.calc.conv import note_to_freq
@@ -332,7 +332,7 @@ best_loss = 9999999999
 last_loss_update = -1
 
 def evolve():
-
+    global base_freq
     target_peaks = []
     base_freq = note_to_freq(-31, base_freq=base_freq)
     target_peaks.append(base_freq/2)
