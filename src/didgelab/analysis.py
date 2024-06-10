@@ -183,11 +183,11 @@ def build_graph(infile):
 def get_deltas(infile=None, nodes=None):
     assert infile is not None or nodes is not None
 
-    if infile is None:
+    if infile is not None:
         nodes = build_graph(infile)
         
     deltas = []
-    for edge in nodes.iterate_nodes():
+    for edge in nodes.iterate_edges():
         for key in edge.parent.losses.keys():
             loss_delta = edge.parent.losses[key] - edge.child.losses[key]
             deltas.append([edge.name, key, np.max((0, loss_delta)), edge.child.losses[key], edge.child.generation])
@@ -213,7 +213,9 @@ def get_success_probs(deltas):
     success_probs = success_probs.sort_values("success_prob", ascending=False)
     return success_probs
 
-def plot_success_probs_over_time(deltas, do_not_plot=False):
+# plot the success probabilities of each operator over time.
+# data can change a lot so the function performs moving average filtering with a parameter window_size
+def plot_success_probs_over_time(deltas, do_not_plot=False, window_size=20):
     deltas = deltas.query("loss_type=='total'").sort_values(by="generation")
 
     generation = -1
@@ -245,6 +247,23 @@ def plot_success_probs_over_time(deltas, do_not_plot=False):
             result.append([generation, operation, prob])
 
     result = pd.DataFrame(result, columns=["generation", "operation", "success_prob"])
+
+    if window_size>1:
+        result["chunk"] = (result.generation/window_size).astype(int)
+        windowed_result = []
+        operations = result.operation.unique()
+        for chunk in result.chunk.unique():
+            df = result.query("chunk==@chunk")
+            generation = int(df.generation.mean())
+            for operation in operations:
+                value = df.query("operation==@operation").success_prob.mean()
+                windowed_result.append({
+                    "generation": generation,
+                    "operation": operation,
+                    "success_prob": value
+                })
+
+        result = pd.DataFrame(windowed_result)
 
     if do_not_plot:
         return result
