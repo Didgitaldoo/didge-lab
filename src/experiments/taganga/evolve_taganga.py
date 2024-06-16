@@ -245,8 +245,8 @@ class MbeyaLoss(LossFunction):
         LossFunction.__init__(self)
 
         self.weights={
-            "major_tuning_loss": 8,
-            "minor_tuning_loss": 4,
+            "major_tuning_loss": 1,
+            "minor_tuning_loss": 0.5,
             "volume_loss": 36,
             "octave_loss": 16,
             "n_note_loss": 500,

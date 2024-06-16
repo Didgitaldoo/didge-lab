@@ -434,7 +434,7 @@ class Nuevolution():
         self.population_size = population_size
         self.evolution_parameters = evolution_parameters
         self.evolution_operators = evolution_operators
-        self.max_n_threads = None
+        self.max_n_threads = max_n_threads
 
         if evolution_operator_probs is None:
             evolution_operator_probs = [1/len(evolution_operators)]*len(evolution_operators)
