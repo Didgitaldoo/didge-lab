@@ -251,7 +251,7 @@ class MbeyaLoss(LossFunction):
             "octave_loss": 16,
             "n_note_loss": 500,
             "diameter_loss": 0.1,
-            "fundamental_loss": 32,
+            "fundamental_loss": 64,
         }
         for key, value in weights.items():
             if key not in self.weights:
