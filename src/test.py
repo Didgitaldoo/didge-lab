@@ -1,41 +1,66 @@
-from didgelab.evo.nuevolution import MutationOperator, Genome
-import numpy as np
-from typing import Dict, Tuple
+wget https://ia802904.us.archive.org/1/items/emi_archive/EMI_2_1_June1986.pdf
+wget https://archive.org/download/emi_archive/EMI_2_2_August1986.pdf
+wget https://archive.org/download/emi_archive/EMI_2_3_October1986.pdf
+wget https://archive.org/download/emi_archive/EMI_2_4_December1986.pdf
+wget https://archive.org/download/emi_archive/EMI_2_5_February1987.pdf
+wget https://archive.org/download/emi_archive/EMI_2_6_April1987.pdf
+wget https://archive.org/download/emi_archive/EMI_3_1_June1987.pdf
+wget https://archive.org/download/emi_archive/EMI_3_2_August1987.pdf
+wget https://archive.org/download/emi_archive/EMI_3_3_October1987.pdf
+wget https://archive.org/download/emi_archive/EMI_3_4_December1987.pdf
+wget https://archive.org/download/emi_archive/EMI_3_5_February1988.pdf
+wget https://archive.org/download/emi_archive/EMI_4_1_June1988.pdf
+wget https://archive.org/download/emi_archive/EMI_4_2_August1988.pdf
+wget https://archive.org/download/emi_archive/EMI_4_4_December1988.pdf
+wget https://archive.org/download/emi_archive/EMI_4_5_February1989.pdf
+wget https://archive.org/download/emi_archive/EMI_4_6_April1989.pdf
+wget https://archive.org/download/emi_archive/EMI_5_1_June1989.pdf
+wget https://archive.org/download/emi_archive/EMI_5_2_August1989.pdf
+wget https://archive.org/download/emi_archive/EMI_5_3_October1989.pdf
+wget https://archive.org/download/emi_archive/EMI_5_4_December1989.pdf
+wget https://archive.org/download/emi_archive/EMI_5_5_February1990.pdf
+wget https://archive.org/download/emi_archive/EMI_5_6_April1990.pdf
+wget https://archive.org/download/emi_archive/EMI_6_1_June1990.pdf
+wget https://archive.org/download/emi_archive/EMI_6_2_August1990.pdf
+wget https://archive.org/download/emi_archive/EMI_6_3_October1990.pdf
+wget https://archive.org/download/emi_archive/EMI_6_4_December1990.pdf
+wget https://archive.org/download/emi_archive/EMI_6_5_February1991.pdf
+wget https://archive.org/download/emi_archive/EMI_6_6_April1991.pdf
+wget https://archive.org/download/emi_archive/EMI_7_1_June1991.pdf
+wget https://archive.org/download/emi_archive/EMI_7_2_September1991.pdf
+wget https://archive.org/download/emi_archive/EMI_7_3_November1991.pdf
+wget https://archive.org/download/emi_archive/EMI_7_4_January1992.pdf
+wget https://archive.org/download/emi_archive/EMI_7_5_April1992.pdf
+wget https://archive.org/download/emi_archive/EMI_7_6_July1992.pdf
+wget https://archive.org/download/emi_archive/EMI_8_1_September1992.pdf
+wget https://archive.org/download/emi_archive/EMI_8_2_December1992.pdf
+wget https://archive.org/download/emi_archive/EMI_8_3_March1993.pdf
+wget https://archive.org/download/emi_archive/EMI_8_4_June1993.pdf
+wget https://archive.org/download/emi_archive/EMI_9_1_September1993.pdf
+wget https://archive.org/download/emi_archive/EMI_9_2_December1993.pdf
+wget https://archive.org/download/emi_archive/EMI_9_3_March1994.pdf
+wget https://archive.org/download/emi_archive/EMI_9_4_June1994.pdf
+wget https://archive.org/download/emi_archive/EMI_10_1_September1994.pdf
+wget https://archive.org/download/emi_archive/EMI_10_2_December1994.pdf
+wget https://archive.org/download/emi_archive/EMI_10_3_March1995.pdf
+wget https://archive.org/download/emi_archive/EMI_10_4_June1995.pdf
+wget https://archive.org/download/emi_archive/EMI_11_1_September1995.pdf
+wget https://archive.org/download/emi_archive/EMI_11_2_December1995.pdf
+wget https://archive.org/download/emi_archive/EMI_11_3_March1996.pdf
+wget https://archive.org/download/emi_archive/EMI_11_4_June1996.pdf
+wget https://archive.org/download/emi_archive/EMI_12_1_September1996.pdf
+wget https://archive.org/download/emi_archive/EMI_12_2_December1996.pdf
+wget https://archive.org/download/emi_archive/EMI_12_3_March1997.pdf
+wget https://archive.org/download/emi_archive/EMI_12_4_June1997.pdf
+wget https://archive.org/download/emi_archive/EMI_13_1_September1997.pdf
+wget https://archive.org/download/emi_archive/EMI_13_2_December1997.pdf
+wget https://archive.org/download/emi_archive/EMI_13_3_March1998.pdf
+wget https://archive.org/download/emi_archive/EMI_13_4_June1998.pdf
+wget https://archive.org/download/emi_archive/EMI_14_1_September1998.pdf
+wget https://archive.org/download/emi_archive/EMI_14_2_December1998.pdf
+wget https://archive.org/download/emi_archive/EMI_14_3_March1999.pdf
+wget https://archive.org/download/emi_archive/EMI_14_4_June1999.pdf
 
-class SimpleMutation(MutationOperator):
 
-    def apply(self, genome : Genome, evolution_parameters : Dict) -> Tuple[Genome, Dict]:
-
-        mr = evolution_parameters["mutation_rate"]
-        if mr is None:
-            mr = 0.5
-        mp = evolution_parameters["gene_mutation_prob"]
-        if mp is None:
-            mp = 0.5
-
-        mutation = np.random.uniform(low=-mr, high=mr, size=len(genome.genome))
-        mutation *= (np.random.sample(size=len(mutation))<mp).astype(int)
-        print(genome.genome.round(2))
-        print(mutation.round(2))
-        mutation = genome.genome + mutation
-        print(mutation.round(2))
-        mutation[mutation<0] = 0
-        mutation[mutation>1] = 1
-        print(mutation.round(2))
-
-
-        new_genome = genome.clone()
-        new_genome.genome = mutation
-        return new_genome, self.describe(genome, new_genome)
-
-np.random.seed(0)
-g = Genome(n_genes=5)
-
-m = SimpleMutation()
-params = {"mutation_rate": 0.5, "gene_mutation_prob": 0.5}
-new_genome, _ = m.apply(g, params)
-
-
-#print(g.genome.round(decimals=2))
-#print(new_genome.genome.round(decimals=2))
-#print(np.abs(g.genome-new_genome.genome).round(decimals=2))
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_YjlkMjhlNzMtZjRiMS00ZDViLTk3ZWEtNWY1YTYxOGU2YmYz%40thread.v2/0?context=%7b%22Tid%22%3a%2261a9f1bd-7ea0-4068-b231-bb4a6bfcb700%22%2c%22Oid%22%3a%226429b003-d85f-46a7-8594-77b189be58c8%22%7d
+https://teams.microsoft.com/l/meetup-join/19%3ameeting_YjlkMjhlNzMtZjRiMS00ZDViLTk3ZWEtNWY1YTYxOGU2YmYz%40thread.v2/0?context=%7b%22Tid%22%3a%2261a9f1bd-7ea0-4068-b231-bb4a6bfcb700%22%2c%22Oid%22%3a%226429b003-d85f-46a7-8594-77b189be58c8%22%7d

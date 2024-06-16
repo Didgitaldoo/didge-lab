@@ -19,7 +19,7 @@ import numpy as np
 
 import logging
 
-base_freq = 425
+base_freq = 440
 
 class MbeyaGemome(GeoGenome):
 
@@ -224,6 +224,7 @@ def diameter_loss(geo):
     return loss
 
 
+
 class MbeyaLoss(LossFunction):
 
     # fundamental: note number of the fundamental
@@ -244,10 +245,11 @@ class MbeyaLoss(LossFunction):
         LossFunction.__init__(self)
 
         self.weights={
-            "tuning_loss": 8,
+            "major_tuning_loss": 8,
+            "minor_tuning_loss": 4,
             "volume_loss": 36,
             "octave_loss": 16,
-            "n_note_loss": 5,
+            "n_note_loss": 500,
             "diameter_loss": 0.1,
             "fundamental_loss": 16,
         }
@@ -262,21 +264,26 @@ class MbeyaLoss(LossFunction):
         self.n_notes=n_notes
         self.max_error = 10
 
-        if target_peaks is not None:
-            self.target_peaks=target_peaks
-        else:
-            self.scale_note_numbers=[]
-            for i in range(len(self.scale)):
-                self.scale_note_numbers.append(self.scale[i]+self.fundamental)
+        self.major_target_peaks = []
+        f0 = note_to_freq(-31, base_freq=base_freq)
+        i=1
+        while f0*i<1000:
+            self.major_target_peaks.append(f0*i)
+            i+=1
 
-            n_octaves=10
-            self.target_peaks=[]
-            for note_number in self.scale_note_numbers:
-                for i in range(0, n_octaves):
-                    transposed_note=note_number+12*i
-                    freq=note_to_freq(transposed_note, base_freq=base_freq)
-                    freq=math.log(freq, 2)
-                    self.target_peaks.append(freq)
+        self.minor_target_peaks = []
+        scale = [0,2,4,5,7,9,11]
+        f=f0
+        i=0
+        while f<1000:
+            for note in scale:
+                note += -31 + 12*i
+                f = note_to_freq(note, base_freq=base_freq)
+                if f>1000:
+                    break
+                self.minor_target_peaks.append(f)
+            i+=1
+            print(f)
 
     def loss(self, genome, context=None):
 
@@ -293,7 +300,8 @@ class MbeyaLoss(LossFunction):
         octave=single_note_loss(-19, notes, i_note=1)*self.weights["octave_loss"]
 
         #notes=geo.get_cadsd().get_notes()
-        tuning_loss=0
+        major_tuning_loss=0
+        minor_tuning_loss=0
 
         start_index=1
         if self.add_octave:
@@ -301,22 +309,28 @@ class MbeyaLoss(LossFunction):
         if len(notes)>start_index:
             for ix, note in notes[start_index:].iterrows():
                 f1=math.log(note["freq"],2)
-                closest_target_index=np.argmin([abs(x-f1) for x in self.target_peaks])
-                f2=self.target_peaks[closest_target_index]
-                tuning_loss += math.sqrt(abs(f1-f2))
+                closest_target_index=np.argmin([abs(x-f1) for x in self.major_target_peaks])
+                f2=self.major_target_peaks[closest_target_index]
+                major_tuning_loss += math.sqrt(abs(f1-f2))
+                
+                closest_target_index=np.argmin([abs(x-f1) for x in self.minor_target_peaks])
+                f2=self.minor_target_peaks[closest_target_index]
+                minor_tuning_loss += math.sqrt(abs(f1-f2))
 
-        tuning_loss*=self.weights["tuning_loss"]
+
+        major_tuning_loss*=self.weights["major_tuning_loss"]
+        minor_tuning_loss*=self.weights["minor_tuning_loss"]
         volume_loss = notes.rel_imp.mean() * self.weights["volume_loss"]
 
         n_notes=self.n_notes+1
         if self.add_octave:
             n_notes+=1
         n_note_loss=max(n_notes-len(notes), 0)*self.weights["n_note_loss"]
-
         d_loss = diameter_loss(geo)*self.weights["diameter_loss"]
 
         loss={
-            "tuning_loss": tuning_loss,
+            "major_tuning_loss": major_tuning_loss,
+            "minor_tuning_loss": minor_tuning_loss,
             "volume_loss": volume_loss,
             "n_note_loss": n_note_loss,
             "diameter_loss": d_loss,
@@ -326,24 +340,15 @@ class MbeyaLoss(LossFunction):
         loss["total"]=sum(loss.values())
         return loss
 
+
 errors = [20, 15, 10, 3]
 last_max_error = errors[0]
 best_loss = 9999999999  
 last_loss_update = -1
 
 def evolve():
-    global base_freq
-    target_peaks = []
-    base_freq = note_to_freq(-31, base_freq=base_freq)/2
-    #target_peaks.append(base_freq/2)
-    freq = base_freq
-    i=1
-    while freq<1000:
-        target_peaks.append(freq)
-        i+=1
-        freq = base_freq*i
 
-    loss = MbeyaLoss(n_notes=7, target_peaks=target_peaks)
+    loss = MbeyaLoss(n_notes=7)
 
     writer = NuevolutionWriter(write_population_interval=5)
 
