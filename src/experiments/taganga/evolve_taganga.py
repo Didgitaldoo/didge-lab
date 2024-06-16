@@ -283,7 +283,6 @@ class MbeyaLoss(LossFunction):
                     break
                 self.minor_target_peaks.append(f)
             i+=1
-            print(f)
 
     def loss(self, genome, context=None):
 
@@ -317,6 +316,8 @@ class MbeyaLoss(LossFunction):
                 f2=self.minor_target_peaks[closest_target_index]
                 minor_tuning_loss += math.sqrt(abs(f1-f2))
 
+        major_tuning_loss /= len(notes)
+        minor_tuning_loss /= len(notes)
 
         major_tuning_loss*=self.weights["major_tuning_loss"]
         minor_tuning_loss*=self.weights["minor_tuning_loss"]
