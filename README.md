@@ -177,9 +177,17 @@ It would be super great if you published the didgeridoo geometries you create wi
 
 ## 7. Licensing / Hoch much does it cost?
 
-The software is free and released under the GNU GPL v2.0 license.
+The software Didgelab is published under the [Creative Commons BY-NC-SA 4.0 License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-The Didgeridoo geometries from the geometry library are free for non-commercial use.
+Share — copy and redistribute the material in any medium or format
+Adapt — remix, transform, and build upon the material
+The licensor cannot revoke these freedoms as long as you follow the license terms.
+Under the following terms:
+
+Attribution — You must give appropriate credit , provide a link to the license, and indicate if changes were made . You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+NonCommercial — You may not use the material for commercial purposes .
+ShareAlike — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
+No additional restrictions — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
 
 ## 8. Future works
 
