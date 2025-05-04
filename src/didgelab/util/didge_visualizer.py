@@ -65,6 +65,8 @@ class DidgeVisualizer:
             g.xaxis.set_ticks_position("top")
             ax = plt.gca()
             ax.set_aspect('equal', adjustable='box')
+            g.set_xlabel("")
+            g.set_ylabel("")
             plt.axis('equal')
             return g
 

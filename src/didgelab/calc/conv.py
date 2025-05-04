@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 # note number to frequency (e.g. 0 -> 440)
 def note_to_freq(note, base_freq=440):
@@ -48,3 +49,7 @@ def note_name_to_number(note):
 
     return 12 * octave + n + - 48
 
+
+# compute the difference between to frequencies in cent
+def cent_diff(freq1, freq2):
+    return 1200*np.log2(freq2/freq1)
