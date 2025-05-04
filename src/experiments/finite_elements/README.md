@@ -1,0 +1,1 @@
+docker run --init -p 8888:8888 -v /Users/jannehring/workspaces/music/didgitaldoo/didge-lab/src/experiments/finite_elements:/tmp ghcr.io/jorgensd/dolfinx-tutorial:release
