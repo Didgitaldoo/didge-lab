@@ -425,7 +425,8 @@ class Nuevolution():
             PartAverageCrossover(),
             PartSwapCrossover()
         ],
-        evolution_operator_probs = None):
+        evolution_operator_probs = None,
+        callback_generation_ended = None):
 
         self.loss = loss
         self.father_genome = father_genome
@@ -435,6 +436,7 @@ class Nuevolution():
         self.evolution_parameters = evolution_parameters
         self.evolution_operators = evolution_operators
         self.max_n_threads = max_n_threads
+        self.callback_generation_ended = callback_generation_ended
 
         if evolution_operator_probs is None:
             evolution_operator_probs = [1/len(evolution_operators)]*len(evolution_operators)
@@ -454,9 +456,16 @@ class Nuevolution():
 
         get_app().subscribe("recompute_loss", recompute_loss)
 
+        if isinstance(father_genome, Genome):
+            genome_type = type(father_genome).__name__
+        elif isinstance(father_genome, list):
+            genome_type = type(father_genome[0]).__name__
+        else:
+            raise Exception()
+
         logging_infos = {
             "loss": type(loss).__name__,
-            "father_genome": type(father_genome).__name__,
+            "father_genome": genome_type,
             "generation_size": generation_size,
             "num_generations": num_generations,
             "population_size": population_size,
@@ -481,23 +490,27 @@ class Nuevolution():
         logging.info(f"initialize threadpoolexecutor with {num_workers} workers")
         pool = ThreadPoolExecutor(max_workers=num_workers)
 
-        self.population = []
-        for i in range(self.generation_size):
-            mutant = self.father_genome.clone()
-            mutant.randomize_genome()
-            self.population.append(mutant)
+        if isinstance(self.father_genome, Genome): 
+            self.population = []
+            for i in range(self.generation_size):
+                mutant = self.father_genome.clone()
+                mutant.randomize_genome()
+                self.population.append(mutant)
+        elif isinstance(self.father_genome, list): 
+            self.population = self.father_genome
+        else:
+            raise Exception()
 
-        probs = []
-        
         logging.info("compute initial generation")
+        
         losses = list(tqdm(pool.map(self.loss.loss, self.population), total=len(self.population)))
         for i in range(len(losses)):
             self.population[i].loss = losses[i]
         self.population = sorted(self.population, key=lambda x:x.loss["total"])
 
         get_app().publish("log_evolution_operations", (self.i_generation, self.population, [], []))
-
         # evolve
+        probs = []
         for i_generation in range(1, self.num_generations+1):
             
             if not self.continue_evolution:
@@ -556,70 +569,8 @@ class Nuevolution():
 
             get_app().publish("generation_ended", (self.i_generation, self.population))
 
-
-            # losses = np.array([p.loss for p in self.population])
-            # indizes = np.random.choice(np.arange(len(self.population)), size=self.generation_size, replace=False, p=probs)
-            # generation = [self.population[i] for i in indizes]
-            # losses_before = [p.loss for p in generation]
-
-            # mutation_prob = self.evolution_parameters["individual_mutation_prob"]
-            # if mutation_prob is None:
-            #     mutation_prob = 0.5
-
-            # i_mutants = np.arange(self.generation_size)[np.random.sample(self.generation_size)<mutation_prob]
-            # mutation_operations = []
-            # for i in i_mutants:
-            #     if len(self.mutation_operators) == 1:
-            #         operator = self.mutation_operators[0]
-            #     else:
-            #         operator = np.random.choice(self.mutation_operators)
-
-            #     individual, operation = operator.apply(generation[i], self.evolution_parameters)
-            #     generation[i] = individual
-            #     mutation_operations.append(operation)
-
-            # # crossover
-            # crossover_prob = self.evolution_parameters["crossover_prob"]
-            # if mutation_prob is None:
-            #     crossover_prob = 0.5
-
-            # i_crossover = np.arange(self.generation_size)[np.random.sample(self.generation_size)<crossover_prob]
-            # crossover_operations = []
-            # for parent1 in i_crossover:
-            #     parent2 = parent1
-            #     while parent1 == parent2:
-            #         parent2 = np.random.choice(np.arange(len(self.population)), p=probs)
-
-            #     if len(self.crossover_operators) == 1:
-            #         operator = self.crossover_operators[0]
-            #     else:
-            #         operator = np.random.choice(self.crossover_operators)
-
-            #     # generation[parent1] = operator.apply(generation[parent1], self.population[parent2], self.evolution_parameters)
-
-            #     individual, operation = operator.apply(generation[parent1], self.population[parent2], self.evolution_parameters)
-            #     generation[parent1] = individual
-            #     crossover_operations.append(operation)
-                
-            # # add only changed genes to population
-            # i_changed = np.arange(self.generation_size)
-            # i_changed = i_changed[[i in i_mutants or i in i_crossover for i in i_changed]]
-
-            # # collect logging data
-            # generation = [generation[i] for i in i_changed]
-            # losses = list(pool.map(self.loss.loss, generation))
-            # for i in range(len(losses)):
-            #     generation[i].loss = losses[i]
-
-            # get_app().publish("log_evolution_operations", (self.i_generation, generation, mutation_operations, crossover_operations))
-
-            # self.population = self.population + generation
-            # self.population = sorted(self.population, key=lambda x:x.loss["total"])
-
-            # if len(self.population) > self.population_size:
-            #     self.population = self.population[0:self.population_size]
-
-            # get_app().publish("generation_ended", (self.i_generation, self.population))
+            if self.callback_generation_ended is not None:
+                self.callback_generation_ended(self.i_generation, self.population)
 
 
         get_app().publish("evolution_ended", (self.population))

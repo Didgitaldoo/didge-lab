@@ -10,11 +10,12 @@ def note_to_freq(note, base_freq=440):
 def note_name(note):
     note=round(note)
     note+=48
-    octave=math.floor(note/12)
+    octave=math.floor((note-3)/12)+1
     number=note%12
     notes=["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
     name=str(notes[number]) + str(octave)
     return name
+
 
 
 # frequency to note number (e.g. 440 -> 0)
