@@ -59,6 +59,7 @@ class Genome(ABC):
     def clone(self):
         clone = deepcopy(self)
         clone.id = Genome.generate_id()
+        clone.loss = None
         return clone
 
 class GeoGenome(Genome):
@@ -462,7 +463,7 @@ class Nuevolution():
             genome_type = type(father_genome[0]).__name__
         else:
             raise Exception()
-
+        
         logging_infos = {
             "loss": type(loss).__name__,
             "father_genome": genome_type,
