@@ -10,7 +10,7 @@ from scipy.signal import argrelextrema
 
 from didgelab.calc.geo import Geo
 
-from ..conv import freq_to_note_and_cent, note_name, note_to_freq
+from ..conv import freq_to_note_and_cent, note_name, note_to_freq, freq_to_note, cent_diff
 from .correction_model.correction_model import FrequencyCorrectionModel
 
 from abc import abstractmethod
@@ -201,8 +201,10 @@ def interpolate_spectrum(freqs, impedances):
 
     return freq_interpolated, np.array(impedance_interpolated)
 
-
-def get_notes(freqs, impedances, base_freq=440):
+# get a pandas table about the notes from the resonant spectrum
+# you can pass a different base_freq for alternative, non-440 hz tuning
+# you can also pass target_freqs to include the deviation from the target into the note list
+def get_notes(freqs, impedances, base_freq=440, target_freqs=None):
     extrema = argrelextrema(impedances, np.greater)
     peak_freqs = freqs[extrema]
     note_and_cent = [freq_to_note_and_cent(f, base_freq=base_freq) for f in peak_freqs]
@@ -214,8 +216,22 @@ def get_notes(freqs, impedances, base_freq=440):
         "freq": peak_freqs,
         "impedance": impedances[extrema],
     }
+
     peaks = pd.DataFrame(peaks)
     peaks["rel_imp"] = peaks.impedance / peaks.impedance.max()
+
+    if target_freqs is not None:
+        targets = []
+        for freq in peak_freqs:
+            i = np.argmin(np.abs(freq-target_freqs))
+            target = target_freqs[i]
+            target_note = note_name(freq_to_note(target))
+            cent = cent_diff(target, freq)
+            sign = "+" if cent>0 else ""
+            cent = f"{sign}{cent:.2f}"
+            targets.append(f"{target_note} ({cent})")
+        peaks["target"] = targets
+
     return peaks
 
 def quick_analysis(geo : Geo, fmin=1, fmax=1000, max_error=5, base_freq=440):

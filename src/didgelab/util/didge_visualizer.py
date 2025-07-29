@@ -43,7 +43,7 @@ class DidgeVisualizer:
         return pd.DataFrame(df)
     
     @classmethod
-    def vis_didge(cls, geo):
+    def vis_didge(cls, geo, ax=None):
 
         if type(geo) == list:
             plt.figure(figsize=(15,2*len(geo)))
@@ -63,7 +63,9 @@ class DidgeVisualizer:
             g.get_legend().remove()
             g.set_yticks([])
             g.xaxis.set_ticks_position("top")
-            ax = plt.gca()
+
+            if ax is not None:
+                ax = plt.gca()
             ax.set_aspect('equal', adjustable='box')
             g.set_xlabel("")
             g.set_ylabel("")
