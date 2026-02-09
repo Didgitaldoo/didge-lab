@@ -19,7 +19,7 @@ from .conv import *
 def acoustical_simulation(
     geo: Geo,
     frequencies: np.ndarray,
-    simulation_backend: str = "tlm_cython",
+    simulation_method: str = "tlm_cython",
 ):
     """
     Compute acoustic impedance at the given frequencies for a didgeridoo geometry.
@@ -31,7 +31,7 @@ def acoustical_simulation(
         geo: Didgeridoo geometry (bore profile as list of segments). Instance of
             `didgelab.geo.Geo` with `geo.geo` as list of `[x_mm, diameter_mm]`.
         frequencies: 1D array of frequencies in Hz at which to evaluate impedance.
-        simulation_backend: Which backend to use. `"tlm_python"` uses the pure-Python
+        simulation_method: Which backend to use. `"tlm_python"` uses the pure-Python
             implementation; `"tlm_cython"` uses the compiled Cython extension (faster,
             requires a successful build of `didgelab.sim.tlm_cython_lib._cadsd`).
 
@@ -40,7 +40,7 @@ def acoustical_simulation(
         Type matches the backend (list or array); length equals `len(frequencies)`.
 
     Raises:
-        Exception: If `simulation_backend` is not `"tlm_python"` or `"tlm_cython"`.
+        Exception: If `simulation_method` is not `"tlm_python"` or `"tlm_cython"`.
 
     Example:
         >>> from didgelab.acoustical_simulation import acoustical_simulation
@@ -48,21 +48,24 @@ def acoustical_simulation(
         >>> import numpy as np
         >>> geo = Geo([[0, 32], [1200, 60]])  # 1.2 m cone, 32 mm mouth, 60 mm bell
         >>> freqs = np.array([73, 150, 300])
-        >>> imp = acoustical_simulation(geo, freqs, simulation_backend="tlm_python")
+        >>> imp = acoustical_simulation(geo, freqs, simulation_method="tlm_python")
         >>> len(imp) == 3
         True
     """
-    if simulation_backend == "tlm_python":
+    if simulation_method == "tlm_python":
         from .sim.tlm_python import TransmissionLineModelPython
         simulator = TransmissionLineModelPython()
         return simulator.get_impedance_spectrum(geo, frequencies)
-    elif simulation_backend == "tlm_cython":
+    elif simulation_method == "tlm_cython":
         from .sim.tlm_cython import TransmissionLineModelCython
         simulator = TransmissionLineModelCython()
         return simulator.get_impedance_spectrum(geo, frequencies)
+    elif simulation_method == "1d_fem":
+        from .sim.fem import FiniteElementsModeling1D
+        simulator = FiniteElementsModeling1D()
+        return simulator.get_impedance_spectrum(geo, frequencies)
     else:
-        raise Exception(f"Unknown simulation backend \"{simulation_backend}\"")
-
+        raise Exception(f"Unknown simulation backend \"{simulation_method}\"")
 
 
 # helper function for compute_ground
@@ -212,7 +215,7 @@ def get_log_simulation_frequencies(fmin: float, fmax: float, max_error: float):
 # compute the impedance spektrum iteratively with high precision only
 # around the peaks
 impedance_iteratively_start_freqs = None
-def compute_impedance_iteratively(geo: Geo, fmax=1000, n_precision_peaks=3, simulation_backend='tlm_cython'):
+def compute_impedance_iteratively(geo: Geo, fmax=1000, n_precision_peaks=3, simulation_method='tlm_cython'):
     """
     Compute the impedance spectrum with adaptive resolution around peaks.
 
@@ -224,7 +227,7 @@ def compute_impedance_iteratively(geo: Geo, fmax=1000, n_precision_peaks=3, simu
         geo: Didgeridoo geometry (instance of didgelab.geo.Geo).
         fmax: Maximum frequency in Hz for the sweep (default 1000).
         n_precision_peaks: Number of peaks to refine with denser sampling (default 3).
-        simulation_backend: Backend for the transmission-line simulation
+        simulation_method: Backend for the transmission-line simulation
             ('tlm_python' or 'tlm_cython', default 'tlm_cython').
 
     Returns:
@@ -241,14 +244,14 @@ def compute_impedance_iteratively(geo: Geo, fmax=1000, n_precision_peaks=3, simu
         ))
     freqs = [impedance_iteratively_start_freqs]
 
-    impedances = acoustical_simulation(geo, freqs, simulation_backend=simulation_backend)
+    impedances = acoustical_simulation(geo, freqs, simulation_method=simulation_method)
 
     # compute a preciser simulation at the peaks
     extrema = get_max(impedances[0])
     for i in range(np.min((n_precision_peaks, len(extrema)))):
         f = freqs[0][extrema[i]]
         extra_freqs = get_log_simulation_frequencies(fmin=0.9*f, fmax=1.1*f, max_error=2)
-        impedances.append(acoustical_simulation(geo, freqs, simulation_backend=simulation_backend))
+        impedances.append(acoustical_simulation(geo, freqs, simulation_method=simulation_method))
         freqs.append(extra_freqs)
 
     # join and sort
@@ -353,7 +356,7 @@ def get_notes(freqs, impedances, base_freq=440, target_freqs=None):
 
     return peaks
 
-def quick_analysis(geo: Geo, fmin=1, fmax=1000, max_error=5, base_freq=440, simulation_backend='tlm_cython'):
+def quick_analysis(geo: Geo, fmin=1, fmax=1000, max_error=5, base_freq=440, simulation_method='tlm_cython'):
     """
     Run a full analysis pipeline: impedance sweep, note table, and ground spectrum.
 
@@ -367,14 +370,14 @@ def quick_analysis(geo: Geo, fmin=1, fmax=1000, max_error=5, base_freq=440, simu
         fmax: Maximum frequency in Hz (default 1000).
         max_error: Parameter for log-spaced frequency resolution (default 5).
         base_freq: Reference frequency in Hz for note conversion (default 440).
-        simulation_backend: 'tlm_python' or 'tlm_cython' (default 'tlm_cython').
+        simulation_method: 'tlm_python' or 'tlm_cython' (default 'tlm_cython').
 
     Returns:
         dict: Keys "freqs", "impedance", "notes" (DataFrame), "ground_freqs",
             "ground_spectrum" (array in dB).
     """
     freqs = get_log_simulation_frequencies(fmin, fmax, max_error)
-    impedance = acoustical_simulation(geo, freqs, simulation_backend=simulation_backend)
+    impedance = acoustical_simulation(geo, freqs, simulation_method=simulation_method)
     notes = get_notes(freqs, impedance, base_freq=base_freq)
     ground_freqs, imp_ip = interpolate_spectrum(freqs, impedance)
     ground = compute_ground_spektrum(ground_freqs, imp_ip)
