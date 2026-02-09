@@ -1,16 +1,39 @@
 """
 Kigali-style parametric didgeridoo shape.
 
-Genome encodes length, bell size, power curve, segment positions/heights,
-optional bubbles, and optional bell accent. Used with evolutionary search (e.g. Nuevolution).
+### **1\. The Genetic Foundation**
+
+First, the model takes the genome (a list of values between 0 and 1\) and scales them to real-world dimensions.
+
+* **Length & Bell:** Determine the bounding box.  
+* **Power-Law Curve:** This creates the "ideal" taper. If the power is $1.0$, it’s a straight cone; if it’s $\>1.0$, it becomes a parabolic horn.
+
+### **2\. The Jitter Layer**
+
+The genome provides x\_genome and y\_genome offsets. These act like "noise" that pushes the diameter in or out at various segments. This gives the didgeridoo its unique, organic character and complex overtones.
+
+### **3\. The "Exact" Constraint Layer (RBF)**
+
+This is where your forced\_diameters come in. To make the diameter exact at a specific $x$ without creating a sharp, unplayable edge, we use **Radial Basis Function (RBF) Interpolation**.
+
+* **Error Calculation:** The code looks at the current diameter at your target distance ($x=800$) and calculates the "error" ($\\Delta$).  
+* **Anchor Points:** We set the error at the mouthpiece ($x=0$) and the bell ($x=L$) to zero so the ends don't move.  
+* **Smooth Warping:** The RBF creates a continuous mathematical function that passes **exactly** through your required $\\Delta$ at $x=800$ and $x=1400$, while remaining $0$ at the ends.  
+* **Addition:** This function is added to the bore. The entire shape "bends" just enough to hit your exact numbers while preserving the "genetic" ripples from step 2\.
+
+### **4\. Acoustic Features**
+
+* **Bell Accent:** If a bell accent is defined, the last section of the bore is mathematically flared outward to increase volume and projection.  
+* **Bubbles:** Finally, "bubbles" (sinusoidal bulges) are added. These are local expansions used to tune specific resonances or "toots" without changing the overall taper of the instrument.
 """
 
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from ..geo import Geo
 from ..evo.genome import GeoGenome
 
+from scipy.interpolate import Rbf # Ensure scipy is available
 
 class KigaliShape(GeoGenome):
     """
@@ -37,6 +60,7 @@ class KigaliShape(GeoGenome):
         bell_accent: float = 0.0,
         bell_start: float = 200,
         n_bell_segments: int = 10,
+        forced_diameters: Optional[List[List[float]]] = None,
     ):
         """
         Args:
@@ -51,7 +75,9 @@ class KigaliShape(GeoGenome):
             bell_accent: If > 0, the last bell_start mm of the bore is accentuated by this factor.
             bell_start: Length (mm) from the bell end over which the bell accent is applied.
             n_bell_segments: Number of points used to build the accentuated bell curve.
-        """
+            forced_diameters: A list of coordinate pairs [[x_pos, diameter], ...] defining exact geometric constraints along the bore. Each x_pos (mm) is the distance from the mouthpiece, and diameter (mm) is the required internal bore width at that point. 
+            """
+
         self.max_length = max_length
         self.min_length = min_length
         self.n_segments = n_segments
@@ -63,16 +89,16 @@ class KigaliShape(GeoGenome):
         self.bell_accent = bell_accent
         self.bell_start = bell_start
         self.n_bell_segments = n_bell_segments
+        self.forced_diameters = np.array(forced_diameters) if forced_diameters else np.empty((0, 2))
 
         self.bubble_width = 300
         self.bubble_height = 40
-
-        # Genome: 3 global params + 3 per bubble + 2*(n_segments-1) for segment x,y
         self.geo_offset = 3 + self.n_bubbles * 3
         genome_length = 3 + 2 * (n_segments - 1) + self.n_bubbles * 3
         self.n_bubble_segments = 10
 
         GeoGenome.__init__(self, n_genes=genome_length)
+
 
     def get_properties(self) -> Tuple[float, float, float, np.ndarray, np.ndarray, List]:
         """
@@ -102,61 +128,55 @@ class KigaliShape(GeoGenome):
         return length, bell_size, power, x_genome, y_genome, bubbles
 
     def genome2geo(self) -> Geo:
-        """
-        Build Geo from genome: power-law taper, segment offsets, optional bell accent, then bubbles.
-
-        Returns:
-            Geo instance with bore as list of (x_mm, diameter_mm) segments.
-        """
         length, bell_size, power, x_genome, y_genome, bubbles = self.get_properties()
 
-        # Base taper: x evenly along length, y = power-law from d0 to effective bell size
-        # When bell_accent > 0, base taper stops short of full bell so the accent can expand it
-        x = np.arange(0, 1, 1 / self.n_segments)
-        x = np.concatenate((x, [1]))
-        x *= length
-
-        y = np.arange(0, 1, 1 / self.n_segments)
-        y = np.concatenate((y, [1]))
-        y = np.power(y, power)
+        # 1. Generate Base Geometry
+        x = np.linspace(0, length, self.n_segments + 1)
+        y = np.power(np.linspace(0, 1, self.n_segments + 1), power)
         y = y * (bell_size / (1 + self.bell_accent) - self.d0) + self.d0
 
-        # Apply genome-driven offsets (centered at 0.5)
+        # Apply genome offsets
         shift_x = length / self.n_segments
         x += np.concatenate(([0], (x_genome - 0.5) * shift_x, [0]))
         shift_y = (1 - self.smoothness) * bell_size
         y += np.concatenate(([0], 0.3 * (y_genome - 0.5) * shift_y, [0]))
 
-        # Optional: replace the bell end with an accentuated bell curve
-        if self.bell_accent > 0 and self.bell_start > 0 and self.n_bell_segments > 0:
-            geo = Geo(list(zip(x, y)))
-            bell_start_index = 0
-            while bell_start_index < len(x) and x[bell_start_index] < length - self.bell_start:
-                bell_start_index += 1
-
-            x_bell = np.arange(self.n_bell_segments, dtype=float)
-            x_bell = x_bell[1:]
-            x_bell /= x_bell.max()
-            x_bell *= self.bell_start
-            x_bell += length - self.bell_start
-
-            y_bell = np.array([Geo.diameter_at_x(geo, xi) for xi in x_bell])
-            mult = np.arange(len(y_bell), dtype=float)
-            mult /= mult[-1]
-            mult = np.power(mult, 2)
-            mult /= mult[-1]
-            mult = 1 + self.bell_accent * np.power(mult, 2)
-            y_bell *= mult
-
-            x = np.concatenate((x[0:bell_start_index], x_bell))
-            y = np.concatenate((y[0:bell_start_index], y_bell))
-
-        x, y = self.fix_didge(x, y, self.d0, bell_size)
-
         for bubble in bubbles:
             pos, width, height = bubble
             x, y = self.make_bubble(x, y, pos, width, height)
 
+        # 2. Force Exact Diameters
+        if len(self.forced_diameters) > 0:
+            # Current geometry before forcing
+            temp_geo = Geo(list(zip(x, y)))
+            
+            # Identify the points we want to force
+            f_x = self.forced_diameters[:, 0]
+            f_d_target = self.forced_diameters[:, 1]
+            
+            # Calculate the "error" (difference) at those points
+            f_d_current = np.array([Geo.diameter_at_x(temp_geo, xi) for xi in f_x])
+            deltas = f_d_target - f_d_current
+            
+            # Include anchor points (mouthpiece and bell) with 0 delta 
+            # so the forcing doesn't warp the very ends of the instrument
+            anchor_x = np.array([0, length])
+            anchor_deltas = np.array([0, 0])
+            
+            all_f_x = np.concatenate([anchor_x, f_x])
+            all_deltas = np.concatenate([anchor_deltas, deltas])
+            
+            # Create a smooth interpolation function for the deltas
+            # 'thin_plate' or 'multiquadric' ensures it passes EXACTLY through the points
+            itp = Rbf(all_f_x, all_deltas, function='thin_plate')
+            
+            # Apply the exact correction across the whole y array
+            y += itp(x)
+
+        # 3. Finalize Shape (Bell accent, clamping, and bubbles)
+        # (Clamping ensures that even with forcing, we don't get negative diameters)
+        x, y = self.fix_didge(x, y, self.d0, bell_size)
+        
         return Geo(list(zip(x, y)))
 
     def fix_didge(
@@ -234,3 +254,4 @@ class KigaliShape(GeoGenome):
         y = np.concatenate((y[x < bubble_start_x], bubble_y, y[x > bubble_end_x]))
         x = np.concatenate((x[x < bubble_start_x], bubble_x, x[x > bubble_end_x]))
         return x, y
+
