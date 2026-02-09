@@ -1,47 +1,25 @@
-from abc import ABC, abstractmethod
-import numpy as np
-import math
+"""
+Loss functions for evaluating genomes. Lower loss is better.
+"""
 
-from didgelab.app import get_app
-from didgelab.calc.geo import Geo
-from didgelab.calc.conv import note_to_freq
+import numpy as np
+from abc import ABC, abstractmethod
+
+from .genome import Genome
+
 
 class LossFunction(ABC):
-
-    def __init__(self):
-        get_app().register_service(self)
+    """Abstract loss used to evaluate a genome. Lower loss is better."""
 
     @abstractmethod
-    def get_loss(self, geo):
-        raise Exception("this is abstract so we should never reach this code")
+    def loss(self, shape: Genome):
+        """Compute loss for the given genome. Returns a dict (must include 'total' for selection)."""
+        pass
 
-    def __call__(self, geo, context=None):
-        return self.get_loss(geo)
 
-# a loss that measures the deviation from a single note 
-def single_note_loss(note, peaks, i_note=0, filter_rel_imp=0.1):
-    peaks=peaks[peaks.rel_imp>filter_rel_imp]
-    if len(peaks)<=i_note:
-        return 1000000
-    f_target=note_to_freq(note)
-    f_fundamental=peaks.iloc[i_note]["freq"]
-    return np.sqrt(abs(math.log(f_target, 2)-math.log(f_fundamental, 2)))
+class TestLossFunction(LossFunction):
+    """Example loss for testing: sum(first half) / sum(second half) plus dummy keys."""
 
-# add loss if the didge gets smaller
-def diameter_loss(geo):
-    if type(geo)==Geo:
-        shape=geo.geo
-    elif type(geo) == list:
-        shape=geo
-    else:
-        raise Exception("unknown type " + str(type(geo)))
-
-    loss=0
-    for i in range(1, len(shape)):
-        delta_y=shape[i-1][1]-shape[i][1]
-        if delta_y < 0:
-            loss+=-1*delta_y
-
-    loss*=0.005
-    return loss
-
+    def loss(self, genome: Genome):
+        l = int(len(genome.genome)/2)
+        return {"total": np.sum(genome.genome[0:l]) / np.sum(genome.genome[l:]), "test": -5, "test2": 10}

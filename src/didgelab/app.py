@@ -1,3 +1,10 @@
+"""
+Application shell and configuration for DidgeLab.
+
+Provides a singleton App with logging, output folders, config (e.g. from config.ini),
+publish/subscribe for events (e.g. generation_ended), and service registration.
+"""
+
 import logging
 import sys
 import os
@@ -7,19 +14,29 @@ from multiprocessing import Manager
 
 app = None
 
+
 def init_app(name=None, create_output_folder=True):
+    """Create and set the global App. Call once at startup."""
     global app
     app = App(name=name, create_output_folder=create_output_folder)
 
+
 def get_app():
+    """Return the global App; initializes with default settings if not yet created."""
     if app is None:
         init_app(None, True)
     return app
 
+
 def get_config():
+    """Return the configuration dict from the global App."""
     return get_app().get_config()
 
+
 class App:
+    """
+    Central app: logging, output directory, config, pub/sub, and service registry.
+    """
 
     def __init__(self, name=None, create_output_folder=True):
 
@@ -56,8 +73,8 @@ class App:
         if "ipykernel" in sys.modules:
             self.start_message()
 
-    # register services in the app to make them available from other parts of the application
     def register_service(self, service):
+        """Register a service instance; retrieve later with get_service(type(service))."""
         self.services[type(service)] = service
 
     def get_service(self, service_type):
@@ -67,6 +84,7 @@ class App:
             return None
 
     def get_config(self, path="config.ini"):
+        """Load and cache config (e.g. from config.ini and ./ *.conf)."""
         
         if self.config is None:
             p = configargparse.ArgParser(default_config_files=['./*.conf'])
@@ -81,8 +99,8 @@ class App:
 
         return self.config
 
-    # publish / subscribe pattern for data exchange between services
     def publish(self, topic, args=None):
+        """Notify all subscribers of topic (optional args passed to callbacks)."""
         logging.debug(f"self.publish topic={topic}, args={args}")
         if topic not in self.subscribers:
             return
@@ -95,12 +113,13 @@ class App:
                 s(args)
 
     def subscribe(self, topic, fct):
+        """Register fct to be called when topic is published."""
         if topic not in self.subscribers:
             self.subscribers[topic]=[]
         self.subscribers[topic].append(fct)
 
-
     def init_logging(self, filename="./log.txt", log_to_file=True):
+        """Configure root logger: file and console, level from config."""
         logFormatter = logging.Formatter("%(asctime)s [%(levelname)s] {%(filename)s:%(lineno)d} %(message)s")
         rootLogger = logging.getLogger()
 
@@ -124,6 +143,7 @@ class App:
             rootLogger.setLevel(logging.WARN)
 
     def start_message(self):
+        """Log ASCII banner and command line."""
         msg='''
  _____  _     _              _           _     
 |  __ \(_)   | |            | |         | |    
@@ -138,6 +158,7 @@ class App:
         logging.info(msg)
 
     def get_output_folder(self, suffix=""):
+        """Create and return a timestamped output directory under evolutions/."""
 
         if self.output_folder is None:
 

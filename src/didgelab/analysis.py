@@ -1,21 +1,29 @@
+"""
+Analysis and visualization of evolution logs for DidgeLab.
+
+Reads population/evolution logs (e.g. population.json.gz), builds lineage graphs
+(nodes = genomes, edges = mutation/crossover), and provides success-probability
+and loss-over-time plots for analyzing runs.
+"""
+
 import json
 import sys
 import os
-import gzip 
+import gzip
 import logging
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from didgelab.calc.geo import Geo, geotools
-import didgelab.calc.fft
-from didgelab.calc.sim.sim import *
-from didgelab.calc.fft import *
-from didgelab.calc.conv import *
-from didgelab.util.didge_visualizer import vis_didge
+from didgelab.geo import Geo
+import didgelab.fft
+from didgelab.sim.tlm_cython_lib.sim import *
+from didgelab.fft import *
+from didgelab.conv import *
+from didgelab.visualize import vis_didge
 
-# open population.json.gz file and return latest generation
 def get_latest_population(infile):
+    """Open population.json.gz and return the latest generation (last line as JSON)."""
     line = None
     try:
         for line in gzip.open(infile):
@@ -25,15 +33,17 @@ def get_latest_population(infile):
     finally:
         return json.loads(line)
 
-# get the newest subfolder of saved_evolutions folder
-def get_latest_evolution_folder(basefolder = "../../../saved_evolutions/"):
+
+def get_latest_evolution_folder(basefolder="../../../saved_evolutions/"):
+    """Return the path to the newest subfolder in basefolder (by name sort)."""
     dirs = list(filter(lambda f:os.path.isdir(os.path.join(basefolder, f)), os.listdir(basefolder)))
     dirs = sorted(dirs, reverse=True)
     dirs = [os.path.join(basefolder, f) for f in dirs]
     return dirs[0]
 
-# print various information about the population
+
 def visualize_individuals(population, n=None, base_freq=440, max_error=1):
+    """Plot geometry and impedance for up to n individuals; print notes and summary."""
 
     if n is not None and n<len(population):
         population = population[0:n]
