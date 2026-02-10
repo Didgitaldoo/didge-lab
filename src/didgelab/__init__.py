@@ -65,6 +65,8 @@ from .evo import (
 )
 from .evo.callbacks import init_standard_evolution
 
+from .loss.TairuaLoss import TairuaLoss
+
 __all__ = [
     "Geo",
     "acoustical_simulation",
@@ -103,4 +105,5 @@ __all__ = [
     "AdaptiveProbabilities",
     "NumpyEncoder",
     "load_latest_evolution",
+    "TairuaLoss"
 ]
