@@ -280,7 +280,7 @@ class KigaliShape(GeoGenome):
 
         bell_size_before = y[-1]
 
-        y = (1-0.0*self.bell_accent)*(y-self.d0)
+        y = (1-0.7*self.bell_accent)*(y-self.d0)
         y += self.d0
 
         segments = list(zip(x,y))

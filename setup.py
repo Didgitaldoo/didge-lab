@@ -1,3 +1,4 @@
+
 """
 Build the Cython extension with NumPy include dirs.
 Package metadata and package layout come from pyproject.toml.
