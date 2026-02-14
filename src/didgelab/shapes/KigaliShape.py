@@ -28,12 +28,13 @@ This is where your forced\_diameters come in. To make the diameter exact at a sp
 """
 
 import numpy as np
-from typing import List, Tuple, Optional
+from typing import Any, List, Tuple, Optional
 
 from ..geo import Geo
 from ..evo.genome import GeoGenome
 
 from scipy.interpolate import Rbf # Ensure scipy is available
+
 
 class KigaliShape(GeoGenome):
     """
@@ -58,7 +59,7 @@ class KigaliShape(GeoGenome):
         n_bubbles: int = 0,
         smoothness: float = 0.3,
         bell_accent: float = 0.0,
-        bell_start: float = 200,
+        bell_start: float = 300,
         n_bell_segments: int = 10,
         forced_diameters: Optional[List[List[float]]] = None,
     ):
@@ -130,51 +131,46 @@ class KigaliShape(GeoGenome):
     def genome2geo(self) -> Geo:
         length, bell_size, power, x_genome, y_genome, bubbles = self.get_properties()
 
-        # 1. Generate Base Geometry
+        # 1. Generate Base Geometry (Power-law taper)
         x = np.linspace(0, length, self.n_segments + 1)
         y = np.power(np.linspace(0, 1, self.n_segments + 1), power)
-        y = y * (bell_size / (1 + self.bell_accent) - self.d0) + self.d0
+        # Linear scale from mouthpiece to bell_size
+        y = y * (bell_size - self.d0) + self.d0
 
-        # Apply genome offsets
+        # Apply genome jitter/offsets
         shift_x = length / self.n_segments
         x += np.concatenate(([0], (x_genome - 0.5) * shift_x, [0]))
         shift_y = (1 - self.smoothness) * bell_size
         y += np.concatenate(([0], 0.3 * (y_genome - 0.5) * shift_y, [0]))
 
+        # 2. Apply Bell Accent
+        x, y = self.apply_bell_accent(x, y, length, bell_size)
+
+        # 3. Add Bubbles
         for bubble in bubbles:
+            # Unpack the tuple: (position, width, height)
             pos, width, height = bubble
             x, y = self.make_bubble(x, y, pos, width, height)
-
-        # 2. Force Exact Diameters
+        
+        # 4. Force Exact Diameters (RBF)
         if len(self.forced_diameters) > 0:
-            # Current geometry before forcing
             temp_geo = Geo(list(zip(x, y)))
-            
-            # Identify the points we want to force
             f_x = self.forced_diameters[:, 0]
             f_d_target = self.forced_diameters[:, 1]
-            
-            # Calculate the "error" (difference) at those points
             f_d_current = np.array([Geo.diameter_at_x(temp_geo, xi) for xi in f_x])
             deltas = f_d_target - f_d_current
             
-            # Include anchor points (mouthpiece and bell) with 0 delta 
-            # so the forcing doesn't warp the very ends of the instrument
             anchor_x = np.array([0, length])
             anchor_deltas = np.array([0, 0])
             
             all_f_x = np.concatenate([anchor_x, f_x])
             all_deltas = np.concatenate([anchor_deltas, deltas])
             
-            # Create a smooth interpolation function for the deltas
-            # 'thin_plate' or 'multiquadric' ensures it passes EXACTLY through the points
             itp = Rbf(all_f_x, all_deltas, function='thin_plate')
-            
-            # Apply the exact correction across the whole y array
             y += itp(x)
 
-        # 3. Finalize Shape (Bell accent, clamping, and bubbles)
-        # (Clamping ensures that even with forcing, we don't get negative diameters)
+        # 5. Finalize (Clamp to ensure d_bell_max is respected)
+        # We clamp to bell_size specifically here
         x, y = self.fix_didge(x, y, self.d0, bell_size)
         
         return Geo(list(zip(x, y)))
@@ -255,3 +251,51 @@ class KigaliShape(GeoGenome):
         x = np.concatenate((x[x < bubble_start_x], bubble_x, x[x > bubble_end_x]))
         return x, y
 
+    def apply_bell_accent(self, x: np.ndarray, y: np.ndarray, length: float, bell_size: float) -> np.ndarray:
+        """
+        Applies a flare to the end of the didgeridoo. 
+        If bell_accent is 0, it follows the existing taper.
+        If bell_accent is 1, it adds a sharp parabolic flare.
+        """
+        if self.bell_accent <= 0:
+            return x, y
+
+        if self.bell_accent > 1:
+            self.bell_accent = 1
+
+        # insert a segment at bell_start position
+        bell_start = x[-1] - self.bell_start
+        if bell_start < 1:
+            bell_start = 1
+
+        if bell_start not in x:
+            segments = list(zip(x,y))
+            geo = Geo(segments)
+            bell_start_diameter = Geo.diameter_at_x(geo, bell_start)
+            segments.append([bell_start, bell_start_diameter])
+            segments = sorted(segments, key=lambda x:x[0])
+            segments = np.array(segments)
+            x = segments[:,0]
+            y = segments[:,1]
+
+        bell_size_before = y[-1]
+
+        y = (1-0.0*self.bell_accent)*(y-self.d0)
+        y += self.d0
+
+        segments = list(zip(x,y))
+        geo = Geo(segments)
+
+        x_bell = np.linspace(bell_start, length, self.n_bell_segments)
+        y_bell = [Geo.diameter_at_x(geo, _x) for _x in x_bell]
+
+        x_sigmoid = np.linspace(-5, 5., self.n_bell_segments)
+        delta = (bell_size_before-y[-1]) * (1-(1/(1 + np.exp(x_sigmoid)))) # sigmoid function
+        y_bell += delta
+
+        i1 = x<bell_start
+
+        x = np.concatenate((x[i1], x_bell))
+        y = np.concatenate((y[i1], y_bell))
+
+        return x, y

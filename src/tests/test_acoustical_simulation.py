@@ -21,7 +21,7 @@ class TestAcousticalSimulation:
     def test_returns_impedance_array(self):
         geo = Geo([[0, 32], [1200, 60]])
         freqs = np.array([73.0, 150.0, 300.0])
-        imp = acoustical_simulation(geo, freqs, simulation_backend="tlm_python")
+        imp = acoustical_simulation(geo, freqs, simulation_method="tlm_python")
         assert len(imp) == len(freqs)
         assert all(isinstance(z, (int, float, np.floating)) for z in imp)
         assert all(z > 0 for z in imp)
@@ -29,8 +29,8 @@ class TestAcousticalSimulation:
     def test_unknown_backend_raises(self):
         geo = Geo([[0, 32], [1200, 60]])
         freqs = np.array([73.0])
-        with pytest.raises(Exception, match="Unknown simulation backend"):
-            acoustical_simulation(geo, freqs, simulation_backend="invalid")
+        with pytest.raises(Exception, match="Unknown simulation backend \"invalid\""):
+            acoustical_simulation(geo, freqs, simulation_method="invalid")
 
 
 class TestGetClosestIndex:
