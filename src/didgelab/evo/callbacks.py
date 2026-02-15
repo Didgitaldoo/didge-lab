@@ -7,8 +7,13 @@ from time import time
 import numpy as np
 import os
 from tqdm import tqdm
-from IPython.display import clear_output
 from datetime import datetime
+
+try:
+    from IPython.display import clear_output
+except ImportError:
+    def clear_output(wait=True):
+        pass
 import gzip
 import json
 

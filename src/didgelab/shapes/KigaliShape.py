@@ -36,6 +36,7 @@ from ..evo.genome import GeoGenome
 from scipy.interpolate import Rbf # Ensure scipy is available
 
 
+
 class KigaliShape(GeoGenome):
     """
     Parametric bore shape: power-law taper, optional bell accent, and optional bubbles.
@@ -62,6 +63,8 @@ class KigaliShape(GeoGenome):
         bell_start: float = 300,
         n_bell_segments: int = 10,
         forced_diameters: Optional[List[List[float]]] = None,
+        sine_shape_n : float = 0.0,
+        sine_shape_y : float = 0.0
     ):
         """
         Args:
@@ -91,6 +94,8 @@ class KigaliShape(GeoGenome):
         self.bell_start = bell_start
         self.n_bell_segments = n_bell_segments
         self.forced_diameters = np.array(forced_diameters) if forced_diameters else np.empty((0, 2))
+        self.sine_shape_n : float = sine_shape_n
+        self.sine_shape_y : float = sine_shape_y
 
         self.bubble_width = 300
         self.bubble_height = 40
@@ -151,6 +156,8 @@ class KigaliShape(GeoGenome):
             # Unpack the tuple: (position, width, height)
             pos, width, height = bubble
             x, y = self.make_bubble(x, y, pos, width, height)
+
+        x, y = self.add_sine_shape(x, y)
         
         # 4. Force Exact Diameters (RBF)
         if len(self.forced_diameters) > 0:
@@ -299,3 +306,15 @@ class KigaliShape(GeoGenome):
         y = np.concatenate((y[i1], y_bell))
 
         return x, y
+
+    def add_sine_shape(self, x, y):
+
+        if self.sine_shape_n <= 0 or self.sine_shape_y <= 0:
+            return x, y
+
+        x_sine = 2*self.sine_shape_n*np.pi*x/x.max()
+        y_sine = np.sin(x_sine)
+        y_sine[y_sine<0] = 0
+
+        y += self.sine_shape_y * y_sine
+        return x,y

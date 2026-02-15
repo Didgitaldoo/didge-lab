@@ -112,8 +112,16 @@ class Nuevolution:
         """Return progress in [0, 1]: (current_generation + 1) / num_generations."""
         return (self.i_generation + 1) / self.num_generations
 
-    def evolve(self):
-        """Run evolution for num_generations; return the final population (sorted by total loss)."""
+    def evolve(self, initial_population=None, start_from_generation=0):
+        """
+        Run evolution for num_generations; return the final population (sorted by total loss).
+
+        Args:
+            initial_population: Optional list of Genome objects to use as starting population.
+                If provided, overrides father_genome. Each genome must have .loss set.
+            start_from_generation: If > 0, skip to this generation (for resuming).
+                The loop runs from start_from_generation+1 to num_generations.
+        """
         # initialize
         num_workers = multiprocessing.cpu_count()
         if self.max_n_threads is not None:
@@ -122,7 +130,10 @@ class Nuevolution:
         logging.info(f"initialize threadpoolexecutor with {num_workers} workers")
         pool = ThreadPoolExecutor(max_workers=num_workers)
 
-        if isinstance(self.father_genome, Genome):
+        if initial_population is not None and len(initial_population) > 0:
+            self.population = initial_population
+            logging.info("resuming from initial population of %d individuals", len(self.population))
+        elif isinstance(self.father_genome, Genome):
             self.population = []
             for i in range(self.generation_size):
                 mutant = self.father_genome.clone()
@@ -133,17 +144,20 @@ class Nuevolution:
         else:
             raise Exception()
 
-        logging.info("compute initial generation")
-
-        losses = list(tqdm(pool.map(self.loss.loss, self.population), total=len(self.population)))
-        for i in range(len(losses)):
-            self.population[i].loss = losses[i]
+        if initial_population is None or not all(
+            hasattr(p, "loss") and p.loss is not None for p in self.population
+        ):
+            logging.info("compute initial generation")
+            losses = list(tqdm(pool.map(self.loss.loss, self.population), total=len(self.population)))
+            for i in range(len(losses)):
+                self.population[i].loss = losses[i]
         self.population = sorted(self.population, key=lambda x: x.loss["total"])
 
+        self.i_generation = start_from_generation
         get_app().publish("log_evolution_operations", (self.i_generation, self.population, [], []))
         # evolve
         probs = []
-        for i_generation in range(1, self.num_generations + 1):
+        for i_generation in range(start_from_generation + 1, self.num_generations + 1):
 
             if not self.continue_evolution:
                 break
