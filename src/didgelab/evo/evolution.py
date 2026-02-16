@@ -47,7 +47,8 @@ class Nuevolution:
                  },
                  evolution_operators=None,
                  evolution_operator_probs=None,
-                 callback_generation_ended=None):
+                 callback_generation_ended=None,
+                 callback_loss_progress=None):
 
         if evolution_operators is None:
             evolution_operators = [
@@ -68,6 +69,7 @@ class Nuevolution:
         self.evolution_operators = evolution_operators
         self.max_n_threads = max_n_threads
         self.callback_generation_ended = callback_generation_ended
+        self.callback_loss_progress = callback_loss_progress
 
         if evolution_operator_probs is None:
             evolution_operator_probs = [1/len(evolution_operators)] * len(evolution_operators)
@@ -112,6 +114,20 @@ class Nuevolution:
         """Return progress in [0, 1]: (current_generation + 1) / num_generations."""
         return (self.i_generation + 1) / self.num_generations
 
+    def _map_losses_with_progress(self, pool, individuals, i_generation=None):
+        """Compute losses via pool.map, invoking callback_loss_progress as each completes.
+        i_generation: generation index for callback (default: self.i_generation). Use 0 for initial population.
+        """
+        total = len(individuals)
+        gen = i_generation if i_generation is not None else self.i_generation
+        if self.callback_loss_progress is None or total == 0:
+            return list(pool.map(self.loss.loss, individuals))
+        results = []
+        for i, loss in enumerate(pool.map(self.loss.loss, individuals)):
+            results.append(loss)
+            self.callback_loss_progress(gen, i + 1, total)
+        return results
+
     def evolve(self, initial_population=None, start_from_generation=0):
         """
         Run evolution for num_generations; return the final population (sorted by total loss).
@@ -148,7 +164,10 @@ class Nuevolution:
             hasattr(p, "loss") and p.loss is not None for p in self.population
         ):
             logging.info("compute initial generation")
-            losses = list(tqdm(pool.map(self.loss.loss, self.population), total=len(self.population)))
+            if self.callback_loss_progress is None:
+                losses = list(tqdm(pool.map(self.loss.loss, self.population), total=len(self.population)))
+            else:
+                losses = self._map_losses_with_progress(pool, self.population, i_generation=0)
             for i in range(len(losses)):
                 self.population[i].loss = losses[i]
         self.population = sorted(self.population, key=lambda x: x.loss["total"])
@@ -175,7 +194,7 @@ class Nuevolution:
             self.i_generation = i_generation
 
             if self.recompute_losses:
-                losses = list(pool.map(self.loss.loss, self.population))
+                losses = self._map_losses_with_progress(pool, self.population)
                 self.recompute_losses = False
 
             operations = np.random.choice(
@@ -202,7 +221,7 @@ class Nuevolution:
                     new_generation.append(individual)
 
             # compute losses
-            losses = list(pool.map(self.loss.loss, new_generation))
+            losses = self._map_losses_with_progress(pool, new_generation)
             for i in range(len(losses)):
                 new_generation[i].loss = losses[i]
 

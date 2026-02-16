@@ -3,6 +3,7 @@ Evolution callbacks: progress bar, logging, early stopping.
 """
 
 import logging
+from typing import Callable, Optional
 from time import time
 import numpy as np
 import os
@@ -19,6 +20,49 @@ import json
 
 from didgelab.app import get_app
 from .evolution import Nuevolution
+
+
+def create_loss_progress_callback(
+    on_progress: Callable[[int, int, int], None],
+    *,
+    num_generations: Optional[int] = None,
+    throttle_interval: float = 0.1,
+) -> Callable[[int, int, int], None]:
+    """
+    Create a callback for Nuevolution.callback_loss_progress that tracks progress
+    within a single generation (the pool.map loss computation step).
+
+    The callback receives (i_generation, completed, total) each time an individual's
+    loss is computed. Can be used for progress bars, streaming to a frontend, etc.
+
+    Args:
+        on_progress: Called with (i_generation, completed, total). May also receive
+            (progress_0_to_1,) if you use a simpler signature - see below.
+        num_generations: If provided, the wrapper can compute overall evolution progress
+            as (i_generation - 1 + completed/total) / num_generations. Pass-through if None.
+        throttle_interval: Minimum seconds between invocations (default 0.1) to avoid
+            flooding. Set to 0 to disable throttling.
+
+    Returns:
+        A callback suitable for evo.callback_loss_progress = create_loss_progress_callback(...)
+
+    Example (tqdm-style progress bar):
+        def update_bar(i_gen, completed, total):
+            pbar.n = (i_gen - 1) * generation_size + completed
+            pbar.refresh()
+        evo.callback_loss_progress = create_loss_progress_callback(update_bar)
+    """
+    last_call_time = [0.0]  # use list to allow closure to mutate
+
+    def wrapper(i_generation: int, completed: int, total: int) -> None:
+        if throttle_interval > 0:
+            now = time()
+            if now - last_call_time[0] < throttle_interval and completed < total:
+                return
+            last_call_time[0] = now
+        on_progress(i_generation, completed, total)
+
+    return wrapper
 from .schedulers import LinearDecreasingCrossover, LinearDecreasingMutation, AdaptiveProbabilities
 from .loss import LossFunction
 
@@ -132,6 +176,28 @@ class NuevolutionProgressBar:
             self.pbar.set_description(f"best loss: {best_loss:.2f}")
 
         get_app().subscribe("generation_ended", update)
+
+
+class TqdmLossProgressCallback:
+    """
+    Reusable callback that shows tqdm progress during the loss computation (pool.map)
+    within each generation. Wire into Nuevolution via callback_loss_progress.
+    """
+
+    def __init__(self, evo: Nuevolution):
+        self.evo = evo
+        self.pbar = None
+
+    def __call__(self, i_generation: int, completed: int, total: int) -> None:
+        if self.pbar is None or self.pbar.total != total:
+            if self.pbar is not None:
+                self.pbar.close()
+            self.pbar = tqdm(total=total, unit="ind", desc=f"gen {i_generation}")
+        self.pbar.n = completed
+        self.pbar.refresh()
+        if completed >= total:
+            self.pbar.close()
+            self.pbar = None
 
 
 class PrintEvolutionInformation:
