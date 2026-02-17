@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "didgelab"
-version = "3.0.3"
+version = "3.0.5"
 authors = [
   { name = "Jan Nehring", email = "jan.nehring@outlook.com" },
 ]

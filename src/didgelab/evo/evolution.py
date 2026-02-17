@@ -116,7 +116,13 @@ class Nuevolution:
 
     def _map_losses_with_progress(self, pool, individuals, i_generation=None):
         """Compute losses via pool.map, invoking callback_loss_progress as each completes.
-        i_generation: generation index for callback (default: self.i_generation). Use 0 for initial population.
+
+        Used for: initial population, recompute (e.g. after acoustic target change), and
+        per-generation new offspring. The callback receives (i_generation, completed, total)
+        so UIs can show "progress of generation X" during any of these phases.
+
+        i_generation: generation index for callback (default: self.i_generation).
+            Use 0 for initial population; use start_from_generation when resuming with recompute.
         """
         total = len(individuals)
         gen = i_generation if i_generation is not None else self.i_generation
@@ -164,10 +170,12 @@ class Nuevolution:
             hasattr(p, "loss") and p.loss is not None for p in self.population
         ):
             logging.info("compute initial generation")
+            # Use 0 for fresh start; use start_from_generation when resuming so UI shows correct "generation X"
+            initial_gen = 0 if start_from_generation == 0 else start_from_generation
             if self.callback_loss_progress is None:
                 losses = list(tqdm(pool.map(self.loss.loss, self.population), total=len(self.population)))
             else:
-                losses = self._map_losses_with_progress(pool, self.population, i_generation=0)
+                losses = self._map_losses_with_progress(pool, self.population, i_generation=initial_gen)
             for i in range(len(losses)):
                 self.population[i].loss = losses[i]
         self.population = sorted(self.population, key=lambda x: x.loss["total"])
@@ -194,7 +202,8 @@ class Nuevolution:
             self.i_generation = i_generation
 
             if self.recompute_losses:
-                losses = self._map_losses_with_progress(pool, self.population)
+                # Recompute population losses (e.g. after acoustic target change); report progress for this generation
+                losses = self._map_losses_with_progress(pool, self.population, i_generation=self.i_generation)
                 self.recompute_losses = False
 
             operations = np.random.choice(
