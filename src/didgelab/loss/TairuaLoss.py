@@ -128,7 +128,10 @@ class TairuaLoss(LossFunction):
             # Deviation from target tuning table (each target matched to nearest peak)
             freq_loss = []
             imp_loss = []
-            for target_freq, target_impedance in zip(self.target_freqs, self.target_impedances):
+            imp_weights_used = []
+            for (target_freq, target_impedance), imp_w in zip(
+                zip(self.target_freqs, self.target_impedances), self.impedance_weights
+            ):
                 i = np.argmin(np.abs(peak_freqs_log - target_freq))
                 peak_freq_log = peak_freqs_log[i]
                 peak_imp = peak_impedances[i]
@@ -141,9 +144,13 @@ class TairuaLoss(LossFunction):
 
                 if target_impedance >= 0:
                     imp_loss.append(np.abs(peak_imp - target_impedance))
+                    imp_weights_used.append(imp_w)
 
             freq_loss = np.sum(np.array(freq_loss) * self.freq_weights)
-            imp_loss = np.sum(np.array(imp_loss) * self.impedance_weights)
+            imp_loss = (
+                np.sum(np.array(imp_loss) * np.array(imp_weights_used))
+                if imp_loss else 0.0
+            )
 
             losses = {"freq_loss": freq_loss, "imp_loss": imp_loss}
 
