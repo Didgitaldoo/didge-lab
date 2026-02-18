@@ -3,6 +3,7 @@ import numpy as np
 import logging
 from abc import ABC, abstractmethod
 from scipy.signal import find_peaks
+from ..acoustical_simulation import acoustical_simulation, get_log_simulation_frequencies
 
 # Assuming these are available in your environment
 # from ..evo import LossFunction
@@ -34,28 +35,56 @@ class LossComponent(ABC):
 
 class FrequencyTuningLoss(LossComponent):
     """
-    PITCH TUNING: Standard objective to align the drone or toots to specific notes.
+    PITCH & AMPLITUDE TUNING: 
+    Aligns peaks to specific frequencies and optionally specific impedance magnitudes.
+    Normalization: Frequency error is divided by 600 cents. Impedance error is absolute.
     """
-    def __init__(self, target_freqs_log: np.ndarray, weights: List[float]):
+    def __init__(self, 
+                 target_freqs_log: np.ndarray, 
+                 target_impedances: np.ndarray, 
+                 weights: List[float]):
+        """
+        Args:
+            target_freqs_log: Array of target frequencies in log2.
+            target_impedances: Array of target normalized impedances [0, 1]. 
+                               Set to -1 to ignore impedance loss for that peak.
+            weights: Per-peak weights for the total loss calculation.
+        """
         self.target_freqs_log = target_freqs_log
+        self.target_impedances = target_impedances
         self.weights = weights
 
     def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
-        loss_vals = []
-        for target_freq in self.target_freqs_log:
-            idx = np.argmin(np.abs(peak_freqs_log - target_freq))
-            diff_cents = 1200 * np.abs(target_freq - peak_freqs_log[idx])
-            loss_vals.append(diff_cents / 600.0)
-        return np.sum(np.array(loss_vals) * self.weights)
+        total_loss = 0.0
+        
+        for i, target_f_log in enumerate(self.target_freqs_log):
+            # 1. Find the closest actual peak to this target frequency
+            idx = np.argmin(np.abs(peak_freqs_log - target_f_log))
+            actual_f_log = peak_freqs_log[idx]
+            actual_amp = peak_impedances[idx]
+            
+            # 2. Calculate Frequency Loss (Normalized Cents)
+            # 600 cents (a tritone) = 1.0 base loss unit
+            freq_error_cents = 1200 * np.abs(target_f_log - actual_f_log)
+            freq_loss = freq_error_cents / 600.0
+            
+            # 3. Calculate Impedance Loss (if target != -1)
+            amp_loss = 0.0
+            if self.target_impedances[i] != -1:
+                amp_loss = np.abs(self.target_impedances[i] - actual_amp)
+            
+            # 4. Combine with per-peak weight
+            total_loss += (freq_loss + amp_loss) * self.weights[i]
+            
+        return total_loss
 
     def get_formula(self) -> Tuple[str, List[str]]:
-        formula = r"L_{freq} = \sum w_i \cdot \frac{|1200 \cdot (\log_2 f_{target,i} - \log_2 f_{peak,i})|}{600}"
+        formula = r"L_{tune} = \sum_{i=1}^{N} w_i \cdot \left( \frac{|1200 \Delta \log_2 f_i|}{600} + [Z_{target,i} \neq -1] \cdot |Z_{target,i} - Z_{peak,i}| \right)"
         explanations = [
-            "w_i: Weight assigned to the i-th target frequency.",
-            "f_target: The desired frequency in Hz.",
-            "f_peak: The actual detected peak frequency in Hz.",
-            "1200: Conversion constant for cents.",
-            "600: Normalization factor (6 semitones)."
+            "w_i: Specific weight for the i-th peak.",
+            "1200/600: Normalizes cent deviation so 1 semitone ≈ 0.166 and 1 tritone = 1.0.",
+            "Z_target: Target normalized impedance (0.0 to 1.0).",
+            "[Z != -1]: Indicator function; impedance loss is zero if target is -1."
         ]
         return formula, explanations
 
@@ -147,30 +176,30 @@ class HarmonicSplittingLoss(LossComponent):
 
 class IntegerHarmonicLoss(LossComponent):
     """
-    PERFECT-INTEGER: Forces the instrument toward a mathematically clean harmonic series.
+    PERFECT-INTEGER: Normalized by 600 cents.
     """
     def __init__(self, weight: float):
         self.weight = weight
 
     def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
         f0 = np.power(2.0, peak_freqs_log[0])
-        total_error = sum(np.abs(1200 * np.log2(np.power(2.0, f_log) / (f0 * (i + 1)))) 
-                         for i, f_log in enumerate(peak_freqs_log))
-        return (total_error / len(peak_freqs_log)) * self.weight
+        # Calculate mean error in cents and divide by 600
+        total_error_cents = sum(np.abs(1200 * np.log2(np.power(2.0, f_log) / (f0 * (i + 1)))) 
+                               for i, f_log in enumerate(peak_freqs_log))
+        avg_error_normalized = (total_error_cents / len(peak_freqs_log)) / 600.0
+        return avg_error_normalized * self.weight
 
     def get_formula(self) -> Tuple[str, List[str]]:
-        formula = r"L_{int} = w \cdot \frac{1}{N} \sum_{n=1}^{N} |1200 \cdot \log_2 \left( \frac{f_n}{n \cdot f_0} \right)|"
+        formula = r"L_{int} = w \cdot \frac{1}{600N} \sum_{n=1}^{N} |1200 \cdot \log_2 \left( \frac{f_n}{n \cdot f_0} \right)|"
         explanations = [
             "f_n: Frequency of the n-th peak.",
-            "f_0: Fundamental (drone) frequency.",
-            "n: Harmonic integer (1, 2, 3...).",
-            "w: Weight for mathematical purity."
+            "600: Normalization constant to balance cent-based loss."
         ]
         return formula, explanations
 
 class NearIntegerLoss(LossComponent):
     """
-    NEAR-INTEGER: Optimized for piano-like stretching (slight inharmonicity).
+    NEAR-INTEGER: Normalized by 600 cents.
     """
     def __init__(self, stretch_factor: float, weight: float):
         self.stretch = stretch_factor
@@ -178,23 +207,18 @@ class NearIntegerLoss(LossComponent):
 
     def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
         f0 = np.power(2.0, peak_freqs_log[0])
-        total_error = sum(np.abs(1200 * np.log2(np.power(2.0, f_log) / (f0 * (i + 1) * (self.stretch ** i)))) 
-                         for i, f_log in enumerate(peak_freqs_log))
-        return total_error * self.weight
+        total_error_cents = sum(np.abs(1200 * np.log2(np.power(2.0, f_log) / (f0 * (i + 1) * (self.stretch ** i)))) 
+                               for i, f_log in enumerate(peak_freqs_log))
+        return (total_error_cents / 600.0) * self.weight
 
     def get_formula(self) -> Tuple[str, List[str]]:
-        formula = r"L_{near} = w \cdot \sum_{n=1}^{N} |1200 \cdot \log_2 \left( \frac{f_n}{n \cdot f_0 \cdot s^n} \right)|"
-        explanations = [
-            "s: Stretch factor (e.g., 1.002 for slightly sharp upper harmonics).",
-            "f_n: Actual peak frequency.",
-            "n: Harmonic rank.",
-            "f_0: Fundamental frequency."
-        ]
-        return formula, explanations
+        formula = r"L_{near} = w \cdot \frac{1}{600} \sum_{n=1}^{N} |1200 \cdot \log_2 \left( \frac{f_n}{n \cdot f_0 \cdot s^n} \right)|"
+        return formula, ["s: Stretch factor", "600: Normalization divisor"]
+
 
 class StretchedOddLoss(LossComponent):
     """
-    STRETCHED/ODD: Emphasizes the 1st, 3rd, and 5th harmonics for hollow/woody timbres.
+    STRETCHED/ODD: Normalized by 600 cents.
     """
     def __init__(self, weight: float):
         self.weight = weight
@@ -202,18 +226,14 @@ class StretchedOddLoss(LossComponent):
     def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
         f0 = np.power(2.0, peak_freqs_log[0])
         targets = [f0 * 1, f0 * 3.1, f0 * 5.2]
-        loss = sum(np.abs(1200 * np.log2(np.power(2.0, peak_freqs_log[np.argmin(np.abs(np.power(2.0, peak_freqs_log) - t))]) / t)) 
-                  for t in targets)
-        return loss * self.weight
+        total_loss_cents = sum(np.abs(1200 * np.log2(np.power(2.0, peak_freqs_log[np.argmin(np.abs(np.power(2.0, peak_freqs_log) - t))]) / t)) 
+                              for t in targets)
+        return (total_loss_cents / 600.0) * self.weight
 
     def get_formula(self) -> Tuple[str, List[str]]:
-        formula = r"L_{odd} = w \cdot \sum |1200 \cdot \log_2 \left( \frac{f_{closest}}{f_0 \cdot (2n+1)_{stretched}} \right)|"
-        explanations = [
-            "f_closest: The peak nearest to the target odd harmonic.",
-            "2n+1: Sequence of odd integers (1, 3, 5).",
-            "stretched: Non-linear multipliers for 'organic' odd spacing."
-        ]
-        return formula, explanations
+        formula = r"L_{odd} = \frac{w}{600} \cdot \sum |1200 \cdot \log_2 \left( \frac{f_{closest}}{f_{target}} \right)|"
+        return formula, ["f_{target}: Stretched odd harmonic targets", "600: Normalization divisor"]
+
 
 class HighInharmonicLoss(LossComponent):
     """
@@ -261,13 +281,8 @@ class CompositeTairuaLoss:
 
         try:
             geo = shape.genome2geo()
-            try:
-                from ..acoustical_simulation import acoustical_simulation, get_log_simulation_frequencies
-                freq_grid = get_log_simulation_frequencies(1, 1000, self.max_error)
-                impedances = np.asarray(acoustical_simulation(geo, freq_grid))
-            except Exception:
-                freq_grid = np.linspace(50, 1000, 2000)
-                impedances = np.sin(freq_grid / 20) ** 2
+            freq_grid = get_log_simulation_frequencies(1, 1000, self.max_error)
+            impedances = np.asarray(acoustical_simulation(geo, freq_grid))
 
             peak_indices, _ = find_peaks(impedances, prominence=0.05)
 
@@ -292,14 +307,25 @@ class CompositeTairuaLoss:
 
 class ScaleTuningLoss(LossComponent):
     """
-    SCALE TUNING: Penalizes peaks that do not fall onto a specific musical scale.
-    Useful for creating instruments that 'toot' in specific harmonies.
+    SCALE TUNING: Normalized by 600 cents.
     """
     def __init__(self, base_note: int, intervals: List[int], weight: float):
         self.weight = weight
         self.base_note = base_note
         self.intervals = intervals
         self.scale_freqs_log = self._compute_scale_log(base_note, intervals)
+
+    def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
+        total_dist_cents = 0
+        for f_log in peak_freqs_log:
+            dist = np.min(np.abs(self.scale_freqs_log - f_log))
+            total_dist_cents += dist * 1200 
+        avg_dist_normalized = (total_dist_cents / len(peak_freqs_log)) / 600.0
+        return avg_dist_normalized * self.weight
+
+    def get_formula(self) -> Tuple[str, List[str]]:
+        formula = r"L_{scale} = w \cdot \frac{1}{600N} \sum_{i=1}^{N} \min |1200 \cdot (\log_2 f_{peak,i} - \log_2 F_{scale})|"
+        return formula, ["F_scale: Allowed log2 frequencies", "600: Normalization factor"]
 
     def _compute_scale_log(self, base_note: int, intervals: List[int]) -> np.ndarray:
         # Generates a log2 frequency scale across the human hearing range
@@ -311,25 +337,8 @@ class ScaleTuningLoss(LossComponent):
                 # Conversion: freq = 440 * 2^((note-69)/12)
                 freq = 440.0 * (2.0 ** ((note - 69.0) / 12.0))
                 freqs_log.append(np.log2(freq))
+
         return np.array(freqs_log)
-
-    def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
-        total_dist = 0
-        for f_log in peak_freqs_log:
-            # Find the distance to the nearest note in the allowed scale
-            dist = np.min(np.abs(self.scale_freqs_log - f_log))
-            total_dist += dist * 1200 # distance in cents
-        return (total_dist / len(peak_freqs_log)) * self.weight
-
-    def get_formula(self) -> Tuple[str, List[str]]:
-        formula = r"L_{scale} = w \cdot \frac{1}{N} \sum_{i=1}^{N} \min |1200 \cdot (\log_2 f_{peak,i} - \log_2 F_{scale})|"
-        explanations = [
-            "F_scale: Set of allowed log2 frequencies derived from base-note and intervals.",
-            "f_peak: Detected resonance frequency.",
-            "min|...|: Distance to the closest 'in-tune' note in the scale.",
-            "w: Weight for strictness of scale adherence."
-        ]
-        return formula, explanations
 
 class PeakQuantityLoss(LossComponent):
     """
