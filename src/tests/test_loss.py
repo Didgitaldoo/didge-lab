@@ -97,6 +97,282 @@ def _make_impedance_with_peaks(peak_freqs_hz):
     return impedances
 
 
+def _make_dummy_spectrum(n_pts=100, peak_indices=None):
+    """Create a minimal frequency grid and impedance array with peaks for component tests."""
+    from didgelab.acoustical_simulation import get_log_simulation_frequencies
+
+    freq_grid = get_log_simulation_frequencies(1, 1000, 5.0)
+    impedances = np.ones(len(freq_grid)) * 1e5
+    if peak_indices is None:
+        peak_indices = [10, 30, 50, 70]
+    for i in peak_indices:
+        i = min(max(0, i), len(impedances) - 1)
+        impedances[i] = 1e7
+    return freq_grid, impedances
+
+
+class TestFrequencyTuningLoss:
+    def test_calculate_returns_non_negative(self):
+        target_log = np.log2(np.array([80.0, 160.0]))
+        loss = FrequencyTuningLoss(target_log, np.array([-1.0, -1.0]), [1.0, 1.0])
+        peak_log = np.log2(np.array([80.0, 160.0]))
+        peak_imp = np.array([0.8, 0.8])
+        freq_grid, impedances = _make_dummy_spectrum(peak_indices=[10, 30])
+        peak_idx = np.array([10, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val >= 0
+        assert isinstance(val, (int, float))
+
+    def test_calculate_low_loss_when_peaks_match_targets(self):
+        target_log = np.log2(np.array([80.0, 160.0]))
+        loss = FrequencyTuningLoss(target_log, np.array([-1.0, -1.0]), [1.0, 1.0])
+        peak_log = np.log2(np.array([80.0, 160.0]))
+        peak_imp = np.array([0.8, 0.8])
+        freq_grid, impedances = _make_dummy_spectrum(peak_indices=[10, 30])
+        peak_idx = np.array([10, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val < 0.1
+
+    def test_calculate_higher_loss_when_peaks_mismatch(self):
+        target_log = np.log2(np.array([80.0, 160.0]))
+        loss = FrequencyTuningLoss(target_log, np.array([-1.0, -1.0]), [1.0, 1.0])
+        peak_log = np.log2(np.array([90.0, 180.0]))
+        peak_imp = np.array([0.8, 0.8])
+        freq_grid, impedances = _make_dummy_spectrum(peak_indices=[10, 30])
+        peak_idx = np.array([10, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val > 0.1
+
+    def test_get_formula_returns_tuple(self):
+        loss = FrequencyTuningLoss(np.array([0.0]), np.array([-1.0]), [1.0])
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+        assert len(formula) > 0
+        assert len(symbols) > 0
+
+
+class TestScaleTuningLoss:
+    def test_calculate_returns_non_negative(self):
+        loss = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0)
+        peak_log = np.log2(np.array([80.0, 160.0, 240.0]))
+        peak_imp = np.array([0.8, 0.8, 0.8])
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 30, 50])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val >= 0
+
+    def test_get_formula_returns_tuple(self):
+        loss = ScaleTuningLoss(60, [0, 2, 4], 1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestPeakQuantityLoss:
+    def test_calculate_zero_when_enough_peaks(self):
+        loss = PeakQuantityLoss(target_count=3, weight=2.0)
+        peak_log = np.log2(np.array([80.0, 120.0, 160.0]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 25, 40])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val == 0
+
+    def test_calculate_penalty_when_few_peaks(self):
+        loss = PeakQuantityLoss(target_count=5, weight=2.0)
+        peak_log = np.log2(np.array([80.0, 160.0]))
+        peak_imp = np.ones(2) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val == 3 * 2.0
+
+    def test_get_formula_returns_tuple(self):
+        loss = PeakQuantityLoss(5, 1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestPeakAmplitudeLoss:
+    def test_calculate_zero_when_amps_above_target(self):
+        loss = PeakAmplitudeLoss(target_min_amplitude=0.2, weight=5.0)
+        peak_log = np.log2(np.array([80.0, 160.0]))
+        peak_imp = np.array([0.8, 0.9])
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val == 0
+
+    def test_calculate_penalty_when_amps_below_target(self):
+        loss = PeakAmplitudeLoss(target_min_amplitude=0.8, weight=5.0)
+        peak_log = np.log2(np.array([80.0, 160.0]))
+        peak_imp = np.array([0.2, 0.3])
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val > 0
+
+    def test_get_formula_returns_tuple(self):
+        loss = PeakAmplitudeLoss(0.25, 1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestQFactorLoss:
+    def test_calculate_returns_non_negative(self):
+        loss = QFactorLoss(target_q=15.0, weight=1.0)
+        peak_log = np.log2(np.array([80.0, 120.0, 160.0]))
+        peak_imp = np.array([0.5, 0.8, 0.5])
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 25, 40])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val >= 0
+        assert isinstance(val, (int, float))
+
+    def test_get_formula_returns_tuple(self):
+        loss = QFactorLoss(15.0, 1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestModalDensityLoss:
+    def test_calculate_max_loss_when_single_peak(self):
+        loss = ModalDensityLoss(cluster_range_cents=50.0, weight=1.0)
+        peak_log = np.log2(np.array([80.0]))
+        peak_imp = np.array([0.8])
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val == 1.0
+
+    def test_calculate_returns_non_negative_with_multiple_peaks(self):
+        loss = ModalDensityLoss(cluster_range_cents=50.0, weight=1.0)
+        peak_log = np.log2(np.array([80.0, 85.0, 160.0]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 12, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val >= 0
+
+    def test_get_formula_returns_tuple(self):
+        loss = ModalDensityLoss(30.0, 1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestIntegerHarmonicLoss:
+    def test_calculate_zero_for_perfect_harmonics(self):
+        loss = IntegerHarmonicLoss(weight=1.0)
+        f0_hz = 100.0
+        peak_log = np.log2(np.array([f0_hz, 2 * f0_hz, 3 * f0_hz]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 20, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val < 0.01
+
+    def test_calculate_positive_for_inharmonic(self):
+        loss = IntegerHarmonicLoss(weight=1.0)
+        peak_log = np.log2(np.array([100.0, 250.0, 400.0]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 25, 40])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val > 0
+
+    def test_get_formula_returns_tuple(self):
+        loss = IntegerHarmonicLoss(1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestNearIntegerLoss:
+    def test_calculate_returns_non_negative(self):
+        loss = NearIntegerLoss(stretch_factor=1.002, weight=1.0)
+        f0_hz = 100.0
+        peak_log = np.log2(np.array([f0_hz, 2 * f0_hz * 1.002, 3 * f0_hz * (1.002 ** 2)]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 20, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val >= 0
+
+    def test_get_formula_returns_tuple(self):
+        loss = NearIntegerLoss(1.002, 1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestStretchedOddLoss:
+    def test_calculate_returns_non_negative(self):
+        loss = StretchedOddLoss(weight=1.0)
+        f0_hz = 100.0
+        peak_log = np.log2(np.array([f0_hz, 3.1 * f0_hz, 5.2 * f0_hz]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 30, 50])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val >= 0
+
+    def test_get_formula_returns_tuple(self):
+        loss = StretchedOddLoss(1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestHighInharmonicLoss:
+    def test_calculate_returns_non_negative_for_harmonic_peaks(self):
+        loss = HighInharmonicLoss(weight=1.0)
+        f0_hz = 100.0
+        peak_log = np.log2(np.array([f0_hz, 2 * f0_hz, 3 * f0_hz]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 20, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val >= 0
+
+    def test_get_formula_returns_tuple(self):
+        loss = HighInharmonicLoss(1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
+class TestHarmonicSplittingLoss:
+    def test_calculate_zero_when_split_exists(self):
+        loss = HarmonicSplittingLoss(harmonic_index=1, split_width_hz=20.0, weight=1.0)
+        f_hz = 100.0
+        peak_log = np.log2(np.array([f_hz, f_hz + 5, f_hz + 10, 200.0]))
+        peak_imp = np.ones(4) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 11, 12, 25])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val == 0
+
+    def test_calculate_weight_when_no_split(self):
+        loss = HarmonicSplittingLoss(harmonic_index=1, split_width_hz=2.0, weight=1.0)
+        peak_log = np.log2(np.array([100.0, 200.0, 300.0]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 20, 30])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val == 1.0
+
+    def test_get_formula_returns_tuple(self):
+        loss = HarmonicSplittingLoss(1, 5.0, 1.0)
+        formula, symbols = loss.get_formula()
+        assert isinstance(formula, str)
+        assert isinstance(symbols, list)
+
+
 class TestCompositeTairuaLossFullExample:
     """Tests for CompositeTairuaLoss with all loss components."""
 
