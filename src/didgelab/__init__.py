@@ -65,7 +65,22 @@ from .evo import (
 )
 from .evo.callbacks import init_standard_evolution
 
-from .loss.TairuaLoss import TairuaLoss
+from .loss import (
+    TairuaLoss,
+    LossComponent,
+    FrequencyTuningLoss,
+    QFactorLoss,
+    ModalDensityLoss,
+    HarmonicSplittingLoss,
+    IntegerHarmonicLoss,
+    NearIntegerLoss,
+    StretchedOddLoss,
+    HighInharmonicLoss,
+    ScaleTuningLoss,
+    PeakQuantityLoss,
+    PeakAmplitudeLoss,
+    CompositeTairuaLoss,
+)
 
 __all__ = [
     "Geo",
@@ -105,5 +120,18 @@ __all__ = [
     "AdaptiveProbabilities",
     "NumpyEncoder",
     "load_latest_evolution",
-    "TairuaLoss"
+    "TairuaLoss",
+    "LossComponent",
+    "FrequencyTuningLoss",
+    "QFactorLoss",
+    "ModalDensityLoss",
+    "HarmonicSplittingLoss",
+    "IntegerHarmonicLoss",
+    "NearIntegerLoss",
+    "StretchedOddLoss",
+    "HighInharmonicLoss",
+    "ScaleTuningLoss",
+    "PeakQuantityLoss",
+    "PeakAmplitudeLoss",
+    "CompositeTairuaLoss",
 ]

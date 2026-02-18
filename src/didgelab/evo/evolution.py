@@ -206,8 +206,10 @@ class Nuevolution:
                 losses = self._map_losses_with_progress(pool, self.population, i_generation=self.i_generation)
                 self.recompute_losses = False
 
+            op_probs = np.asarray(self.evolution_operator_probs, dtype=float)
+            op_probs = op_probs / op_probs.sum()
             operations = np.random.choice(
-                self.evolution_operators, size=self.generation_size, p=self.evolution_operator_probs
+                self.evolution_operators, size=self.generation_size, p=op_probs
             )
 
             new_generation = []

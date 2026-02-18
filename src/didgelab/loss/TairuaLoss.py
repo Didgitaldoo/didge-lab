@@ -159,7 +159,7 @@ class TairuaLoss(LossFunction):
                 nearest_scale_ix = [np.argmin(np.abs(self.scale_freqs - f)) for f in peak_freqs_log]
                 diffs = np.abs(peak_freqs_log - self.scale_freqs[nearest_scale_ix])
                 scale_losses = diffs.sum() * self.scale_weight / max(len(diffs), 1) * 10
-                losses["scale_losses"] = scale_losses
+                losses["scale_losses"] = 0.1*scale_losses
 
             if self.more_peaks:
                 losses["more_peaks_loss"] = self.more_peaks_weight / max(len(peak_indices), 1)
