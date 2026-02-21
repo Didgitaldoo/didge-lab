@@ -17,8 +17,6 @@
 - [8. Future works](#8-future-works)
 - [Package layout (didge-lab-3)](#package-layout-didge-lab-3)
 
----
-
 ## 1. Introduction
 
 DidgeLab is a free toolkit to compute didgeridoo geometries. Traditionally, building a didgeridoo is a random process: builders know how geometry influences the sound, but the exact sonic properties can only be determined after the instrument is built. DidgeLab helps by first defining the desired sound and then computing a geometry that (in simulation) achieves it.
@@ -30,9 +28,7 @@ It provides:
 
 So the first part takes a geometry and predicts its sound; the second takes a target sound and searches for a matching geometry. To the best of our knowledge, DidgeLab is the first open toolkit that implements this inverse design.
 
-The software is a **Python toolkit** rather than a point-and-click app: you use it from scripts or Jupyter notebooks. There is no graphical user interface. The geometry library (see below) can still be used without running evolution or simulation.
-
----
+The software is a **Python toolkit** rather than a point-and-click app: you use it from scripts or Jupyter notebooks. There is no graphical user interface. To use it you need to have Python skills.
 
 ## 2. Related works
 
@@ -41,29 +37,28 @@ The software is a **Python toolkit** rather than a point-and-click app: you use 
 - **Andrea Ferroni (YouTube)** — Didgeridoo acoustics and playing; e.g. DIDGMO explanation, backpressure, cylindrical vs conical bore.
 - **Didgmo / Didjimp** — Existing tools for didgeridoo sound design; used here as a reference (DidgeLab’s impedance spectra match when given the same geometry).
 
----
-
 ## 3. What can it do?
 
 - **Inverse design** — Define the sound you want (e.g. drone + toots) and evolve a bore shape that matches it in simulation.
 - **Precise tuning** — Aim for a drone in D and toots in F, G, B (or other targets) and optimize geometry for those resonances.
 - **Unusual shapes** — Explore “singing” didgeridoos with strong overtones, or shapes that are rare in nature (e.g. Long Multi Tooter–style).
-- **Consistency with Didgmo/Didjimp** — For the same geometry, DidgeLab’s simulation agrees with these programs, which supports the model’s validity. Building and measuring real instruments remains the next step for full validation.
-
----
 
 ## 4. Usage
 
 ### 4.1 Installation
 
-Tested on **Ubuntu Linux** and **macOS**. May work on Windows but has not been tested.
-
 **Prerequisites**
 
-- Python 3.8+ (Conda recommended)
+- Python 3.8+ (Conda or venv recommended)
 - Optional: Cython and a C compiler for the fast simulation backend
 
-**Steps**
+**Use Pip Package**
+
+```
+pip install didgelab
+```
+
+**Compile from source**
 
 1. Clone the repository and go to the project directory:
    ```bash
@@ -86,7 +81,7 @@ Tested on **Ubuntu Linux** and **macOS**. May work on Windows but has not been t
 
 4. Run a quick check (e.g. a script or notebook that runs a simulation and prints a small impedance table). If you see a frequency/impedance/note table, the installation is working.
 
-### 4.2 Tests (pytest)
+### 4.2 Unit Tests (pytest)
 
 From the **repository root**:
 

@@ -204,6 +204,8 @@ class Nuevolution:
             if self.recompute_losses:
                 # Recompute population losses (e.g. after acoustic target change); report progress for this generation
                 losses = self._map_losses_with_progress(pool, self.population, i_generation=self.i_generation)
+                for i in range(len(losses)):
+                    self.population[i].loss = losses[i]
                 self.recompute_losses = False
 
             op_probs = np.asarray(self.evolution_operator_probs, dtype=float)

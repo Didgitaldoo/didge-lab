@@ -81,10 +81,13 @@ class FrequencyTuningLoss(LossComponent):
     def get_formula(self) -> Tuple[str, List[str]]:
         formula = r"L_{tune} = \sum_{i=1}^{N} w_i \cdot \left( \frac{|1200 \Delta \log_2 f_i|}{600} + [Z_{target,i} \neq -1] \cdot |Z_{target,i} - Z_{peak,i}| \right)"
         explanations = [
-            "w_i: Specific weight for the i-th peak.",
-            "1200/600: Normalizes cent deviation so 1 semitone ≈ 0.166 and 1 tritone = 1.0.",
-            "Z_target: Target normalized impedance (0.0 to 1.0).",
-            "[Z != -1]: Indicator function; impedance loss is zero if target is -1."
+            "Δ log2 f_i: For each target i, the system finds the closest detected peak to that target; Δ log2 f_i = log2(f_target,i) − log2(f_peak,i) is the pitch error (positive when the peak is below the target).",
+            "w_i: Weight for the i-th target peak.",
+            "1200: Converts log2 ratio to cents.",
+            "600: Normalization factor (6 semitones) so 1 tritone ≈ 1.0 loss.",
+            "Z_target,i: Target normalized impedance (0.0 to 1.0) for peak i.",
+            "Z_peak,i: Normalized impedance of the closest detected peak to target i.",
+            "[Z ≠ −1]: Indicator; impedance loss is zero if target is −1 (ignore)."
         ]
         return formula, explanations
 
@@ -193,7 +196,11 @@ class IntegerHarmonicLoss(LossComponent):
         formula = r"L_{int} = w \cdot \frac{1}{600N} \sum_{n=1}^{N} |1200 \cdot \log_2 \left( \frac{f_n}{n \cdot f_0} \right)|"
         explanations = [
             "f_n: Frequency of the n-th peak.",
-            "600: Normalization constant to balance cent-based loss."
+            "f_0: Fundamental (drone) frequency.",
+            "n: Harmonic integer (1, 2, 3, …).",
+            "N: Number of peaks.",
+            "600: Normalization constant (6 semitones).",
+            "w: Weight for mathematical purity.",
         ]
         return formula, explanations
 
@@ -213,7 +220,15 @@ class NearIntegerLoss(LossComponent):
 
     def get_formula(self) -> Tuple[str, List[str]]:
         formula = r"L_{near} = w \cdot \frac{1}{600} \sum_{n=1}^{N} |1200 \cdot \log_2 \left( \frac{f_n}{n \cdot f_0 \cdot s^n} \right)|"
-        return formula, ["s: Stretch factor", "600: Normalization divisor"]
+        explanations = [
+            "s: Stretch factor (e.g., 1.002 for slightly sharp upper harmonics).",
+            "f_n: Actual peak frequency.",
+            "n: Harmonic rank.",
+            "f_0: Fundamental frequency.",
+            "600: Normalization divisor (6 semitones).",
+            "w: Weight for stretched-harmonic timbre.",
+        ]
+        return formula, explanations
 
 
 class StretchedOddLoss(LossComponent):
@@ -232,7 +247,13 @@ class StretchedOddLoss(LossComponent):
 
     def get_formula(self) -> Tuple[str, List[str]]:
         formula = r"L_{odd} = \frac{w}{600} \cdot \sum |1200 \cdot \log_2 \left( \frac{f_{closest}}{f_{target}} \right)|"
-        return formula, ["f_{target}: Stretched odd harmonic targets", "600: Normalization divisor"]
+        explanations = [
+            "f_closest: The peak nearest to the target odd harmonic (1st, 3rd, 5th).",
+            "f_target: Stretched odd harmonic targets (1·f_0, 3.1·f_0, 5.2·f_0).",
+            "600: Normalization divisor.",
+            "w: Weight for odd-dominant timbre.",
+        ]
+        return formula, explanations
 
 
 class HighInharmonicLoss(LossComponent):
@@ -325,7 +346,15 @@ class ScaleTuningLoss(LossComponent):
 
     def get_formula(self) -> Tuple[str, List[str]]:
         formula = r"L_{scale} = w \cdot \frac{1}{600N} \sum_{i=1}^{N} \min |1200 \cdot (\log_2 f_{peak,i} - \log_2 F_{scale})|"
-        return formula, ["F_scale: Allowed log2 frequencies", "600: Normalization factor"]
+        explanations = [
+            "F_scale: Set of allowed log2 frequencies (scale notes from base + intervals).",
+            "f_peak,i: Detected resonance frequency.",
+            "min|…|: Distance to the closest in-tune note in the scale.",
+            "N: Number of peaks.",
+            "600: Normalization factor (6 semitones).",
+            "w: Weight for scale adherence.",
+        ]
+        return formula, explanations
 
     def _compute_scale_log(self, base_note: int, intervals: List[int]) -> np.ndarray:
         # Generates a log2 frequency scale across the human hearing range
