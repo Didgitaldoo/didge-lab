@@ -62,8 +62,7 @@ class KigaliShape(GeoGenome):
         bell_accent: float = 0.0,
         bell_start: float = 300,
         n_bell_segments: int = 10,
-        forced_diameters: Optional[List[List[float]]] = None,
-        sine_shape_n : float = 0.0,
+        forced_diameters: Optional[List[Tuple[float, float, float]]] = None,        sine_shape_n : float = 0.0,
         sine_shape_y : float = 0.0
     ):
         """
@@ -79,8 +78,16 @@ class KigaliShape(GeoGenome):
             bell_accent: If > 0, the last bell_start mm of the bore is accentuated by this factor.
             bell_start: Length (mm) from the bell end over which the bell accent is applied.
             n_bell_segments: Number of points used to build the accentuated bell curve.
-            forced_diameters: A list of coordinate pairs [[x_pos, diameter], ...] defining exact geometric constraints along the bore. Each x_pos (mm) is the distance from the mouthpiece, and diameter (mm) is the required internal bore width at that point. 
-            """
+            forced_diameters: A list of triples [(pos_pct, diam, length), ...] defining 
+                geometric constraints along the bore:
+                - pos_pct (float): The longitudinal position expressed as a percentage of 
+                the total bore length (0 = mouthpiece, 1 = bell end).
+                - diam (float): The target internal diameter in mm to be enforced 
+                at that position.
+                - length (float): The longitudinal distance (mm) over which this diameter 
+                should be maintained. If > 0, the code creates a cylindrical section 
+                centered at the calculated position.            
+        """
 
         self.max_length = max_length
         self.min_length = min_length
@@ -93,7 +100,10 @@ class KigaliShape(GeoGenome):
         self.bell_accent = bell_accent
         self.bell_start = bell_start
         self.n_bell_segments = n_bell_segments
-        self.forced_diameters = np.array(forced_diameters) if forced_diameters else np.empty((0, 2))
+        if forced_diameters is None or len(forced_diameters) == 0:
+            self.forced_constraints = []
+        else:
+            self.forced_constraints = list(forced_diameters)
         self.sine_shape_n : float = sine_shape_n
         self.sine_shape_y : float = sine_shape_y
 
@@ -133,6 +143,57 @@ class KigaliShape(GeoGenome):
 
         return length, bell_size, power, x_genome, y_genome, bubbles
 
+    def force_diameters(self, x, y, length):
+        if len(self.forced_constraints) > 0:
+            # We will use RBF to find the 'deformation' required to hit targets
+            target_pts = []
+            target_diams = []
+            
+            for pos_pct, diam, f_length in self.forced_constraints:
+                # API sends pos_pct 0-100; KigaliShape expects 0-1
+                pct = pos_pct / 100.0 if pos_pct > 1 else pos_pct
+                center_x = pct * length
+                
+                if f_length > 0:
+                    # To ensure it's a perfect cylinder, we sample multiple points 
+                    # along the forced length to "overpower" any local jitter.
+                    half_len = f_length / 2
+                    side_pts = np.linspace(center_x - half_len, center_x + half_len, 5)
+                    for p in side_pts:
+                        target_pts.append(p)
+                        target_diams.append(diam)
+                else:
+                    target_pts.append(center_x)
+                    target_diams.append(diam)
+
+            # Create a temporary geometry to see how far off the current "genetic" bore is
+            temp_geo = Geo(list(zip(x, y)))
+            geo_max_x = max(seg[0] for seg in temp_geo.geo)
+            f_x = np.array(target_pts)
+            f_d_target = np.array(target_diams)
+            # Clamp target x to valid bore range to avoid diameter_at_x assert
+            eps = 1e-9 * max(geo_max_x, 1.0)
+            upper = geo_max_x - eps if geo_max_x > eps else geo_max_x
+            f_x_clamped = np.clip(f_x, 0.0, upper)
+
+            # Calculate the difference (delta) between target and current evolved shape
+            f_d_current = np.array([Geo.diameter_at_x(temp_geo, xi) for xi in f_x_clamped])
+            deltas = f_d_target - f_d_current
+            
+            # Anchor mouthpiece and bell (0 delta) so they remain at genetic values
+            # Use clamped x so RBF (x, delta) pairs stay within valid bore range
+            all_f_x = np.concatenate([[0], f_x_clamped, [geo_max_x]])
+            all_deltas = np.concatenate([[0], deltas, [0]])
+            
+            # RBF Interpolation with 'thin_plate' creates a smooth 'warp' function
+            # that hits your deltas exactly at the specified points.
+            itp = Rbf(all_f_x, all_deltas, function='thin_plate')
+            
+            # Apply the warp to the diameter array
+            y += itp(x)
+
+        return x,y
+
     def genome2geo(self) -> Geo:
         length, bell_size, power, x_genome, y_genome, bubbles = self.get_properties()
 
@@ -160,21 +221,7 @@ class KigaliShape(GeoGenome):
         x, y = self.add_sine_shape(x, y)
         
         # 4. Force Exact Diameters (RBF)
-        if len(self.forced_diameters) > 0:
-            temp_geo = Geo(list(zip(x, y)))
-            f_x = self.forced_diameters[:, 0]
-            f_d_target = self.forced_diameters[:, 1]
-            f_d_current = np.array([Geo.diameter_at_x(temp_geo, xi) for xi in f_x])
-            deltas = f_d_target - f_d_current
-            
-            anchor_x = np.array([0, length])
-            anchor_deltas = np.array([0, 0])
-            
-            all_f_x = np.concatenate([anchor_x, f_x])
-            all_deltas = np.concatenate([anchor_deltas, deltas])
-            
-            itp = Rbf(all_f_x, all_deltas, function='thin_plate')
-            y += itp(x)
+        x, y = self.force_diameters(x, y, length)
 
         # 5. Finalize (Clamp to ensure d_bell_max is respected)
         # We clamp to bell_size specifically here
