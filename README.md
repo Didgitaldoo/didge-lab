@@ -2,20 +2,19 @@
 
 ## Table of contents
 
-- [1. Introduction](#1-introduction)
-- [2. Related works](#2-related-works)
-- [3. What can it do?](#3-what-can-it-do)
-- [4. Usage](#4-usage)
-  - [4.1 Installation](#41-installation)
-  - [4.2 Tests (pytest)](#42-tests-pytest)
-  - [4.3 Building the Python package](#43-building-the-python-package)
-  - [4.4 Documentation](#44-documentation)
-  - [4.5 Building a didgeridoo from a geometry](#45-building-a-didgeridoo-from-a-geometry)
-- [5. Didgeridoo geometry library](#5-didgeridoo-geometry-library)
-- [6. Get involved](#6-get-involved)
-- [7. Licensing](#7-licensing)
-- [8. Future works](#8-future-works)
-- [Package layout (didge-lab-3)](#package-layout-didge-lab-3)
+[Table of contents](#table-of-contents)
+[1. Introduction](#1-introduction)
+[2. Related works](#2-related-works)
+[3. Getting Started](#3-getting-started)
+[3.1 Installation](#31-installation)
+[3.2 Documentation](#32-documentation)
+[4. Developer Instructions](#4-developer-instructions)
+[4.1 Compile from source](#41-compile-from-source)
+[4.2 Unit Tests (pytest)](#42-unit-tests-pytest)
+[4.3 Building the Python package](#43-building-the-python-package)
+[4.4 Build Documentation](#44-build-documentation)
+[5. Source code overview](#5-source-code-overview)
+[6. Licensing](#6-licensing)
 
 ## 1. Introduction
 
@@ -156,7 +155,7 @@ Use [pdoc](https://pdoc.dev/) to generate API docs from docstrings. From the rep
   ```
   Then open `docs/html/index.html` in a browser or serve the `docs/html` directory with any static file server.
 
-## Source code overview
+## 5. Source code overview
 
 - **`didgelab`** — Main package:
   - `acoustical_simulation` — Entry point for running simulation (Python or Cython backend).
@@ -169,7 +168,7 @@ Use [pdoc](https://pdoc.dev/) to generate API docs from docstrings. From the rep
   - `evo` — Evolution: shapes, loss functions, mutators, evolution loop, checkpoint/loss logging.
 - **Build** — From repo root: `pip install -e .` (see §4.1 and §4.3).
 
-## 5. Licensing
+## 6. Licensing
 
 DidgeLab is published under **Creative Commons BY-NC-SA 4.0**:
 
@@ -182,4 +181,3 @@ Under these terms:
 - **NonCommercial** — You may not use the material for commercial purposes.  
 - **ShareAlike** — If you remix or build upon the material, you must distribute your contributions under the same license.  
 - **No additional restrictions** — Do not apply legal or technical measures that restrict others from doing what the license permits.
-
