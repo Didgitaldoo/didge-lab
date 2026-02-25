@@ -1,0 +1,35 @@
+[build-system]
+requires = [
+    "setuptools >= 61",
+    "wheel",
+    "Cython >= 3.1",
+    "numpy",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "didgelab"
+version = "3.0.7"
+authors = [
+  { name = "Jan Nehring", email = "jan.nehring@outlook.com" },
+]
+description = "Acoustical simulation and computer-aided design of didgeridoos"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+license = { text = "CC BY-NC-SA 4.0" }
+
+[project.urls]
+Homepage = "https://github.com/didgitaldoo/didge-lab"
+Issues = "https://github.com/didgitaldoo/didge-lab/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
