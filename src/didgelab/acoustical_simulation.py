@@ -178,7 +178,7 @@ def compute_ground_spektrum(freqs, impedance):
 
     return np.array(ground)
 
-def get_log_simulation_frequencies(fmin: float, fmax: float, max_error: float):
+def get_log_simulation_frequencies(fmin: float = 30.0, fmax: float = 1000.0, max_error: float = 5):
     """
     Generate a logarithmically spaced set of frequencies for simulation.
 
@@ -389,3 +389,24 @@ def quick_analysis(geo: Geo, fmin=1, fmax=1000, max_error=5, base_freq=440, simu
         "ground_spectrum": ground
     }
     return result
+
+
+def get_fundamental(geo : Geo, simulation_method : str ='tlm_cython', min_peak_f : float = 50.0):
+    """Return frequency and fundamental of the fundamental of the didgeridoo.
+
+    Args:
+        geo (Geo): Didgeridoo geometry
+        simulation_method (str, optional): Acoustical simulation method. Defaults to 'tlm_cython'.
+        min_peak_f (float, optional): Minimum frequency of the fundamental. Defaults to 50.0.
+
+    Returns:
+        _type_: _description_
+    """
+    freqs = get_log_simulation_frequencies()
+    impedances = acoustical_simulation(geo, freqs, simulation_method)
+    i_peaks = find_peaks(impedances)[0]
+    
+    peak_f = freqs[i_peaks]
+    i_peak = i_peaks[np.arange(len(peak_f))[peak_f > min_peak_f][0]]
+    return freqs[i_peak], impedances[i_peak]
+    

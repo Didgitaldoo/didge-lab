@@ -23,6 +23,7 @@ from .acoustical_simulation import (
     get_log_simulation_frequencies,
     get_notes,
     compute_ground_spektrum,
+    get_fundamental
 )
 from .visualize import (
     vis_didge,

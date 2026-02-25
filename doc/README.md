@@ -1,8 +1,6 @@
 # Documentation Overview
 
-This folder contains documentation for DidgeLab: computer-aided design of didgeridoos. Below is a list of all documentation files with links and brief descriptions.
-
-## Root
+This folder contains documentation for DidgeLab: computer-aided design of didgeridoos. Below is a list of all documentation files with links and brief descriptions. The best place to get started are the tutorials.
 
 | File | Description |
 |------|-------------|
@@ -24,7 +22,6 @@ This folder contains documentation for DidgeLab: computer-aided design of didger
 | [examples/conv_documentation.ipynb](examples/conv_documentation.ipynb) | Documents musical note and frequency conversion utilities (note numbers, names, Hz, wavelength, cent differences). |
 | [examples/evolution_callbacks.ipynb](examples/evolution_callbacks.ipynb) | Explains the evolution callback system: generation/loss callbacks, pub/sub events, and built-in monitors (TqdmLossProgressCallback, EvolutionMonitor, SaveEvolution, EarlyStopping). |
 | [examples/kigali_shape_parameters.ipynb](examples/kigali_shape_parameters.ipynb) | Describes the Kigali parametric shape: base taper, segment jitter, forced diameters, bell accent, and bubbles, with bore plots. |
-| [examples/loss_functions.ipynb](examples/loss_functions.ipynb) | Legacy overview; content migrated to `examples/loss/` — see [loss/README.md](examples/loss/README.md) for the full list. |
 
 ## Examples: Tutorials
 
