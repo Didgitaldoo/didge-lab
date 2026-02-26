@@ -1,20 +1,17 @@
 # DidgeLab
 
-## Table of contents
-
-[Table of contents](#table-of-contents)
-[1. Introduction](#1-introduction)
-[2. Related works](#2-related-works)
-[3. Getting Started](#3-getting-started)
-[3.1 Installation](#31-installation)
-[3.2 Documentation](#32-documentation)
-[4. Developer Instructions](#4-developer-instructions)
-[4.1 Compile from source](#41-compile-from-source)
-[4.2 Unit Tests (pytest)](#42-unit-tests-pytest)
-[4.3 Building the Python package](#43-building-the-python-package)
-[4.4 Build Documentation](#44-build-documentation)
-[5. Source code overview](#5-source-code-overview)
-[6. Licensing](#6-licensing)
+* [1. Introduction](#1-introduction)
+* [2. Related works](#2-related-works)
+* [3. Getting Started](#3-getting-started)
+  + [3.1 Installation](#31-installation)
+  + [3.2 Documentation](#32-documentation)
+* [4. Developer Instructions](#4-developer-instructions)
+  + [4.1 Compile from source](#41-compile-from-source)
+  + [4.2 Unit Tests (pytest)](#42-unit-tests-pytest)
+  + [4.3 Building the Python package](#43-building-the-python-package)
+  + [4.4 Build Documentation](#44-build-documentation)
+* [5. Source code overview](#5-source-code-overview)
+* [6. Licensing](#6-licensing)
 
 ## 1. Introduction
 
