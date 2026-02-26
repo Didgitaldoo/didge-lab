@@ -1,0 +1,2 @@
+include src/didgelab/sim/tlm_cython_lib/_cadsd.pyx
+include src/didgelab/sim/tlm_cython_lib/_cadsd.c
