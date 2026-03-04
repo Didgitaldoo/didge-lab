@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools >= 61",
+    "setuptools >= 61, < 82",  # setuptools 82 removed pkg_resources (used by numpy/build)
     "wheel",
     "numpy",
 ]
@@ -27,8 +27,8 @@ classifiers = [
 license = { text = "CC BY-NC-SA 4.0" }
 dependencies = [
     "configargparse==1.5.3",
-    "pandas==1.5.0",
-    "scipy==1.10.1",
+    "pandas>=2.1.0,<3",  # 2.1+ has Python 3.12 wheels; 1.5.0 builds from source and hits pkg_resources
+    "scipy>=1.11.0",  # 1.11+ has Python 3.12 wheels; older versions build from source
     "matplotlib==3.6.1",
     "prettytable==3.4.1",
     "seaborn==0.12.0",
@@ -39,7 +39,7 @@ dependencies = [
     "scikit-fem==10.0.2",
     "build==1.4.0",
     "twine==6.2.0",
-    "setuptools==82.0.0"
+    "setuptools>=61,<82",  # 82 removed pkg_resources; older packages fail to build
 ]
 
 [project.urls]
