@@ -39,16 +39,18 @@ from scipy.interpolate import Rbf # Ensure scipy is available
 
 class KigaliShape(GeoGenome):
     """
-    Parametric bore shape: power-law taper, optional bell accent, and optional bubbles.
+    Parametric bore shape: supports power-law taper, hybrid cylinder-cone 
+    transitions, mouthpiece leadpipe tapers, and optional bubbles.
 
     Genome layout:
     - [0]: length (min_length .. max_length)
     - [1]: bell diameter (d_bell_min .. d_bell_max)
     - [2]: power exponent for taper curve
-    - [3 + 3*k : 3 + 3*(k+1)] for each bubble k: position, width, height
-    - [geo_offset + 2*j], [geo_offset + 2*j + 1]: x and y (diameter) offsets for segment j
+    - [3 + 3*k : 3 + 3*(k+1)]: per bubble k: position, width, height
+    - [geo_offset + 2*j]: x/y jitter offsets for segment j
+    - [cyl_offset]: (Optional) transition position for cylinder-cone
+    - [cyl_offset + 1]: (Optional) transition diameter for cylinder-cone
     """
-
     def __init__(
         self,
         n_segments: int = 24,
@@ -62,8 +64,17 @@ class KigaliShape(GeoGenome):
         bell_accent: float = 0.0,
         bell_start: float = 300,
         n_bell_segments: int = 10,
-        forced_diameters: Optional[List[Tuple[float, float, float]]] = None,        sine_shape_n : float = 0.0,
-        sine_shape_y : float = 0.0
+        forced_diameters: Optional[List[Tuple[float, float, float]]] = None,        
+        sine_shape_n : float = 0.0,
+        sine_shape_y : float = 0.0,
+        enable_cylinder_cone : bool = False,
+        cylinder_cone_z_pos : List[float] = [0.3, 0.7],
+        cylinder_cone_transition_diameter : List[float] = [32, 36],
+        enable_taper : bool = False,
+        taper_start: float = 20,
+        taper_end: float = 50,
+        taper_diameter: float = 20,
+        taper_n_segments: int = 8,
     ):
         """
         Args:
@@ -87,6 +98,12 @@ class KigaliShape(GeoGenome):
                 - length (float): The longitudinal distance (mm) over which this diameter 
                 should be maintained. If > 0, the code creates a cylindrical section 
                 centered at the calculated position.            
+            taper_start: Distance (mm) where the mouthpiece restriction begins.
+            taper_end: Distance (mm) where the bore returns to its natural diameter.
+            taper_diameter: The target internal diameter (mm) of the mouthpiece bottleneck.
+            enable_cylinder_cone: If True, replaces power-law with a cylindrical-to-conical transition.
+            cylinder_cone_z_pos: Min/Max relative range [0, 1] for the transition point.
+            cylinder_cone_transition_diameter: Min/Max range (mm) for the diameter at the transition.
         """
 
         self.max_length = max_length
@@ -100,21 +117,32 @@ class KigaliShape(GeoGenome):
         self.bell_accent = bell_accent
         self.bell_start = bell_start
         self.n_bell_segments = n_bell_segments
-        if forced_diameters is None or len(forced_diameters) == 0:
-            self.forced_constraints = []
-        else:
-            self.forced_constraints = list(forced_diameters)
+        self.forced_constraints = forced_diameters if (forced_diameters is not None and len(forced_diameters) > 0) else []
         self.sine_shape_n : float = sine_shape_n
         self.sine_shape_y : float = sine_shape_y
 
         self.bubble_width = 300
         self.bubble_height = 40
         self.geo_offset = 3 + self.n_bubbles * 3
-        genome_length = 3 + 2 * (n_segments - 1) + self.n_bubbles * 3
+        genome_length = self.geo_offset + 2 * (n_segments - 1)
+
         self.n_bubble_segments = 10
 
-        GeoGenome.__init__(self, n_genes=genome_length)
+        self.enable_cylinder_cone = enable_cylinder_cone
+        self.cylinder_cone_z_pos = cylinder_cone_z_pos
+        self.cylinder_cone_transition_diameter = cylinder_cone_transition_diameter
 
+        if self.enable_cylinder_cone:
+            self.cyliner_cone_genome_offset = genome_length
+            genome_length += 2
+
+        self.enable_taper = enable_taper
+        self.taper_start = taper_start
+        self.taper_end = taper_end
+        self.taper_diameter = taper_diameter
+        self.taper_n_segments = taper_n_segments
+        
+        GeoGenome.__init__(self, n_genes=genome_length)
 
     def get_properties(self) -> Tuple[float, float, float, np.ndarray, np.ndarray, List]:
         """
@@ -137,11 +165,58 @@ class KigaliShape(GeoGenome):
             j += 3
             bubbles.append((pos, width, height))
 
-        # Segment x/y encoded as alternating genome slots from geo_offset
-        x_genome = np.array([self.genome[i] for i in range(self.geo_offset, len(self.genome), 2)])
-        y_genome = np.array([self.genome[i] for i in range(self.geo_offset + 1, len(self.genome), 2)])
+        # FIX: Define exactly where the jitter genes end so we don't 
+        # accidentally include the cylinder/cone genes in the x/y jitter arrays.
+        jitter_end = self.geo_offset + 2 * (self.n_segments - 1)
+        
+        jitter_genes = self.genome[self.geo_offset : jitter_end]
+        x_genome = jitter_genes[0::2] # Every even index
+        y_genome = jitter_genes[1::2] # Every odd index
 
         return length, bell_size, power, x_genome, y_genome, bubbles
+        
+    def apply_mouthpiece_taper(self, x: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Creates a restricted 'bottleneck' effect:
+        - d0 until taper_start
+        - Smooth transition to taper_diameter
+        - Smooth transition back to main bore by taper_end
+        """
+        # Define the key transition points within the taper zone
+        # We'll split the space between start and end into thirds for the sigmoids
+        zone_width = (self.taper_end - self.taper_start) / 3
+        p1 = self.taper_start + zone_width # End of first sigmoid
+        p2 = self.taper_start + 2 * zone_width # Start of second sigmoid
+
+        # 1. Fixed Entry (0 to taper_start)
+        x_0 = np.linspace(0, self.taper_start, 5)
+        y_0 = np.full_like(x_0, self.d0)
+
+        # 2. Inbound Sigmoid (taper_start to p1)
+        x_1 = np.linspace(self.taper_start, p1, self.taper_n_segments)
+        s1 = 1 / (1 + np.exp(-np.linspace(5, -5, self.taper_n_segments))) # Inverted sigmoid
+        y_1 = self.taper_diameter + (self.d0 - self.taper_diameter) * s1
+
+        # 3. The Bottleneck (p1 to p2)
+        x_2 = np.linspace(p1, p2, 5)
+        y_2 = np.full_like(x_2, self.taper_diameter)
+
+        # 4. Outbound Sigmoid (p2 to taper_end)
+        x_3 = np.linspace(p2, self.taper_end, self.n_segments // 2)
+        temp_geo = Geo(list(zip(x, y)))
+        target_d = Geo.diameter_at_x(temp_geo, self.taper_end)
+        s2 = 1 / (1 + np.exp(-np.linspace(-5, 5, len(x_3))))
+        y_3 = self.taper_diameter + (target_d - self.taper_diameter) * s2
+
+        # 5. Combine and Clean
+        mask_after = x > self.taper_end
+        x_new = np.concatenate((x_0, x_1, x_2, x_3, x[mask_after]))
+        y_new = np.concatenate((y_0, y_1, y_2, y_3, y[mask_after]))
+        
+        # Unique/Sorted to prevent Geo errors
+        _, indices = np.unique(x_new, return_index=True)
+        return x_new[indices], y_new[indices]
+
 
     def force_diameters(self, x, y, length):
         if len(self.forced_constraints) > 0:
@@ -150,9 +225,7 @@ class KigaliShape(GeoGenome):
             target_diams = []
             
             for pos_pct, diam, f_length in self.forced_constraints:
-                # API sends pos_pct 0-100; KigaliShape expects 0-1
-                pct = pos_pct / 100.0 if pos_pct > 1 else pos_pct
-                center_x = pct * length
+                center_x = pos_pct * length
                 
                 if f_length > 0:
                     # To ensure it's a perfect cylinder, we sample multiple points 
@@ -168,21 +241,15 @@ class KigaliShape(GeoGenome):
 
             # Create a temporary geometry to see how far off the current "genetic" bore is
             temp_geo = Geo(list(zip(x, y)))
-            geo_max_x = max(seg[0] for seg in temp_geo.geo)
             f_x = np.array(target_pts)
             f_d_target = np.array(target_diams)
-            # Clamp target x to valid bore range to avoid diameter_at_x assert
-            eps = 1e-9 * max(geo_max_x, 1.0)
-            upper = geo_max_x - eps if geo_max_x > eps else geo_max_x
-            f_x_clamped = np.clip(f_x, 0.0, upper)
-
+            
             # Calculate the difference (delta) between target and current evolved shape
-            f_d_current = np.array([Geo.diameter_at_x(temp_geo, xi) for xi in f_x_clamped])
+            f_d_current = np.array([Geo.diameter_at_x(temp_geo, xi) for xi in f_x])
             deltas = f_d_target - f_d_current
             
             # Anchor mouthpiece and bell (0 delta) so they remain at genetic values
-            # Use clamped x so RBF (x, delta) pairs stay within valid bore range
-            all_f_x = np.concatenate([[0], f_x_clamped, [geo_max_x]])
+            all_f_x = np.concatenate([[0], f_x, [length]])
             all_deltas = np.concatenate([[0], deltas, [0]])
             
             # RBF Interpolation with 'thin_plate' creates a smooth 'warp' function
@@ -194,20 +261,65 @@ class KigaliShape(GeoGenome):
 
         return x,y
 
+    def create_cylinder_cone_y(self, bell_size: float) -> np.ndarray:
+        """
+        Generates a diameter profile that starts cylindrical (up to a genome-defined point)
+        and then opens conically to the bell size.
+        """
+        # Linear spacing of segments from 0 to 1
+        z_relative = np.linspace(0, 1, self.n_segments + 1)
+        
+        # Extract genome values for the transition
+        g_pos = self.genome[self.cyliner_cone_genome_offset]
+        g_diam = self.genome[self.cyliner_cone_genome_offset + 1]
+
+        # Map genome to real-world transition values
+        # transition_z: relative position [0..1] along the length
+        z_min, z_max = self.cylinder_cone_z_pos
+        transition_z = g_pos * (z_max - z_min) + z_min
+        
+        # transition_d: diameter at the end of the cylindrical section
+        d_min, d_max = self.cylinder_cone_transition_diameter
+        transition_d = g_diam * (d_max - d_min) + d_min
+
+        y = np.zeros_like(z_relative)
+
+        for i, z in enumerate(z_relative):
+            if z <= transition_z:
+                # Cylindrical/Linear transition from mouthpiece to transition_d
+                # (Allows it to be non-strictly cylindrical if d0 != transition_d)
+                y[i] = self.d0 + (z / transition_z) * (transition_d - self.d0)
+            else:
+                # Conical flare from the transition point to the bell
+                # Calculate progress from transition point to the end (1.0)
+                flare_progress = (z - transition_z) / (1.0 - transition_z)
+                y[i] = transition_d + flare_progress * (bell_size - transition_d)
+        
+        return y
+
+
     def genome2geo(self) -> Geo:
         length, bell_size, power, x_genome, y_genome, bubbles = self.get_properties()
 
         # 1. Generate Base Geometry (Power-law taper)
         x = np.linspace(0, length, self.n_segments + 1)
-        y = np.power(np.linspace(0, 1, self.n_segments + 1), power)
-        # Linear scale from mouthpiece to bell_size
-        y = y * (bell_size - self.d0) + self.d0
+
+        if self.enable_cylinder_cone:
+            y = self.create_cylinder_cone_y(bell_size)
+        else:
+            y = np.power(np.linspace(0, 1, self.n_segments + 1), power)
+            # Linear scale from mouthpiece to bell_size
+            y = y * (bell_size - self.d0) + self.d0
 
         # Apply genome jitter/offsets
         shift_x = length / self.n_segments
         x += np.concatenate(([0], (x_genome - 0.5) * shift_x, [0]))
         shift_y = (1 - self.smoothness) * bell_size
         y += np.concatenate(([0], 0.3 * (y_genome - 0.5) * shift_y, [0]))
+
+        # 2. Apply the Mouthpiece Taper
+        if self.enable_taper:
+            x, y = self.apply_mouthpiece_taper(x, y)
 
         # 2. Apply Bell Accent
         x, y = self.apply_bell_accent(x, y, length, bell_size)
@@ -244,7 +356,7 @@ class KigaliShape(GeoGenome):
         Returns:
             Tuple (x, y) of arrays with y clamped; x unchanged.
         """
-        mind = d0 * 0.9
+        mind = d0 * 0.5
         x, y = x.copy(), y.copy()
         y[y < mind] = mind
         y[y > bellsize * 1.3] = bellsize * 1.3
