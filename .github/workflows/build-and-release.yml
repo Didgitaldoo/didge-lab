@@ -74,3 +74,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
+
+  publish_pypi:
+      name: Publish to PyPI
+      needs: [build_wheels, build_sdist]
+      runs-on: ubuntu-latest
+      environment: pypi
+      permissions:
+        id-token: write
