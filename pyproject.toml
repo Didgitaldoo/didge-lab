@@ -1,20 +1,23 @@
 [build-system]
 requires = [
-    "setuptools >= 61, < 82",  # setuptools 82 removed pkg_resources (used by numpy/build)
+    "setuptools >= 61, < 82", 
+    "setuptools_scm[toml] >= 6.2",
     "wheel",
     "numpy",
+    "Cython"
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "didgelab"
-version = "3.0.8"
+dynamic = ["version"]
 authors = [
   { name = "Jan Nehring", email = "jan.nehring@outlook.com" },
 ]
 description = "Acoustical simulation and computer-aided design of didgeridoos"
 readme = "README.md"
 requires-python = ">=3.8"
+license = { text = "CC BY-NC-SA 4.0" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -24,11 +27,10 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
 ]
-license = { text = "CC BY-NC-SA 4.0" }
 dependencies = [
     "configargparse==1.5.3",
-    "pandas>=2.1.0,<3",  # 2.1+ has Python 3.12 wheels; 1.5.0 builds from source and hits pkg_resources
-    "scipy>=1.11.0",  # 1.11+ has Python 3.12 wheels; older versions build from source
+    "pandas>=2.1.0,<3",
+    "scipy>=1.11.0",
     "matplotlib==3.6.1",
     "prettytable==3.4.1",
     "seaborn==0.12.0",
@@ -39,12 +41,17 @@ dependencies = [
     "scikit-fem==10.0.2",
     "build==1.4.0",
     "twine==6.2.0",
-    "setuptools>=61,<82",  # 82 removed pkg_resources; older packages fail to build
+    "setuptools>=61,<82",
 ]
 
 [project.urls]
 Homepage = "https://github.com/didgitaldoo/didge-lab"
 Issues = "https://github.com/didgitaldoo/didge-lab/issues"
+
+[tool.setuptools_scm]
+# Generates a file so you can check the version in your code:
+# import didgelab; print(didgelab.__version__)
+write_to = "src/didgelab/_version.py"
 
 [tool.setuptools.packages.find]
 where = ["src"]
