@@ -46,7 +46,7 @@ jobs:
         env:
           # Cython/Numpy needed inside the build environment
           CIBW_BEFORE_BUILD: pip install cython numpy
-          CIBW_SKIP: cp36-* cp37-* cp38-*
+          CIBW_SKIP: cp36-* cp37-* cp38-* pp*  # Skip PyPy: Cython/NumPy C API incompat
           CIBW_ARCHS_MACOS: x86_64 arm64
 
       - name: Upload wheels
