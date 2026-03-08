@@ -49,9 +49,9 @@ Homepage = "https://github.com/didgitaldoo/didge-lab"
 Issues = "https://github.com/didgitaldoo/didge-lab/issues"
 
 [tool.setuptools_scm]
-# Generates a file so you can check the version in your code:
-# import didgelab; print(didgelab.__version__)
 write_to = "src/didgelab/_version.py"
+version_scheme = "release-branch-semver"
+local_scheme = "no-local-version"
 
 [tool.setuptools.packages.find]
 where = ["src"]
