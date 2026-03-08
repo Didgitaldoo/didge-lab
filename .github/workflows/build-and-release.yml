@@ -1,8 +1,12 @@
 name: Build and Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  # release:
+  #   types: [published]
 
 jobs:
   # 1. Build the Source Distribution (Platform independent)
