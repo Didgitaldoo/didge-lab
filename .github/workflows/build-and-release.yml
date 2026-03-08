@@ -15,6 +15,9 @@ jobs:
           ref: ${{ github.event.release.tag_name }}
           fetch-depth: 0
 
+      - name: Ensure clean state
+        run: git clean -xfd && git reset --hard
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

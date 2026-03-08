@@ -31,7 +31,7 @@ dependencies = [
     "configargparse==1.5.3",
     "pandas>=2.1.0,<3",
     "scipy>=1.11.0",
-    "matplotlib==3.6.1",
+    "matplotlib>=3.7.0",
     "prettytable==3.4.1",
     "seaborn==0.12.0",
     "tqdm==4.67.3",
@@ -50,8 +50,8 @@ Issues = "https://github.com/didgitaldoo/didge-lab/issues"
 
 [tool.setuptools_scm]
 write_to = "src/didgelab/_version.py"
-version_scheme = "release-branch-semver"
 local_scheme = "no-local-version"
+version_scheme = "post-release"
 
 [tool.setuptools.packages.find]
 where = ["src"]

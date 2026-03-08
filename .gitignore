@@ -1,3 +1,5 @@
+src/didgelab/_version.py
+
 outputs
 .DS_Store
 prompts.md
