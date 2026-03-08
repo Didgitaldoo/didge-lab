@@ -1,7 +1,8 @@
 name: Build and Release
 
 on:
-  release:–published]
+  release:
+    types: [published]
 
 jobs:
   # 1. Build the Source Distribution (Platform independent)
