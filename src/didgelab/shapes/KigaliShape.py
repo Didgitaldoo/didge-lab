@@ -254,10 +254,12 @@ class KigaliShape(GeoGenome):
             
             # RBF Interpolation with 'thin_plate' creates a smooth 'warp' function
             # that hits your deltas exactly at the specified points.
-            itp = Rbf(all_f_x, all_deltas, function='thin_plate')
-            
-            # Apply the warp to the diameter array
-            y += itp(x)
+            # Fall back to linear interpolation if matrix is singular (e.g. duplicate/collinear points)
+            try:
+                itp = Rbf(all_f_x, all_deltas, function='thin_plate')
+                y += itp(x)
+            except np.linalg.LinAlgError:
+                y += np.interp(x, all_f_x, all_deltas)
 
         return x,y
 
