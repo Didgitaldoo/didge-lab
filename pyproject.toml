@@ -37,7 +37,7 @@ dependencies = [
     "tqdm==4.67.3",
     "cython==0.29.32",
     "jsonlines==4.0.0",
-    "pytest==8.3.5",
+    "pytest>=9.0.3",
     "scikit-fem==10.0.2",
     "build==1.4.0",
     "twine==6.2.0",
