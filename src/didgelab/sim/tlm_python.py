@@ -14,17 +14,22 @@ from ..geo import Geo
 
 from .sim_interface import AcousticSimulationInterface
 
-# Physical constants (float64 preferred but caused issues on some MacOS)
-p = np.float64(1.2929)   # air density kg/m³
-n = np.float64(1.708e-5) # dynamic viscosity
-c = np.float64(343.37)   # speed of sound m/s
 PI = np.float64(np.pi)
+
+# Default physical constants (preserved for backwards compatibility when callers
+# import these from the module directly).
+DEFAULT_P = np.float64(1.2929)    # air density kg/m^3
+DEFAULT_N = np.float64(1.708e-5)  # dynamic viscosity
+DEFAULT_C = np.float64(343.37)    # speed of sound m/s
+p = DEFAULT_P
+n = DEFAULT_N
+c = DEFAULT_C
 
 
 class Segment:
     """Single conical/cylindrical segment: length L, diameters d0 (input), d1 (output)."""
 
-    def __init__(self, L, d0, d1):
+    def __init__(self, L, d0, d1, p=DEFAULT_P, c=DEFAULT_C):
         self.L = L
         self.d0 = d0
         self.d1 = d1
@@ -43,7 +48,7 @@ class Segment:
         self.r0 = p * c / self.a0
 
     @classmethod
-    def create_segments_from_geo(cls, geo):
+    def create_segments_from_geo(cls, geo, p=DEFAULT_P, c=DEFAULT_C):
         """Build list of Segment from geometry (list of [x_mm, d_mm]); converts mm to m."""
 
         segments=[]
@@ -54,16 +59,16 @@ class Segment:
             L=seg1[0]-seg0[0]
             d0=seg0[1]
             d1=seg1[1]
-            seg=Segment(L, d0, d1)
+            seg=Segment(L, d0, d1, p=p, c=c)
             segments.append(seg)
         return segments
 
-def create_segments_from_geo(geo):
+def create_segments_from_geo(geo, p=DEFAULT_P, c=DEFAULT_C):
     """Convenience wrapper for Segment.create_segments_from_geo."""
-    return Segment.create_segments_from_geo(geo)
+    return Segment.create_segments_from_geo(geo, p=p, c=c)
 
 
-def ap(w, segments):
+def ap(w, segments, p=DEFAULT_P, n=DEFAULT_N, c=DEFAULT_C):
     """Chain transfer matrices for angular frequency w; returns 2x2 product matrix."""
     x = [[1, 0], [0, 1]]
     y=[[0,0], [0,0]]
@@ -117,7 +122,7 @@ def ap(w, segments):
     return z
 
 
-def Za(w, segments):
+def Za(w, segments, p=DEFAULT_P, n=DEFAULT_N, c=DEFAULT_C):
     """Radiation impedance at the bell (last segment) for angular frequency w."""
     t_seg = segments[-1]
 
@@ -133,11 +138,11 @@ def Za(w, segments):
     return res
 
 
-def cadsd_Ze(segments, f):
+def cadsd_Ze(segments, f, p=DEFAULT_P, n=DEFAULT_N, c=DEFAULT_C):
     """Input impedance at mouthpiece (magnitude) for frequency f Hz."""
     w = 2.0 * PI * f
-    a = Za(w, segments)
-    b = ap(w, segments)
+    a = Za(w, segments, p=p, n=n, c=c)
+    b = ap(w, segments, p=p, n=n, c=c)
     Ze = abs((a * b[0][0] + b[0][1]) / (a * b[1][0] + b[1][1]))
     return Ze
 
@@ -201,6 +206,9 @@ class TransmissionLineModelPython(AcousticSimulationInterface):
 
     def get_impedance_spectrum(self, geo: Geo, frequencies: np.array):
         """Return list of impedance magnitudes at each frequency in Hz."""
-        segments = Segment.create_segments_from_geo(geo.geo)
-        impedances = np.array([cadsd_Ze(segments, f) for f in frequencies])
+        p_ = np.float64(self.constants.air_density)
+        n_ = np.float64(self.constants.dynamic_viscosity)
+        c_ = np.float64(self.constants.speed_of_sound)
+        segments = Segment.create_segments_from_geo(geo.geo, p=p_, c=c_)
+        impedances = np.array([cadsd_Ze(segments, f, p=p_, n=n_, c=c_) for f in frequencies])
         return impedances

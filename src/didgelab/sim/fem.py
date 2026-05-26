@@ -4,9 +4,10 @@ from skfem.helpers import dot, grad
 from .sim_interface import AcousticSimulationInterface
 from ..geo import Geo
 
-c = 343000.0  # Speed of sound in mm/s
+DEFAULT_C_MM_S = 343000.0  # Speed of sound in mm/s (matches 343.37 m/s up to legacy rounding)
+c = DEFAULT_C_MM_S  # retained for backwards compatibility with anyone importing this name
 
-def fem1d(geo, frequencies):
+def fem1d(geo, frequencies, c=DEFAULT_C_MM_S):
 
 
     x_coords = geo[:, 0]
@@ -73,10 +74,16 @@ def fem1d(geo, frequencies):
 
 class FiniteElementsModeling1D(AcousticSimulationInterface):
 
-    """FiniteElementsModeling1D simulator."""
+    """FiniteElementsModeling1D simulator.
+
+    Reads the speed of sound from ``self.constants`` (SI, m/s) and converts to
+    mm/s for the internal mm-based mesh. The viscothermal damping coefficient
+    (2e-6) is kept hard-coded and is not configurable through this interface.
+    """
 
     def get_impedance_spectrum(self, geo: Geo, frequencies: np.array):
-        
+
         """Return list of impedance magnitudes at each frequency in Hz."""
-        impedances = fem1d(np.array(geo.geo), frequencies)
+        c_mm_s = self.constants.speed_of_sound * 1000.0
+        impedances = fem1d(np.array(geo.geo), frequencies, c=c_mm_s)
         return impedances

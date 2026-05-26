@@ -8,8 +8,10 @@ and toot peaks). The simulation model follows transmission-line theory and
 CADSD-style implementations (see `didgelab.sim.tlm_python` and `didgelab.sim.tlm_cython`).
 """
 
+from typing import Optional
+
 from didgelab import sim
-from .sim.sim_interface import AcousticSimulationInterface
+from .sim.sim_interface import AcousticSimulationInterface, AcousticConstants
 from .geo import Geo
 import numpy as np
 import pandas as pd
@@ -20,6 +22,7 @@ def acoustical_simulation(
     geo: Geo,
     frequencies: np.ndarray,
     simulation_method: str = "tlm_cython",
+    constants: Optional[AcousticConstants] = None,
 ):
     """
     Compute acoustic impedance at the given frequencies for a didgeridoo geometry.
@@ -54,15 +57,15 @@ def acoustical_simulation(
     """
     if simulation_method == "tlm_python":
         from .sim.tlm_python import TransmissionLineModelPython
-        simulator = TransmissionLineModelPython()
+        simulator = TransmissionLineModelPython(constants=constants)
         return simulator.get_impedance_spectrum(geo, frequencies)
     elif simulation_method == "tlm_cython":
         from .sim.tlm_cython import TransmissionLineModelCython
-        simulator = TransmissionLineModelCython()
+        simulator = TransmissionLineModelCython(constants=constants)
         return simulator.get_impedance_spectrum(geo, frequencies)
     elif simulation_method == "1d_fem":
         from .sim.fem import FiniteElementsModeling1D
-        simulator = FiniteElementsModeling1D()
+        simulator = FiniteElementsModeling1D(constants=constants)
         return simulator.get_impedance_spectrum(geo, frequencies)
     else:
         raise Exception(f"Unknown simulation backend \"{simulation_method}\"")

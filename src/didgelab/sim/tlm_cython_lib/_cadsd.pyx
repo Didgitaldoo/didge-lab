@@ -20,6 +20,27 @@ cdef np.longdouble_t PI= 3.14159265358979323846
 # Minimum length/diameter (m) to avoid zero division; geometry is in mm then converted to m
 cdef np.longdouble_t EPS_GEO = 1e-12
 
+# Defaults for restoring after a set_constants() call.
+DEFAULT_P = 1.2929
+DEFAULT_N = 1.708e-5
+DEFAULT_C = 343.37
+
+def set_constants(p_, n_, c_):
+    """Override the module-level physical constants used by all simulations.
+
+    Note: this mutates module-level state. Concurrent simulations in the same
+    process that need different constants will race. Single-threaded callers
+    should call this before invoking ``cadsd_Ze`` / ``create_segments_from_geo``.
+    """
+    global p, n, c
+    p = p_
+    n = n_
+    c = c_
+
+def reset_constants():
+    """Restore physical constants to their default values."""
+    set_constants(DEFAULT_P, DEFAULT_N, DEFAULT_C)
+
 cdef packed struct Segment:
     np.longdouble_t L, d0, d1, a0, a01, a1, phi, l, x1, x0, r0
 
