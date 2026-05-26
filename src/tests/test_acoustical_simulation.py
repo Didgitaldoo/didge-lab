@@ -13,6 +13,7 @@ from didgelab.acoustical_simulation import (
     interpolate_spectrum,
     get_notes,
 )
+from didgelab.sim.sim_interface import AcousticConstants
 
 
 class TestAcousticalSimulation:
@@ -31,6 +32,60 @@ class TestAcousticalSimulation:
         freqs = np.array([73.0])
         with pytest.raises(Exception, match="Unknown simulation backend \"invalid\""):
             acoustical_simulation(geo, freqs, simulation_method="invalid")
+
+    def test_fem_returns_impedance_array(self):
+        pytest.importorskip("skfem")
+        geo = Geo([[0, 32], [1200, 60]])
+        freqs = np.array([73.0, 150.0, 300.0])
+        imp = acoustical_simulation(geo, freqs, simulation_method="1d_fem")
+        assert len(imp) == len(freqs)
+        assert all(isinstance(z, (int, float, np.floating)) for z in imp)
+        assert all(z > 0 for z in imp)
+
+    def test_all_backends_agree_on_fundamental(self):
+        """All three backends should locate the fundamental impedance peak at
+        roughly the same frequency (within ~10 percent) for the same geometry.
+
+        Each backend uses a different normalization, so absolute magnitudes are
+        not comparable — but peak *frequencies* are a physical quantity and
+        must agree.
+        """
+        pytest.importorskip("skfem")
+        try:
+            from didgelab.sim.tlm_cython_lib._cadsd import cadsd_Ze  # noqa: F401
+        except ImportError:
+            pytest.skip("tlm_cython extension not built")
+
+        geo = Geo([[0, 32], [1500, 70]])
+        freqs = np.linspace(40, 200, 50)
+
+        peak_freqs = {}
+        for method in ("tlm_python", "tlm_cython", "1d_fem"):
+            imp = acoustical_simulation(geo, freqs, simulation_method=method)
+            peak_freqs[method] = freqs[int(np.argmax(imp))]
+
+        ref = peak_freqs["tlm_python"]
+        for method, f in peak_freqs.items():
+            rel_err = abs(f - ref) / ref
+            assert rel_err < 0.10, (
+                f"Backend '{method}' fundamental peak at {f:.1f} Hz disagrees "
+                f"with tlm_python at {ref:.1f} Hz (rel err {rel_err:.2%}). "
+                f"All peaks: {peak_freqs}"
+            )
+
+    def test_fem_constants_take_effect(self):
+        pytest.importorskip("skfem")
+        geo = Geo([[0, 32], [1200, 60]])
+        freqs = np.array([73.0, 150.0, 300.0])
+        imp_default = acoustical_simulation(geo, freqs, simulation_method="1d_fem")
+        imp_custom = acoustical_simulation(
+            geo,
+            freqs,
+            simulation_method="1d_fem",
+            constants=AcousticConstants(speed_of_sound=340.0),
+        )
+        # Lowering c shifts the spectrum noticeably — guards the m/s -> mm/s wiring.
+        assert not np.allclose(imp_default, imp_custom)
 
 
 class TestGetClosestIndex:
