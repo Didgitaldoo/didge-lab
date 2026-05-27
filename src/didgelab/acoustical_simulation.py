@@ -27,23 +27,47 @@ def acoustical_simulation(
     """
     Compute acoustic impedance at the given frequencies for a didgeridoo geometry.
 
-    Uses a transmission-line model of the bore. Impedance peaks correspond to
-    resonances (drone, toots). The result has the same length as `frequencies`.
+    Impedance peaks correspond to resonances (drone, toots). The result has
+    the same length as `frequencies`.
 
     Args:
         geo: Didgeridoo geometry (bore profile as list of segments). Instance of
             `didgelab.geo.Geo` with `geo.geo` as list of `[x_mm, diameter_mm]`.
         frequencies: 1D array of frequencies in Hz at which to evaluate impedance.
-        simulation_method: Which backend to use. `"tlm_python"` uses the pure-Python
-            implementation; `"tlm_cython"` uses the compiled Cython extension (faster,
-            requires a successful build of `didgelab.sim.tlm_cython_lib._cadsd`).
+        simulation_method: Which backend to use. One of:
+
+            - ``"tlm_python"``: pure-Python transmission-line model
+              (Mapes-Riordan transfer matrices on conical/cylindrical segments).
+            - ``"tlm_cython"`` (default): the same TLM compiled via Cython
+              (much faster, requires a successful build of
+              ``didgelab.sim.tlm_cython_lib._cadsd``).
+            - ``"1d_fem"``: 1D Webster-horn finite-element solver
+              (``didgelab.sim.fem1d.FiniteElementsModeling1D``). Requires
+              ``scikit-fem``. Assembles a 600-node line mesh per call.
+            - ``"2d_fem"``: axisymmetric Helmholtz finite-element solver over
+              the meridional half-plane
+              (``didgelab.sim.fem2d.FiniteElementsModeling2D``). Requires
+              ``scikit-fem``. Triangular mesh of (``n_axial`` x ``n_radial``)
+              nodes with r-weighted forms; equivalent to the 1D Webster horn
+              and the TLM transfer matrix for the lossless mode frequencies.
+              Supports an optional bent centerline (``centerline=...`` on the
+              class) for visualising bent bores.
+
+            All four backends share the same ``AcousticSimulationInterface``
+            and accept the same ``constants`` argument.
+        constants: optional :class:`AcousticConstants` (SI units). When ``None``,
+            each backend falls back to its own default — currently
+            ``compute_moist_air_properties()`` via the base class.
 
     Returns:
         Impedance magnitude at each frequency, in the same order as `frequencies`.
         Type matches the backend (list or array); length equals `len(frequencies)`.
+        Absolute magnitudes are not comparable across backends (different
+        normalisations); peak *frequencies* are.
 
     Raises:
-        Exception: If `simulation_method` is not `"tlm_python"` or `"tlm_cython"`.
+        Exception: If `simulation_method` is not one of the supported names
+            (``"tlm_python"``, ``"tlm_cython"``, ``"1d_fem"``, ``"2d_fem"``).
 
     Example:
         >>> from didgelab.acoustical_simulation import acoustical_simulation
@@ -64,8 +88,12 @@ def acoustical_simulation(
         simulator = TransmissionLineModelCython(constants=constants)
         return simulator.get_impedance_spectrum(geo, frequencies)
     elif simulation_method == "1d_fem":
-        from .sim.fem import FiniteElementsModeling1D
+        from .sim.fem1d import FiniteElementsModeling1D
         simulator = FiniteElementsModeling1D(constants=constants)
+        return simulator.get_impedance_spectrum(geo, frequencies)
+    elif simulation_method == "2d_fem":
+        from .sim.fem2d import FiniteElementsModeling2D
+        simulator = FiniteElementsModeling2D(constants=constants)
         return simulator.get_impedance_spectrum(geo, frequencies)
     else:
         raise Exception(f"Unknown simulation backend \"{simulation_method}\"")

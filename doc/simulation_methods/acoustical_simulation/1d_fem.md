@@ -1,61 +1,126 @@
 # 1D Finite Element Method
 
-## 1. The Governing Equation: Helmholtz Equation
+Source: [`src/didgelab/sim/fem1d.py`](../../../src/didgelab/sim/fem1d.py).
 
-The code models the didgeridoo using the Webster Horn Equation, which is a 1D version of the Helmholtz equation that accounts for a changing cross-sectional area $S(x)$.
-The physics follows this second-order differential equation for acoustic pressure $p$:
+## 1. The Governing Equation: Webster Horn
 
-$$\frac{1}{S(x)} \frac{d}{dx} \left( S(x) \frac{dp}{dx} \right) + k^2 p = 0$$
+The code models the didgeridoo using the **Webster horn equation** — a 1D
+reduction of the Helmholtz equation that accounts for a varying cross-sectional
+area $S(x)$ along the bore axis:
 
-$S(x)$: Cross-sectional area at position $x$.
+$$\frac{1}{S(x)} \frac{\mathrm{d}}{\mathrm{d}x}\!\left( S(x)\,\frac{\mathrm{d}p}{\mathrm{d}x} \right) + k^2 p = 0$$
 
-$k$: The complex wave number ($k = \frac{\omega}{c}$).
+- $S(x) = \pi\,(d(x)/2)^2$ — cross-sectional area at axial position $x$, in mm². The diameter $d(x)$ is linearly interpolated from the input geometry.
+- $k$ — complex wave number (defined in §4), in mm$^{-1}$.
+- $p$ — complex acoustic pressure.
 
-$p$: Acoustic pressure.
+The mesh and all geometric quantities are in **mm**. The physical constants
+($\rho$, $\mu$, $c$) are passed in **SI units** (kg/m³, Pa·s, m/s); the only
+place units cross is when the wave number is converted from m$^{-1}$ to mm$^{-1}$
+before squaring.
 
-## 2. The Weak Form (Finite Element Formulation)
+## 2. The Weak Form
 
-To solve this with FEM, the code converts the differential equation into a "weak form" by multiplying by a test function $v$ and integrating over the length of the tube $L$. After applying integration by parts, we get:
+Multiplying by a test function $v$, integrating over the bore length $L$, and
+integrating by parts gives
 
-$$\int_0^L S(x) \frac{dp}{dx} \frac{dv}{dx} dx - k^2 \int_0^L S(x) p v dx = 0$$
+$$\int_0^L S(x)\,\frac{\mathrm{d}p}{\mathrm{d}x}\,\frac{\mathrm{d}v}{\mathrm{d}x}\,\mathrm{d}x
+ \;-\; k^2 \int_0^L S(x)\,p\,v\,\mathrm{d}x \;=\; 0.$$
 
-In the code, this is split into two bilinear forms:
+In the code this is split into two area-weighted bilinear forms:
 
-Stiffness Matrix ($K$): get_area(w.x[0]) * dot(grad(u), grad(v)) — Represents the spatial variation of pressure.
+| Matrix | Form | Code |
+|---|---|---|
+| Stiffness $K$ | $\int S(x)\,p'\,v'$ | `get_area(w.x[0]) * dot(grad(u), grad(v))` |
+| Mass $M$      | $\int S(x)\,p\,v$   | `get_area(w.x[0]) * u * v`                  |
 
-Mass Matrix ($M$): get_area(w.x[0]) * u * v — Represents the "storage" of acoustic energy in the volume.
+## 3. Discretisation
 
-## 3. Discretization and Linear Algebra
+The bore is meshed as **600 linear `ElementLineP1` elements** evenly spaced
+from $x=0$ to $x=L$:
 
-The code uses skfem to divide the instrument into 600 small linear elements (ElementLineP1). This turns the continuous calculus problem into a discrete matrix equation:
+```python
+mesh = fem.MeshLine(np.linspace(0, x_coords[-1], 600))
+```
 
-$$(K - k^2 M) \mathbf{p} = \mathbf{b}$$
+That turns the weak form into the sparse matrix equation
 
-$K$ and $M$ are global matrices assembled from the segment geometries.
+$$(K - k^2 M)\,\mathbf{p} = \mathbf{b},$$
 
-$\mathbf{p}$ is the vector of unknown pressures at each node.
+with $\mathbf{p}$ the unknown pressures at each node and $\mathbf{b}$ the
+source vector.
 
-$\mathbf{b}$ is the "source" vector (the input from your lips at the mouthpiece).
+## 4. Complex Wave Number and Damping (Mapes-Riordan)
 
-## 4. Complex Wave Number and Damping
+Without damping the resonances would be infinitely sharp (the matrix is
+singular at every eigenfrequency). The code uses the same Mapes-Riordan
+boundary-layer model as the TLM and the 2D FEM: a frequency- and geometry-
+dependent **viscothermal parameter**
 
-In an ideal world, $k = \omega / c$. However, without damping, the resonances would be infinitely sharp (mathematically singular). The code introduces an imaginary component to $k$ to simulate viscothermal losses:
-k = (omega / c) - 1j * (2e-6 * np.sqrt(f))
-This imaginary term represents energy absorbed by the walls of the didgeridoo. The $\sqrt{f}$ dependency is mathematically accurate for boundary layer losses in acoustic tubes.
+$$r_v \;=\; R_{\text{avg}}\,\sqrt{\frac{\rho\,\omega}{\mu}}$$
+
+where $R_{\text{avg}}$ is the mean bore radius (in metres, computed from the
+mean of the input diameters). $r_v$ then enters the complex wave number as
+
+$$k_{\text{m}} \;=\; \frac{\omega}{c}\!\left(1 + \frac{1.045}{r_v}\right)
+              \;-\; i\,\frac{\omega}{c}\,\frac{1.045}{r_v}.$$
+
+The real part is a small phase-velocity reduction; the imaginary part is the
+attenuation. The minus sign on the imaginary part matches the $e^{j\omega t}$
+time convention used by the linear solver.
+
+The result is in m$^{-1}$. The mesh is in mm, so before assembling $A=K-k^2 M$:
+
+```python
+k_mm = k_complex_m / 1000.0
+k_sq = k_mm ** 2
+```
+
+This is the only place a unit conversion happens in the solver.
 
 ## 5. Boundary Conditions
 
-The code defines how the sound behaves at both ends:
-The Mouthpiece ($x=0$): It sets a source term b_mouth[mouth_indices] = 1.0. This effectively simulates a unit volume velocity input.
-The Bell ($x=L$): It sets p = 0 (Dirichlet condition) using bell_dofs. In physics, this is an "open end" approximation where pressure drops to zero because the tube meets the infinite atmosphere.
+| Boundary | $x$ | Condition | How |
+|---|---|---|---|
+| Mouthpiece | $x=0$ | source: unit volume velocity | `b_mouth[mouth_indices] = 1.0` |
+| Bell       | $x=L$ | Dirichlet $p=0$ (open end)   | `fem.condense(A, b, D=bell_dofs)` |
+
+The Dirichlet bell condition is the standard idealisation of an open pipe end
+radiating into an infinite atmosphere — pressure drops to zero there.
 
 ## 6. Calculating Impedance
 
-Acoustic Impedance $Z$ is defined as the ratio of Pressure $p$ to Volume Velocity $U$:
+Acoustic impedance is
 
-$$Z = \frac{p}{U}$$
+$$Z = \frac{p}{U}.$$
 
-Because the code sets the input source ($U$) to a constant $1.0$, the resulting pressure value at the first node (p[mouth_indices[0]]) is the impedance. The impedance_magnitude is simply the absolute value of this complex result.
+Because the input source $U$ is set to a constant `1.0` at the mouth, the
+returned spectrum is simply
 
+$$|Z(f)| \;=\; \bigl|p_c(\text{mouth\_indices[0]})\bigr|$$
 
+for each frequency $f$ in the sweep. Absolute magnitudes are not comparable
+to the TLM (different normalisations); peak frequencies are — and they agree
+with the TLM to within ~5 cents on a realistic didgeridoo geometry (see
+`tests/test_acoustical_simulation.py::test_all_backends_agree_on_fundamental`).
 
+## 7. The Simulator Class
+
+`FiniteElementsModeling1D` is the `AcousticSimulationInterface` wrapper:
+
+```python
+class FiniteElementsModeling1D(AcousticSimulationInterface):
+    def get_impedance_spectrum(self, geo, frequencies):
+        return fem1d(
+            np.array(geo.geo), frequencies,
+            p=self.constants.air_density,
+            n=self.constants.dynamic_viscosity,
+            c=self.constants.speed_of_sound,
+        )
+```
+
+It inherits the constants-handling constructor from the base class, so
+`FiniteElementsModeling1D(constants=AcousticConstants(speed_of_sound=340.0))`
+overrides whichever air properties you like. The default (when constants is
+None) is `compute_moist_air_properties()` — 28 °C, 100 % relative humidity,
+1 atm — i.e. saturated breath.

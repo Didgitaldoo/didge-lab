@@ -25,6 +25,7 @@ from .acoustical_simulation import (
     compute_ground_spektrum,
     get_fundamental
 )
+from .sim.sim_interface import AcousticConstants, compute_moist_air_properties
 from .visualize import (
     vis_didge,
     plot_bore,
@@ -89,6 +90,8 @@ __all__ = [
     "get_log_simulation_frequencies",
     "get_notes",
     "compute_ground_spektrum",
+    "AcousticConstants",
+    "compute_moist_air_properties",
     "vis_didge",
     "plot_bore",
     "plot_impedance_spectrum",
