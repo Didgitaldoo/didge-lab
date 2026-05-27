@@ -35,19 +35,43 @@ cimport numpy as np
 cimport cython
 import numpy as npy
 
-from libc.math cimport sqrt, atan, sin, M_PI, fabs
+from libc.math cimport sqrt, atan, sin, cos, sinh, cosh, M_PI, fabs
 
 np.import_array()
 
 
 # ---------------------------------------------------------------------------
-# C99 complex math (no GIL needed)
+# Complex math (portable: no <complex.h>)
 # ---------------------------------------------------------------------------
+#
+# We deliberately do not `cdef extern from "complex.h"` here. MSVC implements
+# C complex numbers as a struct (`_Dcomplex`) rather than C99
+# `double _Complex`, which is incompatible with the `__pyx_t_double_complex`
+# type Cython generates and breaks builds with errors like
+# "cannot convert from '__pyx_t_double_complex' to '_Dcomplex'". Instead we
+# implement the three complex functions we need (`ccosh`, `csinh`, `cabs`)
+# inline using only real-valued libc primitives. This is portable across
+# gcc, clang, and MSVC regardless of which complex representation Cython
+# chooses internally.
 
-cdef extern from "complex.h" nogil:
-    double complex ccosh(double complex z)
-    double complex csinh(double complex z)
-    double cabs(double complex z)
+cdef inline double complex ccosh(double complex z) noexcept nogil:
+    # cosh(x + iy) = cosh(x) cos(y) + i sinh(x) sin(y)
+    cdef double x = z.real
+    cdef double y = z.imag
+    return cosh(x) * cos(y) + 1j * (sinh(x) * sin(y))
+
+
+cdef inline double complex csinh(double complex z) noexcept nogil:
+    # sinh(x + iy) = sinh(x) cos(y) + i cosh(x) sin(y)
+    cdef double x = z.real
+    cdef double y = z.imag
+    return sinh(x) * cos(y) + 1j * (cosh(x) * sin(y))
+
+
+cdef inline double cabs(double complex z) noexcept nogil:
+    cdef double x = z.real
+    cdef double y = z.imag
+    return sqrt(x * x + y * y)
 
 
 # ---------------------------------------------------------------------------

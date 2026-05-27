@@ -1,10 +1,14 @@
 [build-system]
 requires = [
-    "setuptools >= 61, < 82", 
+    "setuptools >= 61, < 82",
     "setuptools_scm[toml] >= 6.2",
     "wheel",
-    "numpy",
-    "Cython"
+    # NumPy 2.x at build time -> the resulting wheel is ABI-compatible with
+    # both NumPy 1.x (>=1.22) and 2.x at runtime. Required because the
+    # checked-in _cadsd.c uses the NumPy 2.x PyArray_Descr layout.
+    "numpy >= 2.0",
+    # 3.1+ is needed for the NumPy 2.x compatibility shims in numpy.pxd.
+    "Cython >= 3.1",
 ]
 build-backend = "setuptools.build_meta"
 

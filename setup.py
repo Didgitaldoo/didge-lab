@@ -16,7 +16,16 @@ _cadsd_ext = Extension(
     name="didgelab.sim.tlm_cython_lib._cadsd",
     sources=[_CADSD_C],
     include_dirs=[np.get_include()],
-    define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+    define_macros=[
+        ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"),
+        # MSVC's <complex.h> exposes complex numbers as a struct (`_Dcomplex`)
+        # rather than C99 `double _Complex`, which is incompatible with the
+        # `__pyx_t_double_complex` typedef Cython generates. Forcing
+        # CYTHON_CCOMPLEX=0 makes the generated .c use Cython's own
+        # struct-based complex type for all arithmetic, which compiles cleanly
+        # under MSVC and remains correct under gcc/clang.
+        ("CYTHON_CCOMPLEX", "0"),
+    ],
 )
 
 
