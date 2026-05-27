@@ -23,12 +23,13 @@ class AcousticConstants:
     air_density: kg/m^3 (was `p`)
     dynamic_viscosity: Pa*s (was `n`)
     speed_of_sound: m/s (was `c`)
+
+    the default constants assume 28 degree celsius and 100% humidity.
     """
 
-    air_density: float = 1.2929
-    dynamic_viscosity: float = 1.708e-5
-    speed_of_sound: float = 343.37
-
+    air_density: float = 1.1555716502283166
+    dynamic_viscosity: float = 1.8513526776608096e-05
+    speed_of_sound: float = 350.20363323610275
 
 class AcousticSimulationInterface(ABC):
     """Interface for computing acoustic impedance spectrum of a didgeridoo geometry."""

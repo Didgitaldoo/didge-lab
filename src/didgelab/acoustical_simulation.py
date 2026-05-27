@@ -52,8 +52,16 @@ def acoustical_simulation(
               and the TLM transfer matrix for the lossless mode frequencies.
               Supports an optional bent centerline (``centerline=...`` on the
               class) for visualising bent bores.
+            - ``"3d_fem"``: full 3D Helmholtz finite-element solver on a
+              tetrahedral mesh swept from a circular cross-section along the
+              centerline (``didgelab.sim.fem3d.FiniteElementsModeling3D``).
+              Requires ``scikit-fem``. The only backend that models bent
+              bores from first principles — the curvature-induced pitch
+              shift falls out of the geometry, no shortcut correction.
+              Significantly slower than the others; see
+              ``doc/simulation_methods/acoustical_simulation/3d_fem.md``.
 
-            All four backends share the same ``AcousticSimulationInterface``
+            All five backends share the same ``AcousticSimulationInterface``
             and accept the same ``constants`` argument.
         constants: optional :class:`AcousticConstants` (SI units). When ``None``,
             each backend falls back to its own default — currently
@@ -67,7 +75,8 @@ def acoustical_simulation(
 
     Raises:
         Exception: If `simulation_method` is not one of the supported names
-            (``"tlm_python"``, ``"tlm_cython"``, ``"1d_fem"``, ``"2d_fem"``).
+            (``"tlm_python"``, ``"tlm_cython"``, ``"1d_fem"``, ``"2d_fem"``,
+            ``"3d_fem"``).
 
     Example:
         >>> from didgelab.acoustical_simulation import acoustical_simulation
@@ -94,6 +103,10 @@ def acoustical_simulation(
     elif simulation_method == "2d_fem":
         from .sim.fem2d import FiniteElementsModeling2D
         simulator = FiniteElementsModeling2D(constants=constants)
+        return simulator.get_impedance_spectrum(geo, frequencies)
+    elif simulation_method == "3d_fem":
+        from .sim.fem3d import FiniteElementsModeling3D
+        simulator = FiniteElementsModeling3D(constants=constants)
         return simulator.get_impedance_spectrum(geo, frequencies)
     else:
         raise Exception(f"Unknown simulation backend \"{simulation_method}\"")

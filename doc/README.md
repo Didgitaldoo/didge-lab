@@ -12,16 +12,22 @@ This folder contains documentation for DidgeLab: computer-aided design of didger
 |------|-------------|
 | [simulation_methods/acoustical_simulation/transmission_line_model.md](simulation_methods/acoustical_simulation/transmission_line_model.md) | Explains the transmission-line model: transfer matrices, viscothermal losses, conical vs. cylindrical geometry, radiation impedance, and input impedance. |
 | [simulation_methods/acoustical_simulation/1d_fem.md](simulation_methods/acoustical_simulation/1d_fem.md) | Describes the 1D finite element method: Helmholtz equation, weak form, discretization, damping, and boundary conditions. |
+| [simulation_methods/acoustical_simulation/2d_fem.md](simulation_methods/acoustical_simulation/2d_fem.md) | Axisymmetric 2D FEM: r-weighted Helmholtz on the meridional half-plane, weak form, bent-centerline sweep, and the inner-wall shortcut correction for bent bores. |
+| [simulation_methods/acoustical_simulation/3d_fem.md](simulation_methods/acoustical_simulation/3d_fem.md) | Full 3D FEM: tetrahedral Helmholtz on the swept bore volume, the only backend that predicts bent-bore pitch shifts from first principles without a fitting parameter. |
+| [simulation_methods/acoustical_simulation/mesh_construction.md](simulation_methods/acoustical_simulation/mesh_construction.md) | How the 1D, 2D, and 3D FEM meshes are built from a bore profile (and centerline): line, structured triangulation, swept disk template, Bishop frame, prism-to-tet split. |
 
 ## Examples
 
 | File | Description |
 |------|-------------|
-| [examples/acoustical_simulations.ipynb](examples/acoustical_simulations.ipynb) | Compares acoustical simulation methods (tlm_python, tlm_cython, 1d_fem) and plots impedance spectra. |
+| [examples/acoustical_simulations.ipynb](examples/acoustical_simulations.ipynb) | Compares all five acoustical simulation backends (tlm_python, tlm_cython, 1d_fem, 2d_fem, 3d_fem) and plots impedance spectra with execution-time benchmarks. |
 | [examples/visualize_didgeridoos.ipynb](examples/visualize_didgeridoos.ipynb) | Demonstrates visualization tools: bore geometry, impedance spectrum, notes, and combined plots for single or multiple geometries. |
 | [examples/conv_documentation.ipynb](examples/conv_documentation.ipynb) | Documents musical note and frequency conversion utilities (note numbers, names, Hz, wavelength, cent differences). |
 | [examples/evolution_callbacks.ipynb](examples/evolution_callbacks.ipynb) | Explains the evolution callback system: generation/loss callbacks, pub/sub events, and built-in monitors (TqdmLossProgressCallback, EvolutionMonitor, SaveEvolution, EarlyStopping). |
 | [examples/kigali_shape_parameters.ipynb](examples/kigali_shape_parameters.ipynb) | Describes the Kigali parametric shape: base taper, segment jitter, forced diameters, bell accent, and bubbles, with bore plots. |
+| [examples/temperature_and_humidity.ipynb](examples/temperature_and_humidity.ipynb) | Shows how air temperature and humidity feed into AcousticConstants and how that shifts the impedance spectrum. |
+| [examples/bent_shapes/fem2d_bent_didge.ipynb](examples/bent_shapes/fem2d_bent_didge.ipynb) | Bent-bore experiment in the 2D FEM: straight vs. curved centerline, mesh visualisation, and the inner-wall shortcut correction. |
+| [examples/bent_shapes/fem3d_bent_didge.ipynb](examples/bent_shapes/fem3d_bent_didge.ipynb) | Bent-bore experiment in the 3D FEM: swept tetrahedral mesh, 3D bore visualisation, and parameter-free pitch-shift prediction. |
 
 ## Examples: Tutorials
 

@@ -53,6 +53,70 @@ def _normals_from_centerline(points: np.ndarray) -> np.ndarray:
     return normals
 
 
+def _inner_wall_axial_factor(
+    cl: np.ndarray,
+    normals: np.ndarray,
+    d_axial: np.ndarray,
+) -> np.ndarray:
+    """Per-axial-station effective propagation factor for the bent-tube
+    wavefront-shortcut model.
+
+    The two walls of the bent tube are the polylines
+    ``cl + normals * d/2`` and ``cl - normals * d/2``. To leading order in
+    geometric acoustics, the lowest-order acoustic wave in a curved tube
+    shortcuts to the *inside* of the bend, so its effective propagation
+    distance is the arc length of the inner (shorter) wall polyline, not the
+    centerline. This function returns the local ratio
+    ``ds_wall / ds_centerline`` for the shorter wall, evaluated per axial
+    station. Multiplied into the squared wavenumber in the Webster/2D-FEM
+    mass form it raises resonance frequencies by exactly the amount the
+    geometry implies — no fitting parameter.
+
+    Limitations: the "shorter wall" is picked globally (whichever of the two
+    full polylines is shorter). For curves with comparable bends in both
+    directions the model degenerates toward the centerline, as it should.
+    The model assumes the wave doesn't see the wall *fold* in self-intersecting
+    bends (caller should trim such regions).
+    """
+    half = 0.5 * d_axial[:, None]
+    wall_pos = cl + normals * half
+    wall_neg = cl - normals * half
+    arc_pos = float(np.linalg.norm(np.diff(wall_pos, axis=0), axis=1).sum())
+    arc_neg = float(np.linalg.norm(np.diff(wall_neg, axis=0), axis=1).sum())
+    inner = wall_neg if arc_neg <= arc_pos else wall_pos
+
+    # Per-element wall step and centerline step lengths.
+    seg_wall = np.linalg.norm(np.diff(inner, axis=0), axis=1)
+    seg_cl = np.linalg.norm(np.diff(cl, axis=0), axis=1)
+    seg_cl = np.where(seg_cl == 0.0, 1.0, seg_cl)
+    factor_elem = seg_wall / seg_cl  # one value per centerline element
+
+    # Map to per-vertex by averaging neighbouring elements (endpoints take the
+    # single adjacent element).
+    factor_node = np.empty(len(cl))
+    factor_node[0] = factor_elem[0]
+    factor_node[-1] = factor_elem[-1]
+    factor_node[1:-1] = 0.5 * (factor_elem[:-1] + factor_elem[1:])
+    return factor_node
+
+
+def _wall_arc_lengths(cl: np.ndarray, normals: np.ndarray, d_axial: np.ndarray) -> Tuple[float, float]:
+    """Arc lengths of the inner and outer wall polylines for a centerline strip.
+
+    The walls are ``cl + normals * (+/- d_axial/2)``. "Inner" is the side that
+    is shorter on average for the given curve (so the result does not depend on
+    the normal's sign convention).
+    """
+    half = 0.5 * d_axial[:, None]
+    wall_pos = cl + normals * half
+    wall_neg = cl - normals * half
+    arc_pos = float(np.linalg.norm(np.diff(wall_pos, axis=0), axis=1).sum())
+    arc_neg = float(np.linalg.norm(np.diff(wall_neg, axis=0), axis=1).sum())
+    inner = min(arc_pos, arc_neg)
+    outer = max(arc_pos, arc_neg)
+    return inner, outer
+
+
 def build_2d_mesh(
     geo: np.ndarray,
     n_axial: int = 200,
@@ -60,6 +124,7 @@ def build_2d_mesh(
     centerline: Optional[np.ndarray] = None,
     centerline_scale: Optional[float] = None,
     full_strip: bool = False,
+    length_basis: str = "centerline",
 ) -> Tuple[fem.MeshTri, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Build a 2D triangular mesh of the bore.
 
@@ -78,8 +143,18 @@ def build_2d_mesh(
         centerline: optional ``(M, 2)`` array in mm. If given, the bore is
             extruded along this planar polyline. If ``None``, the bore is
             straight along x.
-        centerline_scale: multiplier on the bore length to set the centerline's
-            target arc length. See module docs.
+        centerline_scale: multiplier on the bore length to set the target
+            arc length (see ``length_basis``). Defaults to 1.0.
+        length_basis: which arc length to match against ``bore_length * scale``.
+            ``"centerline"`` (default, legacy behaviour) matches the centerline's
+            own arc length. ``"mean_wall"`` matches the average of the inner-
+            and outer-wall arc lengths of the resulting strip; this compensates
+            for the fact that a tube extruded perpendicular to a planar
+            centerline has its outer wall longer than the centerline in bends
+            where the discrete polyline plus finite ``d/2`` offset breaks the
+            ideal ``mean(inner, outer) == centerline`` identity (sharp turns,
+            and varying ``d``). Iteratively rescales the centerline so the
+            mesh's mean wall arc matches the target.
         full_strip: if True, mesh both sides of the centerline (offsets
             ``[-1, +1]``) — useful for *visualization* of a bent bore, but not
             correct for an axisymmetric solve. Default ``False`` (half strip).
@@ -114,10 +189,31 @@ def build_2d_mesh(
         # Target arc length = bore_length * scale  (scale defaults to 1.0)
         scale = 1.0 if centerline_scale is None else float(centerline_scale)
         target_arc = bore_length * scale
-        scaled = (cl_in - cl_in[0]) * (target_arc / total_in)
 
-        cl, _ = _resample_centerline(scaled, n_axial)
-        normals = _normals_from_centerline(cl)
+        if length_basis == "centerline":
+            scaled = (cl_in - cl_in[0]) * (target_arc / total_in)
+            cl, _ = _resample_centerline(scaled, n_axial)
+            normals = _normals_from_centerline(cl)
+        elif length_basis == "mean_wall":
+            # Fixed-point iteration: rescale centerline until the mesh's
+            # (inner+outer)/2 wall arc length equals target_arc.
+            cl_factor = target_arc / total_in
+            for _ in range(20):
+                scaled = (cl_in - cl_in[0]) * cl_factor
+                cl, _ = _resample_centerline(scaled, n_axial)
+                normals = _normals_from_centerline(cl)
+                inner, outer = _wall_arc_lengths(cl, normals, d_axial)
+                mean_wall = 0.5 * (inner + outer)
+                if mean_wall <= 0.0:
+                    break
+                ratio = target_arc / mean_wall
+                cl_factor *= ratio
+                if abs(ratio - 1.0) < 1e-6:
+                    break
+        else:
+            raise ValueError(
+                f"length_basis must be 'centerline' or 'mean_wall', got {length_basis!r}"
+            )
 
     # Radial sampling: axis (r=0) to wall (r=d/2) for the half strip; both sides
     # for the full strip. Either way the "radial distance" stored in r_perp is
@@ -177,6 +273,8 @@ def fem2d(
     n_radial: int = 10,
     centerline: Optional[np.ndarray] = None,
     centerline_scale: Optional[float] = None,
+    length_basis: str = "centerline",
+    bent_shortcut: bool = True,
 ):
     """Axisymmetric FEM acoustic impedance solver (mm coordinates).
 
@@ -200,6 +298,15 @@ def fem2d(
         n_axial, n_radial: mesh resolution.
         centerline: optional 2D polyline (mm) along which to extrude the bore.
         centerline_scale: see :func:`build_2d_mesh`.
+        bent_shortcut: when ``True`` (default) and ``centerline`` is given,
+            apply the parameter-free wavefront-shortcut correction (see
+            :func:`_inner_wall_axial_factor`): the squared wavenumber in the
+            mass form is locally scaled by
+            ``(ds_inner_wall / ds_centerline)**2``, where the inner wall is
+            the shorter of the two ``cl +/- normal * d/2`` polylines. This
+            raises resonance frequencies by the amount the geometry implies,
+            without any fitting parameter. Set ``False`` to recover the bare
+            axisymmetric solve.
 
     Returns:
         ``(impedance_array, mesh, points_flat, mouth_nodes, bell_nodes)``.
@@ -209,6 +316,7 @@ def fem2d(
         geo, n_axial=n_axial, n_radial=n_radial,
         centerline=centerline, centerline_scale=centerline_scale,
         full_strip=False,  # half-meridional plane for axisymmetric
+        length_basis=length_basis,
     )
 
     element = fem.ElementTriP1()
@@ -218,16 +326,38 @@ def fem2d(
     # a P1 field; it will appear at quadrature points as w['r'] in the forms.
     r_field = basis.interpolate(r_perp)
 
+    # Bent-tube wavefront-shortcut field (ds_inner_wall / ds_centerline)^2,
+    # per axial station broadcast across the radial direction. Parameter-free.
+    if centerline is not None and bent_shortcut:
+        bore_length = float(geo[:, 0][-1] - geo[:, 0][0])
+        s_uniform_axial = np.linspace(0.0, bore_length, n_axial)
+        d_axial = np.interp(s_uniform_axial + geo[0, 0], geo[:, 0], geo[:, 1])
+
+        cl_in = np.asarray(centerline, dtype=float)
+        total_in = float(np.linalg.norm(np.diff(cl_in, axis=0), axis=1).sum())
+        scale = 1.0 if centerline_scale is None else float(centerline_scale)
+        target_arc = bore_length * scale
+        scaled = (cl_in - cl_in[0]) * (target_arc / total_in)
+        cl_resampled, _ = _resample_centerline(scaled, n_axial)
+        normals_axial = _normals_from_centerline(cl_resampled)
+
+        factor_axial = _inner_wall_axial_factor(cl_resampled, normals_axial, d_axial)
+        corr_axial = factor_axial ** 2
+        corr_flat = np.repeat(corr_axial[:, None], n_radial, axis=1).reshape(-1)
+    else:
+        corr_flat = np.ones(basis.N)
+    corr_field = basis.interpolate(corr_flat)
+
     @fem.BilinearForm
     def stiffness_axi(u, v, w):
         return w["r"] * dot(grad(u), grad(v))
 
     @fem.BilinearForm
     def mass_axi(u, v, w):
-        return w["r"] * u * v
+        return w["r"] * w["corr"] * u * v
 
     K = stiffness_axi.assemble(basis, r=r_field)
-    M = mass_axi.assemble(basis, r=r_field)
+    M = mass_axi.assemble(basis, r=r_field, corr=corr_field)
 
     # RHS: uniform forcing at mouth nodes. The radial weight is applied by the
     # operator during assembly, not here.
@@ -292,10 +422,14 @@ class FiniteElementsModeling2D(AcousticSimulationInterface):
         n_axial: int = 200,
         n_radial: int = 10,
         centerline_scale: Optional[float] = None,
+        length_basis: str = "centerline",
+        bent_shortcut: bool = True,
     ):
         super().__init__(constants)
         self.centerline = centerline
         self.centerline_scale = centerline_scale
+        self.length_basis = length_basis
+        self.bent_shortcut = bent_shortcut
         self.n_axial = n_axial
         self.n_radial = n_radial
         # Filled in after the most recent call to get_impedance_spectrum:
@@ -315,6 +449,8 @@ class FiniteElementsModeling2D(AcousticSimulationInterface):
             n_radial=self.n_radial,
             centerline=self.centerline,
             centerline_scale=self.centerline_scale,
+            length_basis=self.length_basis,
+            bent_shortcut=self.bent_shortcut,
         )
         self.last_mesh = mesh
         self.last_points = points_flat

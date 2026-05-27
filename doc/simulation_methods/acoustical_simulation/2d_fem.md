@@ -103,8 +103,10 @@ axisymmetric weight is applied around the (curved) centerline rather than
 around a fixed axis. For modest bends the approximation is sound; for tight
 loops it ignores the inner/outer-radius asymmetry of the toroidal Jacobian.
 
-See `src/experiments/2dfem/fem2d_bent_didge.ipynb` for a worked example
-(straight vs. curve.csv-bent didgeridoo).
+See `doc/examples/bent_shapes/fem2d_bent_didge.ipynb` for a worked example
+(straight vs. curve.csv-bent didgeridoo), and the companion
+`fem3d_bent_didge.ipynb` for a comparison against the 3D FEM, which
+predicts the same shift without any shortcut model.
 
 ## 8. Calculating Impedance
 
