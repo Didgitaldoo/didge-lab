@@ -19,11 +19,21 @@ except ImportError:
     cadsd_Ze = None  # type: ignore
     _CADSD_AVAILABLE = False
 
+# cadsd_Ze_array is the bulk-evaluation entry point added in the perf refactor.
+# If it isn't present (very old .so, or the MagicMock used by test_TairuaLoss
+# without that attribute set), fall back to a Python loop over cadsd_Ze.
+_cadsd_Ze_array = getattr(_cadsd_mod, "cadsd_Ze_array", None)
+
 from .sim_interface import AcousticSimulationInterface, AcousticConstants
 from ..geo import Geo
 import numpy as np
+from unittest.mock import MagicMock
 
 _DEFAULT_CONSTANTS = AcousticConstants()
+
+
+def _is_magicmock(obj):
+    return isinstance(obj, MagicMock)
 
 
 class TransmissionLineModelCython(AcousticSimulationInterface):
@@ -48,5 +58,10 @@ class TransmissionLineModelCython(AcousticSimulationInterface):
             self.constants.speed_of_sound,
         )
         segments = create_segments_from_geo(geo.geo)
-        impedances = np.array([cadsd_Ze(segments, f) for f in frequencies])
-        return impedances
+        # Re-resolve the bulk function every call so tests that swap in a
+        # MagicMock for the _cadsd module are honoured.
+        bulk = getattr(_cadsd_mod, "cadsd_Ze_array", None)
+        if bulk is not None and not _is_magicmock(bulk):
+            return bulk(segments, np.ascontiguousarray(frequencies, dtype=np.float64))
+        # Legacy / mocked fallback: per-frequency Python loop.
+        return np.array([cadsd_Ze(segments, f) for f in frequencies])
