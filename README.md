@@ -50,7 +50,7 @@ pip install didgelab
 
 ### 3.2 Documentation
 
-Here is an [overview of the available documentation](doc/README..nd). The best place to get started are the tutorials:
+Here is an [overview of the available documentation](doc/README.md). The best place to get started are the tutorials:
 
 * [Didge Lab Tutorial - Part 1 - Introduction and acoustical simulation](doc/examples/tutorials/tutorial1.ipynb)
 * [DidgeLab tutorial part 2 - Create geometries from parametric shapes](doc/examples/tutorials/tutorial2.ipynb)
