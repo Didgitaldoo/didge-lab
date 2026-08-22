@@ -11,4 +11,4 @@ pytest>=9.0.3
 scikit-fem==10.0.2
 build==1.4.0
 twine==6.2.0
-setuptools>=61,<82
+setuptools>=82
