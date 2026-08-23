@@ -26,6 +26,8 @@ So the first part takes a geometry and predicts its sound; the second takes a ta
 
 The software is a **Python toolkit** rather than a point-and-click app: you use it from scripts or Jupyter notebooks. There is no graphical user interface. You need Python skills to use it.
 
+If you are not into Python programming, I suggest you use the web-based software [didgelab.com](https://didgelab.com).
+
 ## 2. Related works
 
 - **Frank Geipel** — [Computer-Aided Didgeridoo Sound Design](https://www.didgeridoo-physik.de/) (CADSD). DidgeLab’s approach is based on our reading of his ideas and descriptions.
