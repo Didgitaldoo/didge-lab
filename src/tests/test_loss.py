@@ -168,6 +168,73 @@ class TestScaleTuningLoss:
         assert isinstance(formula, str)
         assert isinstance(symbols, list)
 
+    def test_p1_matches_uniform(self):
+        """p=1 is neutral: same as default uniform weighting."""
+        peak_log = np.log2(np.array([80.0, 160.0, 240.0]))
+        peak_imp = np.ones(3) * 0.8
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 30, 50])
+        uniform = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0)
+        neutral = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0, favor_lower_frequencies=1.0)
+        assert uniform.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx) == pytest.approx(
+            neutral.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        )
+
+    def test_p_gt_1_favors_lower(self):
+        """With only the low peak mistuned, p>1 yields higher loss than p=1."""
+        # High peak on a scale note (C5 ≈ 523.25 from C4 major); low peak offset.
+        scale = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0, favor_lower_frequencies=1.0)
+        # Put low peak far off scale, high peak on scale (C5 = MIDI 72 → ~523.25 Hz)
+        c5 = 440.0 * (2.0 ** ((72 - 69) / 12.0))
+        off_low = 75.0  # not near any C-major note around 65–85 Hz
+        peak_log = np.log2(np.array([off_low, c5]))
+        peak_imp = np.ones(2)
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([5, 40])
+        loss_p1 = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0, favor_lower_frequencies=1.0)
+        loss_p2 = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0, favor_lower_frequencies=2.0)
+        v1 = loss_p1.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        v2 = loss_p2.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert v2 > v1
+
+    def test_p_lt_1_favors_higher(self):
+        """With only the high peak mistuned, p<1 yields higher loss than p=1."""
+        c4 = 440.0 * (2.0 ** ((60 - 69) / 12.0))
+        off_high = 400.0
+        peak_log = np.log2(np.array([c4, off_high]))
+        peak_imp = np.ones(2)
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 50])
+        loss_p1 = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0, favor_lower_frequencies=1.0)
+        loss_p0 = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0, favor_lower_frequencies=0.0)
+        v1 = loss_p1.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        v0 = loss_p0.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert v0 > v1
+
+    def test_identical_distances_independent_of_p(self):
+        """When every peak has the same cents error, loss does not depend on p."""
+        # Two peaks offset by the same log2 amount from their nearest scale notes.
+        # Use frequencies that share the same min cents distance by construction:
+        # pick one scale note and offset both peaks by the same delta in log2.
+        intervals = [0, 2, 4, 5, 7, 9, 11]
+        base = ScaleTuningLoss(60, intervals, 1.0)
+        f0 = 2.0 ** base.scale_freqs_log[0]
+        f1 = 2.0 ** base.scale_freqs_log[7]  # one octave up in the generated grid
+        delta_log = 0.05  # same offset for both
+        peak_log = np.array([np.log2(f0) + delta_log, np.log2(f1) + delta_log])
+        peak_imp = np.ones(2)
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10, 30])
+        vals = [
+            ScaleTuningLoss(60, intervals, 1.0, favor_lower_frequencies=p).calculate(
+                peak_log, peak_imp, freq_grid, impedances, peak_idx
+            )
+            for p in (0.0, 1.0, 2.0, 3.0)
+        ]
+        assert vals[0] == pytest.approx(vals[1], rel=1e-9)
+        assert vals[1] == pytest.approx(vals[2], rel=1e-9)
+        assert vals[2] == pytest.approx(vals[3], rel=1e-9)
+
 
 class TestPeakQuantityLoss:
     def test_calculate_zero_when_enough_peaks(self):

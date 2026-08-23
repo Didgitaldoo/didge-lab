@@ -329,27 +329,61 @@ class CompositeTairuaLoss:
 class ScaleTuningLoss(LossComponent):
     """
     SCALE TUNING: Normalized by 600 cents.
+
+    favor_lower_frequencies (p): per-peak weights α ∝ f^(1-p), renormalized so
+    sum(α)=N. p=1 is neutral (uniform); p>1 favors lower frequencies; p<1 favors higher.
     """
-    def __init__(self, base_note: int, intervals: List[int], weight: float):
+    def __init__(
+        self,
+        base_note: int,
+        intervals: List[int],
+        weight: float,
+        favor_lower_frequencies: float = 1.0,
+    ):
         self.weight = weight
         self.base_note = base_note
         self.intervals = intervals
+        self.favor_lower_frequencies = float(favor_lower_frequencies)
         self.scale_freqs_log = self._compute_scale_log(base_note, intervals)
 
     def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
-        total_dist_cents = 0
-        for f_log in peak_freqs_log:
-            dist = np.min(np.abs(self.scale_freqs_log - f_log))
-            total_dist_cents += dist * 1200 
-        avg_dist_normalized = (total_dist_cents / len(peak_freqs_log)) / 600.0
+        peak_freqs_log = np.asarray(peak_freqs_log, dtype=float)
+        n = len(peak_freqs_log)
+        if n == 0:
+            return 0.0
+
+        dists_cents = np.array([
+            np.min(np.abs(self.scale_freqs_log - f_log)) * 1200.0
+            for f_log in peak_freqs_log
+        ])
+
+        p = self.favor_lower_frequencies
+        if abs(p - 1.0) < 1e-12:
+            alphas = np.ones(n)
+        else:
+            freqs = np.power(2.0, peak_freqs_log)
+            raw = np.power(freqs, 1.0 - p)
+            raw_sum = float(np.sum(raw))
+            if not np.isfinite(raw_sum) or raw_sum <= 0:
+                alphas = np.ones(n)
+            else:
+                alphas = raw * (n / raw_sum)
+
+        avg_dist_normalized = float(np.sum(alphas * dists_cents) / n) / 600.0
         return avg_dist_normalized * self.weight
 
     def get_formula(self) -> Tuple[str, List[str]]:
-        formula = r"L_{scale} = w \cdot \frac{1}{600N} \sum_{i=1}^{N} \min |1200 \cdot (\log_2 f_{peak,i} - \log_2 F_{scale})|"
+        formula = (
+            r"L_{scale} = w \cdot \frac{1}{600N} \sum_{i=1}^{N} "
+            r"\alpha_i \min |1200 \cdot (\log_2 f_{peak,i} - \log_2 F_{scale})|, "
+            r"\quad \alpha_i \propto f_i^{1-p}"
+        )
         explanations = [
             "F_scale: Set of allowed log2 frequencies (scale notes from base + intervals).",
             "f_peak,i: Detected resonance frequency.",
             "min|…|: Distance to the closest in-tune note in the scale.",
+            "α_i: Per-peak weight ∝ f_i^(1-p), renormalized so sum(α)=N.",
+            "p: favor_lower_frequencies (1=neutral; >1 favors lower; <1 favors higher).",
             "N: Number of peaks.",
             "600: Normalization factor (6 semitones).",
             "w: Weight for scale adherence.",
