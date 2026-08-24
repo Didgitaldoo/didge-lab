@@ -180,13 +180,39 @@ class TestScaleTuningLoss:
             neutral.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
         )
 
+    def test_includes_notes_below_c4(self):
+        """Didgeridoo drones sit below C4; the scale grid must include those octaves."""
+        # Same mapping as evolution_runner: E → MIDI 64 (E4), major pentatonic.
+        loss = ScaleTuningLoss(64, [0, 2, 4, 7, 9], 1.0)
+        freqs = np.power(2.0, loss.scale_freqs_log)
+        assert freqs.min() < 40.0
+        assert freqs.max() <= 1000.0
+
+        def midi_hz(m: int) -> float:
+            return 440.0 * (2.0 ** ((m - 69.0) / 12.0))
+
+        e2 = midi_hz(40)
+        fs3 = midi_hz(54)
+        e4 = midi_hz(64)
+        for target in (e2, fs3, e4):
+            cents = np.min(np.abs(1200.0 * np.log2(freqs / target)))
+            assert cents == pytest.approx(0.0, abs=1e-6)
+
+    def test_in_scale_drone_has_near_zero_loss(self):
+        e2 = 440.0 * (2.0 ** ((40 - 69.0) / 12.0))
+        loss = ScaleTuningLoss(64, [0, 2, 4, 7, 9], 1.0)
+        peak_log = np.log2(np.array([e2]))
+        peak_imp = np.array([1.0])
+        freq_grid, impedances = _make_dummy_spectrum()
+        peak_idx = np.array([10])
+        val = loss.calculate(peak_log, peak_imp, freq_grid, impedances, peak_idx)
+        assert val == pytest.approx(0.0, abs=1e-9)
+
     def test_p_gt_1_favors_lower(self):
         """With only the low peak mistuned, p>1 yields higher loss than p=1."""
         # High peak on a scale note (C5 ≈ 523.25 from C4 major); low peak offset.
-        scale = ScaleTuningLoss(60, [0, 2, 4, 5, 7, 9, 11], 1.0, favor_lower_frequencies=1.0)
-        # Put low peak far off scale, high peak on scale (C5 = MIDI 72 → ~523.25 Hz)
         c5 = 440.0 * (2.0 ** ((72 - 69) / 12.0))
-        off_low = 75.0  # not near any C-major note around 65–85 Hz
+        off_low = 70.0  # between C2 (65.4 Hz) and D2 (73.4 Hz)
         peak_log = np.log2(np.array([off_low, c5]))
         peak_imp = np.ones(2)
         freq_grid, impedances = _make_dummy_spectrum()

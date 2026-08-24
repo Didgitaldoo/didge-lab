@@ -352,6 +352,9 @@ class ScaleTuningLoss(LossComponent):
         if n == 0:
             return 0.0
 
+        if self.scale_freqs_log.size == 0:
+            return 0.0
+
         dists_cents = np.array([
             np.min(np.abs(self.scale_freqs_log - f_log)) * 1200.0
             for f_log in peak_freqs_log
@@ -390,18 +393,36 @@ class ScaleTuningLoss(LossComponent):
         ]
         return formula, explanations
 
-    def _compute_scale_log(self, base_note: int, intervals: List[int]) -> np.ndarray:
-        # Generates a log2 frequency scale across the human hearing range
+    def _compute_scale_log(
+        self,
+        base_note: int,
+        intervals: List[int],
+        fmin: float = 1.0,
+        fmax: float = 1000.0,
+    ) -> np.ndarray:
+        """Generate log2 scale frequencies covering the simulation band.
+
+        ``base_note`` is a MIDI note whose pitch class is the scale root
+        (evolution_runner uses C4=60 plus the key). Notes are generated in
+        every octave that overlaps [fmin, fmax], so drone-range peaks
+        (e.g. E2) are scored against the same scale as high toots.
+        """
+        if not intervals:
+            return np.array([], dtype=float)
+
+        root_pc = int(base_note) % 12
+        scale_pcs = {(root_pc + int(iv)) % 12 for iv in intervals}
+
         freqs_log = []
-        for octave in range(0, 5): # Cover 5 octaves
-            for interval in intervals:
-                # MIDI-style note calculation: note = base + octave*12 + interval
-                note = base_note + (octave * 12) + interval
-                # Conversion: freq = 440 * 2^((note-69)/12)
-                freq = 440.0 * (2.0 ** ((note - 69.0) / 12.0))
+        # MIDI 0 (C-1, ~8.2 Hz) through MIDI 96 (C7, ~2093 Hz).
+        for midi in range(0, 97):
+            if (midi % 12) not in scale_pcs:
+                continue
+            freq = 440.0 * (2.0 ** ((midi - 69.0) / 12.0))
+            if fmin <= freq <= fmax:
                 freqs_log.append(np.log2(freq))
 
-        return np.array(freqs_log)
+        return np.array(freqs_log, dtype=float)
 
 class PeakQuantityLoss(LossComponent):
     """

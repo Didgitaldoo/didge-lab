@@ -469,13 +469,25 @@ class KigaliShape(GeoGenome):
         return x, y
 
     def add_sine_shape(self, x, y):
+        """Add organic waves along the bore without changing mouthpiece or bell diameter.
 
+        Waves are faded to zero at both ends so the configured bell size is preserved.
+        """
         if self.sine_shape_n <= 0 or self.sine_shape_y <= 0:
             return x, y
 
-        x_sine = 2*self.sine_shape_n*np.pi*x/x.max()
-        y_sine = np.sin(x_sine)
-        y_sine[y_sine<0] = 0
+        length = x.max()
+        if length <= 0:
+            return x, y
 
-        y += self.sine_shape_y * y_sine
-        return x,y
+        x_norm = x / length
+        y_sine = np.sin(2 * self.sine_shape_n * np.pi * x_norm)
+        y_sine[y_sine < 0] = 0
+
+        # Half-sine envelope: 0 at mouthpiece and bell, 1 at mid-bore.
+        envelope = np.sin(np.pi * x_norm)
+        y0, y_bell = y[0], y[-1]
+        y = y + self.sine_shape_y * y_sine * envelope
+        y[0] = y0
+        y[-1] = y_bell
+        return x, y

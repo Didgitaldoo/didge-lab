@@ -266,3 +266,42 @@ class TestKigaliShapeEnableTaper:
         y_taper = [p[1] for p in geo_taper.geo]
         y_no_taper = [p[1] for p in geo_no_taper.geo]
         assert y_taper != y_no_taper
+
+
+class TestKigaliShapeSineShape:
+    """Organic waves must not enlarge the bell past the configured max."""
+
+    def _shape(self, sine_shape_n=2.3, sine_shape_y=40.0):
+        shape = KigaliShape(
+            n_segments=24,
+            n_bubbles=0,
+            d0=32,
+            d_bell_min=50,
+            d_bell_max=60,
+            smoothness=1.0,
+            bell_accent=0.0,
+            sine_shape_n=sine_shape_n,
+            sine_shape_y=sine_shape_y,
+        )
+        shape.genome[:] = 0.5
+        shape.genome[1] = 1.0  # decode to d_bell_max
+        return shape
+
+    def test_sine_shape_does_not_enlarge_bell_beyond_max(self):
+        shape = self._shape()
+        geo = shape.genome2geo()
+        assert geo.bellsize() <= shape.d_bell_max + 1e-6
+
+    def test_sine_shape_preserves_bell_opening(self):
+        with_waves = self._shape(sine_shape_n=2.3, sine_shape_y=40.0)
+        without_waves = self._shape(sine_shape_n=2.3, sine_shape_y=0.0)
+        geo_waves = with_waves.genome2geo()
+        geo_plain = without_waves.genome2geo()
+        assert np.isclose(geo_waves.bellsize(), geo_plain.bellsize(), atol=1e-6)
+
+    def test_sine_shape_still_adds_mid_bore_waves(self):
+        with_waves = self._shape(sine_shape_n=3.0, sine_shape_y=20.0)
+        without_waves = self._shape(sine_shape_n=3.0, sine_shape_y=0.0)
+        y_waves = np.array([p[1] for p in with_waves.genome2geo().geo])
+        y_plain = np.array([p[1] for p in without_waves.genome2geo().geo])
+        assert np.max(np.abs(y_waves - y_plain)) > 1.0
