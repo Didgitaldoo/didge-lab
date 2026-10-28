@@ -16,7 +16,10 @@ def _mock_create_segments_from_geo(geo):
     return Segment.create_segments_from_geo(geo)
 _mock_cadsd.create_segments_from_geo = _mock_create_segments_from_geo
 _mock_cadsd.cadsd_Ze = lambda s, f: 1e6
-sys.modules["didgelab.sim.tlm_cython_lib._cadsd"] = _mock_cadsd
+try:
+    import didgelab.sim.tlm_cython_lib._cadsd  # use the real extension when it is built
+except ImportError:
+    sys.modules["didgelab.sim.tlm_cython_lib._cadsd"] = _mock_cadsd
 
 from didgelab.geo import Geo
 from didgelab.shapes.MbeyaShape import MbeyaGenome

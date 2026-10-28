@@ -23,7 +23,10 @@ def _mock_cadsd_Ze(segments, freq):
 
 _mock_cadsd.create_segments_from_geo = _mock_create_segments_from_geo
 _mock_cadsd.cadsd_Ze = _mock_cadsd_Ze
-sys.modules["didgelab.sim.tlm_cython_lib._cadsd"] = _mock_cadsd
+try:
+    import didgelab.sim.tlm_cython_lib._cadsd  # use the real extension when it is built
+except ImportError:
+    sys.modules["didgelab.sim.tlm_cython_lib._cadsd"] = _mock_cadsd
 
 from didgelab.geo import Geo
 from didgelab.evo import (
