@@ -1,0 +1,10 @@
+# Rhythmic demo: "dong-tiki dong-tiki dong tiki ritititi"
+# Beats 1 and 2: dong (eighth) + ti ki (sixteenths); beat 3: dong, tiki;
+# beat 4: ri ti ti ti (sixteenths, "r" = a quick tongue flap).
+title:      Dong-tiki ritititi
+instrument: Arusha
+tempo:      92
+meter:      4/4
+
+[rhythm]
+| !dong-tiki dong-tiki dong:1/8 tiki:1/8 ritititi |

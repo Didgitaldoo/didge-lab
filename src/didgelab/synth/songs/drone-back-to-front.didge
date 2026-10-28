@@ -1,0 +1,12 @@
+# A drone over four bars; the tongue starts at the back ("oo"),
+# glides forward over three and a half bars and arrives at the front ("ee").
+title:      Drone, tongue back to front
+instrument: Arusha
+tempo:      80
+meter:      4/4
+
+[rhythm]
+| uh _ _ _ | _ _ _ _ | _ _ _ _ | _ _ _ _ |
+
+[tongue]
+| oo ~ ~ ~ | ~ ~ ~ ~ | ~ ~ ~ ~ | ~ ~ ~ ee |

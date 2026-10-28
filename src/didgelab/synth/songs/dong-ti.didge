@@ -1,0 +1,9 @@
+# Rhythmic demo: "dong-ti dong-ti dong-ti dong-ti"
+# Each beat: "dong" (tongue back, ending in ng) on the beat, "ti" (tongue front) on the off-beat.
+title:      Dong-ti
+instrument: Arusha
+tempo:      96
+meter:      4/4
+
+[rhythm]
+| !dong-ti dong-ti dong-ti dong-ti |

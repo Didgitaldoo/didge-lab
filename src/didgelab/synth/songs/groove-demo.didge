@@ -1,0 +1,16 @@
+# A longer example with most features: tongue automation that overrides the
+# syllables in bar 2, a toot, a vocalised bar and circular breathing.
+title:      Groove demo
+instrument: Kizimkazi
+tempo:      104
+meter:      4/4
+swing:      58%
+voice:      C4
+
+[rhythm]
+| !dong-ti dong-ti dong-tiki ritititi | doo _ di-ga ^         |
+| !ta-ka ta-ka *too doo               | ~oo _ _ dong-ti       |
+
+[tongue]
+| auto                                | oo ~ ee .             |
+| auto                                | auto                  |

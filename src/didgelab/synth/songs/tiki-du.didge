@@ -1,0 +1,9 @@
+# Rhythmic demo: "tiki du, tiki du, tiki du, tiki du"
+# Each beat: two sixteenths "ti ki" and an eighth "du".
+title:      Tiki du
+instrument: Arusha
+tempo:      90
+meter:      4/4
+
+[rhythm]
+| !tiki du tiki du tiki du tiki du |
