@@ -16,16 +16,16 @@ Quick start::
 from pathlib import Path
 
 from ..sim.sim_interface import compute_moist_air_properties
-from .bore import Bore
+from .bore import Bore, ModalBore, Resonance
 from .model import ModelParams, filter_gain, harmonic_spectrum
 from .vocaltract import VocalTract, VOWELS
 from .synth import Synthesizer, Controls
 from .techniques import Player, parse_score, score_controls, random_score
 from . import song as _song
 
-__all__ = ["Bore", "ModelParams", "VocalTract", "VOWELS", "Synthesizer", "Controls", "Player",
+__all__ = ["Bore", "ModalBore", "Resonance", "ModelParams", "VocalTract", "VOWELS", "Synthesizer", "Controls", "Player",
            "parse_score", "score_controls", "random_score", "synthesize", "filter_gain",
-           "harmonic_spectrum", "SONGS", "render_song_loop"]
+           "harmonic_spectrum", "SONGS", "render_song_loop", "render_song_loop_from_peaks"]
 
 DEFAULT_SCORE = """tempo = 100
 doo:2 di:.5 ga:.5 di:.5 ga:.5 ^ doo:1 ti:.5 ka:.5 ti:.5 ka:.5 *too:1 doo:1 rr:1 doo:1 wa:1 ya:1 ee:1 oo:1 ^ ~oo:2@C4 doo:2
@@ -69,6 +69,23 @@ def render_song_loop(geometry, song, temperature=28.0, tempo=100.0, fs=48000):
         raise ValueError(f"unknown song {song!r}, available: {sorted(SONGS)}")
     constants = compute_moist_air_properties(temp_celsius=temperature)
     bore = Bore(geometry, constants=constants)
+    s = _song.load(SONGS[song])
+    return _song.render(s, bore, tempo=tempo, repeats=1, loop=True, fs=fs,
+                         fadeout=0.0), fs
+
+
+def render_song_loop_from_peaks(peaks, song, mouth_diameter=32.0, temperature=28.0, tempo=100.0,
+                                fs=48000):
+    """Like :func:`render_song_loop`, but for a bore given by its impedance peaks.
+
+    ``peaks`` are (freq_hz, impedance, q) tuples or dicts with keys freq,
+    impedance, q (see :class:`ModalBore`); impedance is in Pa s/m^3 as
+    computed by DidgeLab.
+    """
+    if song not in SONGS:
+        raise ValueError(f"unknown song {song!r}, available: {sorted(SONGS)}")
+    constants = compute_moist_air_properties(temp_celsius=temperature)
+    bore = ModalBore(peaks, mouth_diameter=mouth_diameter, constants=constants)
     s = _song.load(SONGS[song])
     return _song.render(s, bore, tempo=tempo, repeats=1, loop=True, fs=fs,
                          fadeout=0.0), fs

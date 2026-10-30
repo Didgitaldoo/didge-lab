@@ -173,3 +173,85 @@ class Bore:
         re = np.interp(f, self.freqs, arr.real, left=arr.real[0], right=0.0)
         im = np.interp(f, self.freqs, arr.imag, left=arr.imag[0], right=0.0)
         return re + 1j * im
+
+
+class ModalBore:
+    """A bore given by its impedance peaks instead of a geometry.
+
+    Each peak is a resonance with frequency ``freq`` (Hz), impedance maximum
+    ``impedance`` (Pa s/m^3, the unit of DidgeLab) and quality factor ``q``
+    (centre frequency / -3 dB bandwidth). The complex spectra are sums of
+    second-order resonators,
+
+        Z_in(f) = Z_bg(f) + sum_n Z_n / (1 + j Q_n (f/f_n - f_n/f)),
+        H(f)    = -j sum_n g(f_n) Z_n/Z_0 / (1 + j Q_n (f/f_n - f_n/f)),
+
+    with the same poles in H as in Z_in. The residues of H are not known
+    without a geometry; g(f) = 2 / (1 + (f / 1500 Hz)^2) is fitted on the
+    bores of the didge-archive, where |H| / (|Z_in| / Z_0) at the peaks is
+    about 2 below 500 Hz and falls above 1 kHz (equal signs of the residues
+    match the harmonic spectra of these bores better than alternating ones,
+    4.6 vs 6.1 dB mean error per harmonic). Z_bg ramps from 0 to Z_0
+    above ~2 kHz, where the real Z_in of a didgeridoo levels out at Z_0.
+
+    The pitches are those of the peaks; the timbre is an approximation of a
+    real bore with the same peaks. Has the interface of :class:`Bore` that the
+    synthesizer uses (``freqs``, ``Zin``, ``H``, ``resonances``, ``drone``,
+    ``toot``, ``interp``).
+
+    Parameters
+    ----------
+    peaks : list of :class:`Resonance`, dicts with keys freq, impedance, q,
+        or (freq, impedance, q) tuples
+    mouth_diameter : mouthpiece diameter in mm, sets Z_0
+    """
+
+    H_CORNER = 1500.0
+    BG_CORNER = 2000.0
+
+    def __init__(self, peaks, mouth_diameter=32.0, fmax=12000.0, df=0.5, constants=None):
+        res = []
+        for p in peaks:
+            if isinstance(p, Resonance):
+                res.append(p)
+            elif isinstance(p, dict):
+                res.append(Resonance(float(p["freq"]), float(p["impedance"]), float(p["q"])))
+            else:
+                res.append(Resonance(*map(float, p)))
+        if not res:
+            raise ValueError("at least one peak is required")
+        for r in res:
+            if r.freq <= 0 or r.impedance <= 0 or r.q <= 0:
+                raise ValueError(f"freq, impedance and q must be positive: {r}")
+        self.resonances = sorted(res, key=lambda r: r.freq)
+        self.constants = constants or compute_moist_air_properties()
+        d0 = mouth_diameter / 1000
+        self.Z0 = self.constants.air_density * self.constants.speed_of_sound / (np.pi * d0 * d0 / 4)
+        self.freqs = np.arange(df, fmax + df, df)
+        self.Zin, self.H = self.spectra(self.freqs)
+
+    def spectra(self, freqs):
+        """Complex (Z_in, H) at ``freqs``."""
+        f = np.asarray(freqs, dtype=float)
+        zin = self.Z0 * (f / self.BG_CORNER) ** 2 / (1 + (f / self.BG_CORNER) ** 2) + 0j
+        h = np.zeros_like(zin)
+        for r in self.resonances:
+            mode = 1.0 / (1 + 1j * r.q * (f / r.freq - r.freq / f))
+            zin = zin + r.impedance * mode
+            g = 2.0 / (1 + (r.freq / self.H_CORNER) ** 2)
+            h = h + g * r.impedance / self.Z0 * mode
+        return zin, -1j * h
+
+    def didgelab_impedance(self, freqs):
+        """|Z_in| at ``freqs`` (the counterpart of DidgeLab's simulation)."""
+        return np.abs(self.spectra(freqs)[0])
+
+    @property
+    def drone(self):
+        return self.resonances[0].freq
+
+    def toot(self, n=1):
+        """Frequency of the n-th toot (n=1 is the second impedance peak)."""
+        return self.resonances[n].freq
+
+    interp = Bore.interp
