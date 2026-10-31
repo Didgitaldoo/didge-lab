@@ -17,6 +17,11 @@ class LossComponent(ABC):
 
     Components that set ``uses_peak_q = True`` also receive ``peak_qs`` (quality factor per
     peak, measured by CompositeTairuaLoss on the fine peak windows) as a keyword argument.
+
+    Components whose loss is a weighted sum of absolute deviations can also implement
+    ``residuals``: the signed deviations, so that sum(|r|) equals the loss. Least-squares
+    refinement (``didgelab.evo.refine_least_squares``) minimizes sum(r^2) instead, which is
+    smooth where the absolute values have a kink, at the target itself.
     """
     uses_peak_q = False
 
@@ -25,6 +30,12 @@ class LossComponent(ABC):
                   all_freqs: np.ndarray, all_impedances: np.ndarray, peak_indices: np.ndarray) -> float:
         """Computes the loss value based on spectral data."""
         pass
+
+    def residuals(self, peak_freqs_log: np.ndarray, peak_impedances: np.ndarray,
+                  all_freqs: np.ndarray, all_impedances: np.ndarray,
+                  peak_indices: np.ndarray) -> Optional[np.ndarray]:
+        """Signed deviations with sum(|r|) == calculate(...), or None if the component has none."""
+        return None
 
     @abstractmethod
     def get_formula(self) -> Tuple[str, List[str]]:
@@ -81,6 +92,17 @@ class FrequencyTuningLoss(LossComponent):
             total_loss += (freq_loss + amp_loss) * self.weights[i]
             
         return total_loss
+
+    def residuals(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
+        """Per target: the signed pitch error (cents / 600) and, if targeted, the signed
+        impedance error, each times the target weight. Always the same length."""
+        residuals = []
+        for i, target_f_log in enumerate(self.target_freqs_log):
+            idx = np.argmin(np.abs(peak_freqs_log - target_f_log))
+            residuals.append(self.weights[i] * 1200 * (peak_freqs_log[idx] - target_f_log) / 600.0)
+            if self.target_impedances[i] != -1:
+                residuals.append(self.weights[i] * (peak_impedances[idx] - self.target_impedances[i]))
+        return np.array(residuals)
 
     def get_formula(self) -> Tuple[str, List[str]]:
         formula = r"L_{tune} = \sum_{i=1}^{N} w_i \cdot \left( \frac{|1200 \Delta \log_2 f_i|}{600} + [Z_{target,i} \neq -1] \cdot |Z_{target,i} - Z_{peak,i}| \right)"
@@ -393,37 +415,85 @@ class CompositeTairuaLoss:
             qs[fallback] = half_power_q(freq_grid, impedances, peak_indices[fallback])
         return freqs_log, imps, qs
 
+    def analyze(self, shape) -> Tuple[Dict[str, float], Optional[Dict[str, np.ndarray]]]:
+        """
+        Simulate ``shape`` and evaluate all components, without caching or error handling.
+
+        Returns:
+            (results, spectrum): results maps each component name and "total" to its value;
+            spectrum holds the arguments the components are called with ("peak_freqs_log",
+            "peak_impedances", "all_freqs", "all_impedances", "peak_indices") plus "peak_qs".
+            If no peak is found, results is {"total": 1_000_000} and spectrum is None.
+        """
+        geo = shape.genome2geo()
+        freq_grid = self._freq_grid()
+        impedances = np.asarray(acoustical_simulation(geo, freq_grid))
+
+        peak_indices, _ = find_peaks(impedances, prominence=0.05)
+        peak_indices = peak_indices[freq_grid[peak_indices] <= self.fmax]
+
+        if len(peak_indices) == 0:
+            return {"total": 1_000_000}, None
+
+        peak_freqs_log, peak_imps, peak_qs = self._refine_peaks(geo, freq_grid, impedances, peak_indices)
+        peak_impedances = peak_imps / (max(impedances.max(), peak_imps.max()) + 1e-9)
+        spectrum = {
+            "peak_freqs_log": peak_freqs_log,
+            "peak_impedances": peak_impedances,
+            "all_freqs": freq_grid,
+            "all_impedances": impedances,
+            "peak_indices": peak_indices,
+            "peak_qs": peak_qs,
+        }
+
+        results = {}
+        for name, comp in self.components.items():
+            results[name] = comp.calculate(*self._component_args(spectrum),
+                                           **self._component_kwargs(comp, spectrum))
+        results["total"] = sum(results.values())
+        return results, spectrum
+
     def loss(self, shape) -> Dict[str, float]:
         if getattr(shape, "loss", None) is not None:
             return shape.loss
 
         try:
-            geo = shape.genome2geo()
-            freq_grid = self._freq_grid()
-            impedances = np.asarray(acoustical_simulation(geo, freq_grid))
-
-            peak_indices, _ = find_peaks(impedances, prominence=0.05)
-            peak_indices = peak_indices[freq_grid[peak_indices] <= self.fmax]
-
-            if len(peak_indices) == 0:
-                return {"total": 1_000_000}
-
-            peak_freqs_log, peak_imps, peak_qs = self._refine_peaks(geo, freq_grid, impedances, peak_indices)
-            peak_impedances = peak_imps / (max(impedances.max(), peak_imps.max()) + 1e-9)
-
-            results = {}
-            for name, comp in self.components.items():
-                kwargs = {"peak_qs": peak_qs} if getattr(comp, "uses_peak_q", False) else {}
-                results[name] = comp.calculate(peak_freqs_log, peak_impedances, freq_grid, impedances,
-                                               peak_indices, **kwargs)
-
-            results["total"] = sum(results.values())
+            results, spectrum = self.analyze(shape)
+            if spectrum is None:
+                return results
             shape.loss = results
             return results
 
         except Exception as e:
             logging.exception(f"EA Loss failed: {e}")
             return {"total": 1e8}
+
+    def residuals(self, shape) -> Tuple[Optional[np.ndarray], Dict[str, float]]:
+        """
+        Residual vector of ``shape`` for least-squares refinement, and its loss results.
+
+        Components with ``residuals`` contribute their signed deviations; every other
+        component contributes sqrt(value), so that sum(r^2) still includes it. The vector is
+        None if no peak is found. Its length can change with the number of peaks
+        (ScaleTuningLoss has one residual per peak).
+        """
+        results, spectrum = self.analyze(shape)
+        if spectrum is None:
+            return None, results
+        parts = []
+        for name, comp in self.components.items():
+            r = comp.residuals(*self._component_args(spectrum))
+            parts.append(np.sqrt([max(results[name], 0.0)]) if r is None else np.asarray(r, dtype=float))
+        return np.concatenate(parts) if parts else np.zeros(0), results
+
+    @staticmethod
+    def _component_args(spectrum):
+        return (spectrum["peak_freqs_log"], spectrum["peak_impedances"], spectrum["all_freqs"],
+                spectrum["all_impedances"], spectrum["peak_indices"])
+
+    @staticmethod
+    def _component_kwargs(comp, spectrum):
+        return {"peak_qs": spectrum["peak_qs"]} if getattr(comp, "uses_peak_q", False) else {}
 
 
 class ScaleTuningLoss(LossComponent):
@@ -455,25 +525,37 @@ class ScaleTuningLoss(LossComponent):
         if self.scale_freqs_log.size == 0:
             return 0.0
 
-        dists_cents = np.array([
-            np.min(np.abs(self.scale_freqs_log - f_log)) * 1200.0
-            for f_log in peak_freqs_log
-        ])
-
-        p = self.favor_lower_frequencies
-        if abs(p - 1.0) < 1e-12:
-            alphas = np.ones(n)
-        else:
-            freqs = np.power(2.0, peak_freqs_log)
-            raw = np.power(freqs, 1.0 - p)
-            raw_sum = float(np.sum(raw))
-            if not np.isfinite(raw_sum) or raw_sum <= 0:
-                alphas = np.ones(n)
-            else:
-                alphas = raw * (n / raw_sum)
-
+        dists_cents = np.abs(self._signed_dists_cents(peak_freqs_log))
+        alphas = self._alphas(peak_freqs_log)
         avg_dist_normalized = float(np.sum(alphas * dists_cents) / n) / 600.0
         return avg_dist_normalized * self.weight
+
+    def residuals(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
+        """Per peak: the signed distance to the nearest scale note, weighted as in calculate.
+        One residual per peak, so the length changes with the number of peaks."""
+        peak_freqs_log = np.asarray(peak_freqs_log, dtype=float)
+        n = len(peak_freqs_log)
+        if n == 0 or self.scale_freqs_log.size == 0:
+            return np.zeros(n)
+        alphas = self._alphas(peak_freqs_log)
+        return self.weight * alphas * self._signed_dists_cents(peak_freqs_log) / (600.0 * n)
+
+    def _signed_dists_cents(self, peak_freqs_log: np.ndarray) -> np.ndarray:
+        """Signed cent distance of each peak from its nearest scale note."""
+        offsets = peak_freqs_log[:, None] - self.scale_freqs_log[None, :]
+        return 1200.0 * offsets[np.arange(len(peak_freqs_log)), np.argmin(np.abs(offsets), axis=1)]
+
+    def _alphas(self, peak_freqs_log: np.ndarray) -> np.ndarray:
+        """Per-peak weights ∝ f^(1-p), renormalized so sum(α) = N."""
+        n = len(peak_freqs_log)
+        p = self.favor_lower_frequencies
+        if abs(p - 1.0) < 1e-12:
+            return np.ones(n)
+        raw = np.power(np.power(2.0, peak_freqs_log), 1.0 - p)
+        raw_sum = float(np.sum(raw))
+        if not np.isfinite(raw_sum) or raw_sum <= 0:
+            return np.ones(n)
+        return raw * (n / raw_sum)
 
     def get_formula(self) -> Tuple[str, List[str]]:
         formula = (

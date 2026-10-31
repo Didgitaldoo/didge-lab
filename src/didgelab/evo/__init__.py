@@ -15,7 +15,7 @@ from .operators import (
 )
 from .evolution import Nuevolution
 from .cmaes import CMAES
-from .local_search import refine, refine_population
+from .local_search import refine, refine_least_squares, refine_population
 from .schedulers import AdaptiveProbabilities
 from .writer import NumpyEncoder, load_latest_evolution
 
@@ -37,6 +37,7 @@ __all__ = [
     "Nuevolution",
     "CMAES",
     "refine",
+    "refine_least_squares",
     "refine_population",
     "AdaptiveProbabilities",
     "NumpyEncoder",

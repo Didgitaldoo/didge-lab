@@ -534,3 +534,49 @@ class TestCompositeTairuaLossFullExample:
 
         # freq loss is sum(cents / 600); allow 0.5 cent per peak
         assert result["freq"] < 3 * 0.5 / 600
+
+
+class TestResiduals:
+    """Signed residuals for least-squares refinement: sum(|r|) must equal the loss."""
+
+    def test_frequency_tuning_residuals_are_signed_and_sum_to_loss(self):
+        targets = np.log2(np.array([80.0, 160.0]))
+        loss = FrequencyTuningLoss(targets, np.array([-1.0, 0.5]), [2.0, 1.0])
+        peaks = targets + np.array([10.0, -20.0]) / 1200
+        imps = np.array([0.9, 0.3])
+
+        r = loss.residuals(peaks, imps, None, None, None)
+
+        np.testing.assert_allclose(r, [2.0 * 10 / 600, 1.0 * -20 / 600, 1.0 * (0.3 - 0.5)])
+        assert np.sum(np.abs(r)) == pytest.approx(loss.calculate(peaks, imps, None, None, None))
+
+    @pytest.mark.parametrize("favor_lower", [1.0, 1.5])
+    def test_scale_tuning_residuals_sum_to_loss(self, favor_lower):
+        loss = ScaleTuningLoss(base_note=60, intervals=[0, 4, 7], weight=3.0, favor_lower_frequencies=favor_lower)
+        peaks = np.log2(np.array([65.0, 98.0, 131.5, 200.0]))
+
+        r = loss.residuals(peaks, np.ones(4), None, None, None)
+
+        assert len(r) == 4
+        assert np.sum(np.abs(r)) == pytest.approx(loss.calculate(peaks, np.ones(4), None, None, None))
+        assert np.any(r < 0) and np.any(r > 0)
+
+    def test_components_without_residuals_return_none(self):
+        assert PeakQuantityLoss(4, 1.0).residuals(np.zeros(2), np.ones(2), None, None, None) is None
+
+    def test_composite_residuals(self):
+        loss = CompositeTairuaLoss(max_error=5.0)
+        loss.add_component("freq", FrequencyTuningLoss(np.log2([72.0, 150.0]), np.full(2, -1.0), [1.0, 1.0]))
+        loss.add_component("peaks_qty", PeakQuantityLoss(target_count=5, weight=2.0))
+        shape = KigaliShape(n_segments=20)
+        shape.loss = None
+
+        with patch("didgelab.loss.loss.acoustical_simulation", side_effect=_make_impedance_with_peaks([73.4, 146.8])):
+            r, results = loss.residuals(shape)
+            assert results == pytest.approx(loss.loss(shape))
+
+        # two signed tuning residuals, then sqrt of the peak-quantity loss (no residuals)
+        assert len(r) == 3
+        assert r[0] > 0 and r[1] < 0  # peak 73.4 Hz above target 72, 146.8 Hz below 150
+        assert r[2] ** 2 == pytest.approx(results["peaks_qty"])
+        assert np.sum(np.abs(r[:2])) == pytest.approx(results["freq"])

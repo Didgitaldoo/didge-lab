@@ -9,7 +9,7 @@ import pytest
 
 pytest.importorskip("configargparse")
 
-from didgelab.evo import CMAES, Genome, LossFunction, refine, refine_population
+from didgelab.evo import CMAES, Genome, LossFunction, refine, refine_least_squares, refine_population
 from didgelab.evo.cmaes import reflect_into_unit_box
 
 
@@ -128,3 +128,62 @@ class TestRefine:
         assert len(result) == len(population)
         assert result == sorted(result, key=lambda x: x.loss["total"])
         assert result[0].loss["total"] < best_before
+
+
+class TestRefineLeastSquares:
+    """Least-squares refinement with the real simulation on a small Mbeya genome."""
+
+    @staticmethod
+    def _detuned_targets(genome, cents):
+        from didgelab.loss.loss import CompositeTairuaLoss, FrequencyTuningLoss
+        probe = CompositeTairuaLoss()
+        probe.add_component("freq", FrequencyTuningLoss(np.zeros(1), np.full(1, -1.0), [0.0]))
+        _, spectrum = probe.analyze(genome)
+        targets = spectrum["peak_freqs_log"][:3] + cents / 1200
+        loss = CompositeTairuaLoss()
+        loss.add_component("freq", FrequencyTuningLoss(targets, np.full(3, -1.0), [1.0, 1.0, 1.0]))
+        return loss
+
+    def test_tunes_detuned_peaks(self):
+        from didgelab.shapes.MbeyaShape import MbeyaGenome
+        np.random.seed(0)
+        genome = MbeyaGenome(n_bubbles=2)
+        loss = self._detuned_targets(genome, cents=15.0)
+        start_loss = loss.loss(genome.clone())["total"]
+
+        result = refine_least_squares(loss, genome, max_evaluations=400)
+
+        assert start_loss == pytest.approx(3 * 15 / 600)
+        assert result.loss["total"] < 1e-4 * start_loss  # < 0.0015 cent per peak
+        assert result.named_parameters["refine_evaluations"] <= 400
+        assert np.all((result.genome >= 0) & (result.genome <= 1))
+        assert genome.loss is None  # start genome untouched
+
+    def test_respects_budget_and_never_worse(self):
+        from didgelab.shapes.MbeyaShape import MbeyaGenome
+        np.random.seed(1)
+        genome = MbeyaGenome(n_bubbles=2)
+        loss = self._detuned_targets(genome, cents=40.0)
+        start_loss = loss.loss(genome.clone())["total"]
+
+        result = refine_least_squares(loss, genome, max_evaluations=30)
+
+        assert result.named_parameters["refine_evaluations"] == 30
+        assert result.loss["total"] <= start_loss
+
+    def test_refine_dispatches_and_population(self):
+        from didgelab.shapes.MbeyaShape import MbeyaGenome
+        np.random.seed(2)
+        population = [MbeyaGenome(n_bubbles=2) for _ in range(3)]
+        loss = self._detuned_targets(population[0], cents=20.0)
+        for g in population:
+            g.loss = loss.loss(g)
+
+        assert refine(loss, population[0], 200, method="least-squares").loss["total"] < 1e-3 * population[0].loss["total"]
+        result = refine_population(loss, population, n_best=2, max_evaluations=200, method="least-squares")
+        assert len(result) == 3
+        assert result[0].loss["total"] < 1e-3 * population[0].loss["total"]
+
+    def test_requires_residuals(self):
+        with pytest.raises(TypeError):
+            refine_least_squares(QuadraticLoss(), DummyGenome(n_genes=4))
