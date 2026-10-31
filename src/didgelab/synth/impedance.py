@@ -367,8 +367,6 @@ def estimate(x, fs, params=ModelParams(), weights=Weights(), restarts=3, maxiter
 
 
 def plot(est: Estimate, path, true_bore=None, title=None, fmax=1500.0):
-    import matplotlib
-    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(9, 4.2))
     m = est.freqs <= fmax

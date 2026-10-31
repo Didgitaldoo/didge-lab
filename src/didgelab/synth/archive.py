@@ -18,8 +18,8 @@ URL = "https://github.com/Didgitaldoo/didge-archive.git"
 
 # Corrections of the archive index. Tamaki2 points to the Open Didgeridoo
 # geometry, but the archive also contains tamaki2.json. The simulated drone of
-# tamaki2.json matches the recording (-12 cents) while opendidgeridoo.json is
-# 47 cents off, so we use tamaki2.json.
+# tamaki2.json matches the recording (-10 cents) while opendidgeridoo.json is
+# 45 cents off, so we use tamaki2.json.
 GEOMETRY_OVERRIDES = {"Tamaki2": "geometries/tamaki2.json"}
 
 

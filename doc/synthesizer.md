@@ -432,7 +432,7 @@ The Didge Archive contains, for nine didgeridoos, the measured bore together wit
 recordings: a neutral drone, hand slaps on the mouthpiece (open / closed hand)
 and a song or a long performance. One index entry points to the wrong geometry:
 "Tamaki2" refers to the Open Didgeridoo file, but `tamaki2.json` exists and its
-simulated drone matches the recording (−12 instead of −47 cents), so
+simulated drone matches the recording (−10 instead of −45 cents), so
 `tamaki2.json` is used.
 
 ### 7.1 Drone pitch

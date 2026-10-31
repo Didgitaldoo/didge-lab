@@ -99,7 +99,7 @@ What this means:
 
 The archive entry "Tamaki2" points to the Open Didgeridoo geometry, but the
 archive also contains `tamaki2.json`. The simulated drone of `tamaki2.json`
-matches the recording (−12 cents) while `opendidgeridoo.json` is 47 cents off, so
+matches the recording (−10 cents) while `opendidgeridoo.json` is 45 cents off, so
 `didgelab.synth.archive` uses `tamaki2.json` (`archive.GEOMETRY_OVERRIDES`).
 
 ## 4. Repeating the comparison

@@ -72,8 +72,6 @@ def transcribe(x, fs, bore, model_path=None, params=ModelParams()):
 
 
 def plot_transcription(x, fs, fa, segs, path, title=""):
-    import matplotlib
-    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from .analysis import stft
 
