@@ -195,7 +195,7 @@ class ModalBore:
     Accuracy (drone renders, didge-archive and generated bores): the
     brightness (spectral centroid) is right on average but single bores are
     0.5..1.9 x as bright as the geometry with the same peaks (a plain
-    cone even ~3.7 x). Refits of the
+    cone even ~3.7 x; the archive songs 0.7..2.2 x). Refits of the
     residues (roll-off, alternating signs with phase, Q dependence, with and
     without vocal tract) did not reduce this spread: the peaks below 3 kHz
     do not carry enough information about the timbre.
