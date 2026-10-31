@@ -22,10 +22,12 @@ from .vocaltract import VocalTract, VOWELS
 from .synth import Synthesizer, Controls
 from .techniques import Player, parse_score, score_controls, random_score
 from . import song as _song
+from .impedance import estimate as estimate_impedance
 
 __all__ = ["Bore", "ModalBore", "Resonance", "ModelParams", "VocalTract", "VOWELS", "Synthesizer", "Controls", "Player",
            "parse_score", "score_controls", "random_score", "synthesize", "filter_gain",
-           "harmonic_spectrum", "SONGS", "render_song_loop", "render_song_loop_from_peaks"]
+           "harmonic_spectrum", "SONGS", "render_song_loop", "render_song_loop_from_peaks",
+           "estimate_impedance"]
 
 DEFAULT_SCORE = """tempo = 100
 doo:2 di:.5 ga:.5 di:.5 ga:.5 ^ doo:1 ti:.5 ka:.5 ti:.5 ka:.5 *too:1 doo:1 rr:1 doo:1 wa:1 ya:1 ee:1 oo:1 ^ ~oo:2@C4 doo:2

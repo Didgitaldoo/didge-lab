@@ -16,6 +16,12 @@ This folder contains documentation for DidgeLab: computer-aided design of didger
 | [simulation_methods/acoustical_simulation/3d_fem.md](simulation_methods/acoustical_simulation/3d_fem.md) | Full 3D FEM: tetrahedral Helmholtz on the swept bore volume, the only backend that predicts bent-bore pitch shifts from first principles without a fitting parameter. |
 | [simulation_methods/acoustical_simulation/mesh_construction.md](simulation_methods/acoustical_simulation/mesh_construction.md) | How the 1D, 2D, and 3D FEM meshes are built from a bore profile (and centerline): line, structured triangulation, swept disk template, Bishop frame, prism-to-tet split. |
 
+## Synthesis
+
+| File | Description |
+|------|-------------|
+| [impedance_from_sound.md](impedance_from_sound.md) | Estimating the impedance spectrum of an unknown didgeridoo from a sound sample (`didgelab.synth.estimate_impedance`): method, accuracy on the Didge Archive, recording tips. |
+
 ## Examples
 
 | File | Description |
