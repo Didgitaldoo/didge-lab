@@ -35,13 +35,20 @@ def _audio_formats():
 
 
 def write_audio(path, y, fs):
-    """Write 16-bit audio with soundfile if installed, else as wav with scipy."""
+    """Write audio with soundfile if installed (format from the file name, 16 bit
+    for wav/flac), else as 16-bit wav with scipy; a non-wav name then gets the
+    suffix .wav. Returns the path written."""
+    path = Path(path)
     try:
         import soundfile as sf
-        sf.write(path, y, fs, subtype="PCM_16")
     except ImportError:
         from scipy.io import wavfile
+        path = path.with_suffix(".wav")
         wavfile.write(path, fs, (np.clip(y, -1, 1) * 32767).astype(np.int16))
+        return path
+    pcm = path.suffix.lower() in (".wav", ".flac", ".aiff", ".aif")
+    sf.write(path, y, fs, subtype="PCM_16" if pcm else None)
+    return path
 
 
 def check_audio_out(out, *inputs):

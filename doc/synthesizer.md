@@ -525,7 +525,7 @@ cross-validation:
 | model | rms band error |
 |---|---|
 | this synthesizer, leave-one-out | **5.1 dB** |
-| this synthesizer, final defaults | 5.4 dB |
+| this synthesizer, final defaults | 5.7 dB |
 | generic $1/n$ harmonic spectrum | 6.1 dB |
 | Didge2Wav | 26.5 dB |
 

@@ -6,11 +6,11 @@ import argparse
 from pathlib import Path
 
 import numpy as np
-import soundfile as sf
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from didgelab.synth.cli import write_audio
 from didgelab.synth import archive, Bore, ModelParams, VOWELS, VocalTract, synthesize, DEFAULT_SCORE
 from didgelab.synth import vocaltract
 from didgelab.synth.analysis import load_audio, stft
@@ -173,7 +173,7 @@ c.vt[:, 1] = 0.5
 c.vt[:, 2] = 0.45
 c.vt[:, 3] = 0.3
 y = Synthesizer(bm, p, seed=0).render(c, reverb=0.15)
-sf.write(AUD / "tongue-sweep-matema.mp3", y, 48000, format="MP3")
+write_audio(AUD / "tongue-sweep-matema.mp3", y, 48000)
 xr, fs = load_audio(matema.samples["song"], 48000)
 xr = xr[3 * fs:12 * fs]
 fig, axs = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
@@ -239,7 +239,7 @@ for col, name in enumerate(["drone-back-to-front", "dong-tiki-ritititi"]):
     sg = songlib.load(SONGS / f"{name}.didge")
     bo = songlib.load_bore(sg, archive_path=args.archive)
     y = songlib.render(sg, bo)
-    sf.write(AUD / "songs" / f"{name}.mp3", y, 48000, format="MP3")
+    write_audio(AUD / "songs" / f"{name}.mp3", y, 48000)
     from didgelab.synth.techniques import Player
     pl = Player(bo, seed=0)
     c = pl.controls(songlib.events(sg), {"humanize": 0}, tail=0.0, tongue=songlib.tongue_track(sg))
@@ -275,11 +275,11 @@ showcase = {
 }
 for name, score in showcase.items():
     y, fs = synthesize(arusha.geometry, score, seed=1)
-    sf.write(AUD / f"arusha-{name}.mp3", y, fs, format="MP3")
+    write_audio(AUD / f"arusha-{name}.mp3", y, fs)
 for inst in ["Malveira", "Kizimkazi", "Tamaki1", "Matema"]:
     y, fs = synthesize(archive.get(inst, args.archive).geometry, DEFAULT_SCORE, seed=2)
-    sf.write(AUD / f"{inst.lower()}-groove.mp3", y, fs, format="MP3")
+    write_audio(AUD / f"{inst.lower()}-groove.mp3", y, fs)
 # simple straight cone, the Didge2Wav example bore
 y, fs = synthesize([[0, 32], [1500, 43]], DEFAULT_SCORE, seed=3)
-sf.write(AUD / "didge2wav-cone-groove.mp3", y, fs, format="MP3")
+write_audio(AUD / "didge2wav-cone-groove.mp3", y, fs)
 print("done")

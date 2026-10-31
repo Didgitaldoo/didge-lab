@@ -12,9 +12,9 @@ import json
 from pathlib import Path
 
 import numpy as np
-import soundfile as sf
 from scipy.ndimage import median_filter
 
+from didgelab.synth.cli import write_audio
 from didgelab.synth import archive
 from didgelab.synth.analysis import load_audio
 from didgelab.synth.bore import Bore
@@ -94,7 +94,7 @@ for ins, path in jobs:
     from didgelab.synth.detect import analyse
     fa_ex = analyse(x[:n], fs, bore, invert=False)
     y = resynthesize(fa_ex, bore)
-    sf.write(AUD / f"resynth-{name}.mp3", y, fs, format="MP3")
+    write_audio(AUD / f"resynth-{name}.mp3", y, fs)
 
 json.dump(rows, open("doc/results/synth/recordings_summary.json", "w"), indent=1)
 

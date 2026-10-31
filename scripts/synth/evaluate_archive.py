@@ -11,9 +11,9 @@ import json
 from pathlib import Path
 
 import numpy as np
-import soundfile as sf
 from scipy.signal import find_peaks, butter, freqz
 
+from didgelab.synth.cli import write_audio
 from didgelab.synth import archive
 from didgelab.synth.analysis import load_audio, stft, track_f0, harmonic_amplitudes, ltas_harmonics
 from didgelab.synth.bore import Bore
@@ -211,7 +211,8 @@ for nm in names:
     M = 20 * np.log10(np.abs(b.interp("Zin", nn * f0)) ** 1.2 * np.abs(hindle_harmonics(0.85, NH)) * np.abs(hl) + 1e-30)
     d2w.append(band_err(RB[nm], bands(nn * f0, np.maximum(M, M.max() - 120))))
     flat.append(band_err(RB[nm], bands(nn * f0, 20 * np.log10(1 / nn))))
-    default.append(E[(0.45, 0.85, 1.0, nm)])
+    # the final defaults of ModelParams (not a grid point: zs_mpa = 0.1)
+    default.append(band_err(RB[nm], bands(nn * f0, harmonic_db(b, f0, VOWELS["neutral"], ModelParams(), NH))))
 out["ltas_third_octave"] = {"model_leave_one_out_db": float(np.mean(loo)), "model_default_db": float(np.mean(default)),
                             "didge2wav_db": float(np.mean(d2w)), "generic_1_over_n_db": float(np.mean(flat)),
                             "per_instrument_default": dict(zip(names, default))}
@@ -228,7 +229,7 @@ for ax, ins in zip(axs.ravel(), insts):
     f0, L, x = neutral[ins.name]
     c = score_controls(b, "tempo = 60\nuh:2", params)
     y = Synthesizer(b, params, seed=0).render(c, reverb=0.15)
-    sf.write(AUD / f"{ins.name.lower().replace(' ', '-')}-neutral-synth.mp3", y, 48000, format="MP3")
+    write_audio(AUD / f"{ins.name.lower().replace(' ', '-')}-neutral-synth.mp3", y, 48000)
     for sig, lab, col in [(x, "recording", "#555"), (y[int(0.3 * 48000):int(1.8 * 48000)], "synthesis", "#d62728")]:
         N = len(sig)
         X = np.abs(np.fft.rfft(sig * np.hanning(N), 2 * N))
