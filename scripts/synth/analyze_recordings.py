@@ -42,10 +42,12 @@ for ins in archive.load(args.archive):
 
 
 def tongue_moves(ti, dt, min_swing=0.35):
-    """Number of front<->back excursions of the tongue index (hysteresis)."""
-    x = median_filter(np.nan_to_num(ti, nan=np.nanmedian(ti)), 15)
+    """Number of front<->back excursions of the tongue index (hysteresis
+    around the player's median position, which is the reference of the index)."""
+    c = np.nanmedian(ti)
+    x = median_filter(np.nan_to_num(ti, nan=c), 15)
     moves, state = 0, None
-    lo, hi = 0.5 - min_swing / 2, 0.5 + min_swing / 2
+    lo, hi = c - min_swing / 2, c + min_swing / 2
     for v in x:
         s = "front" if v < lo else ("back" if v > hi else state)
         if state is not None and s != state:
@@ -63,7 +65,7 @@ for ins, path in jobs:
     summ = summarize(fa, segs)
     dur = summ["duration_s"]
     ev = summ["events"]
-    F = fa.formant_hz[np.isfinite(fa.formant_hz)]
+    ti = fa.tongue_index[np.isfinite(fa.tongue_index)]
     stops_f = ev.get("stop_front", 0)
     stops_b = ev.get("stop_back", 0)
     toots = {k: v for k, v in ev.items() if k.startswith("toot")}
@@ -77,8 +79,9 @@ for ins, path in jobs:
         "circular_breaths": ev.get("circular_breath", 0),
         "breath_interval_s": round(dur / ev["circular_breath"], 1) if ev.get("circular_breath") else None,
         "fricatives": ev.get("fricative", 0),
-        "formant_p10_p50_p90_hz": [int(v) for v in np.percentile(F, [10, 50, 90])] if len(F) else None,
-        "tongue": {k: round(v, 2) for k, v in summ["tongue"].items()},
+        "tongue_p10_p90": [round(float(v), 2) for v in np.percentile(ti, [10, 90])] if len(ti) else None,
+        "tongue_coverage": round(float(np.mean(np.isfinite(fa.tongue_index[fa.mode >= 0]))), 2),
+        "tongue_match": round(float(np.nanmedian(fa.tongue_match[fa.mode >= 0])), 2),
         "tongue_moves_per_s": round(tongue_moves(fa.tongue_index, fa.t[1] - fa.t[0]) / dur, 2),
     }
     rows.append(row)
@@ -100,15 +103,14 @@ json.dump(rows, open("doc/results/synth/recordings_summary.json", "w"), indent=1
 
 # markdown table for the article
 hdr = ["recording", "instrument", "dur s", "drone Hz (sim)", "toots", "stops/s", "front stops",
-       "trills", "voice s", "circ. breaths", "formant p10/50/90 Hz", "tongue front/mid/back", "tongue moves/s"]
+       "trills", "voice s", "circ. breaths", "tongue p10-p90", "tongue coverage", "tongue match", "tongue moves/s"]
 lines = ["| " + " | ".join(hdr) + " |", "|" + "---|" * len(hdr)]
 for r in rows:
     toots = ", ".join(f"{k}:{v}" for k, v in sorted(r["toots"].items())) or "-"
-    tg = r["tongue"]
     lines.append("| " + " | ".join(str(v) for v in [
         r["recording"], r["instrument"], r["duration_s"], f"{r['drone_hz']} ({r['sim_drone_hz']})", toots,
         r["stops_per_s"], r["front_stop_share"], r["trills"], r["voice_s"], r["circular_breaths"],
-        "/".join(map(str, r["formant_p10_p50_p90_hz"] or [])),
-        f"{tg.get('front', 0):.2f}/{tg.get('middle', 0):.2f}/{tg.get('back', 0):.2f}", r["tongue_moves_per_s"]]) + " |")
+        "-".join(map(str, r["tongue_p10_p90"] or [])), r["tongue_coverage"], r["tongue_match"],
+        r["tongue_moves_per_s"]]) + " |")
 Path("doc/results/synth/recordings_summary.md").write_text("\n".join(lines) + "\n")
 print("\n".join(lines))

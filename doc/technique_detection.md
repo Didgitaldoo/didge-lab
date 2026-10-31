@@ -50,13 +50,15 @@ Every 10 ms frame of the recording is analysed (`detect.analyse`):
    of the DidgeLab resonances. The lowest resonance whose harmonics are within
    4 dB of the best one wins. This avoids octave errors. Playing on the 2nd or a
    higher resonance is a toot.
-2. **Where is the tongue?** The dominant formant of the frame (the strongest
-   peak of the spectral envelope between 500 Hz and 4 kHz, relative to the
-   long-term envelope) is translated into a **tongue index** from 0 (front) to
-   1 (back) with the vocal-tract model of the same bore.
+2. **Where is the tongue?** The spectral envelope of the frame, relative to the
+   median envelope of the recording, is compared with the change that the
+   vocal-tract model of the same bore predicts for every tongue position. The
+   best match gives a **tongue index** from 0 (front) to 1 (back), relative to
+   the player's average position: movements are measured, not whether a player
+   is mostly at the front or at the back.
 3. **Features** per frame: level and its changes, lip mode, energy between the
    harmonics, high-band noise, 15–45 Hz amplitude modulation, band energies,
-   formant and tongue index, with ±100 ms context.
+   tongue index and its match quality, with ±100 ms context.
 
 The techniques are then detected by a classifier (`learn.Detector`, one
 gradient-boosted tree ensemble per technique) that has **never seen a real

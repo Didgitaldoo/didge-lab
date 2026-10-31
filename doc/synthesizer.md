@@ -605,7 +605,7 @@ on the archive bores) the band 300 Hz–1 kHz held −17.5 dB of the total energ
 in the archive song recordings −8 dB (spectral centroid 132 vs 311 Hz). With the
 jaw open (1.0) the grooves reach −10.2 dB (1–3 kHz: −15.0 vs −14.8 dB in the
 recordings, centroid 226 Hz), while the formant prominence measured with the
-tracker of §8.2 stays the same (about 7 dB; recordings 6–10 dB) and the formant
+earlier peak tracker (§8.2) stays the same (about 7 dB; recordings 6–10 dB) and the formant
 still falls from about 2.75 kHz ("ee") to 1.3 kHz ("oo"). The articulated shapes
 therefore use an open jaw and differ only in the tongue.
 
@@ -649,28 +649,54 @@ accepted if the drone's harmonics in between are clearly weaker. Unlike a
 harmonic-contrast score this is not disturbed by vocalisation sidebands, which
 fall between the harmonics.
 
-### 8.2 Where is the tongue? (formant tracking)
+### 8.2 Where is the tongue? (template matching)
 
 A full inversion of the four vocal-tract parameters from the harmonic amplitudes
 (grid search with Viterbi smoothing, implemented in `detect.VTInverter`) turned
 out to be ill-posed: many configurations explain a frame almost equally well.
-A much more robust feature is the dominant formant itself. For every frame the
+The tongue position alone is much better determined. For every frame the
 spectral envelope $E_t(f)$ (maximum over ±40 Hz to bridge the harmonics, then
-averaged over 250 Hz) is compared with the long-term envelope of the recording,
-level and tilt are removed by an affine fit in $\log f$,
+averaged over 250 Hz) is compared with the median envelope of the recording,
 
 ```math
-R_t(f) = E_t(f) - \mathrm{median}_{t'} E_{t'}(f) - \alpha_t - \beta_t\log_2 f,
-\qquad
-F_t = \arg\max_{500\le f\le 4000} R_t(f),
+R_t(f) = E_t(f) - \mathrm{median}_{t'} E_{t'}(f).
 ```
 
-and $F_t$ is accepted if its prominence $R_t(F_t) - \mathrm{median}_f R_t$
-exceeds 4 dB. The physical model then translates the formant into a tongue
-position: for the bore at hand, the model formant $F_{\text{model}}(\tau)$ is
-computed along the tongue-position axis (it falls monotonically from front to
-back), and the **tongue index** is $F_{\text{model}}^{-1}(F_t)$ normalised to
-$[0,1]$ (0 = front, 1 = back), extrapolated in $\log f$ beyond the model range.
+The median removes everything that does not change during the performance: the
+bore, the radiation, the room and the microphone. What remains is the change of
+the mouth. The model predicts this change for the bore at hand: for 41 tongue
+positions $\tau \in [0, 1]$ (0 = front "ee", 1 = back "oo"; jaw open, tongue
+height and glottis fixed) the radiated spectrum relative to the spectrum without
+vocal tract, smoothed in the same way and centred on its mean over all
+positions, gives a template $T_\tau(f)$. The **tongue index** is the position
+whose template correlates best with the frame between 600 Hz and 3 kHz,
+
+```math
+\hat\tau_t = \arg\max_\tau \; \mathrm{corr}_{600\le f\le 3000}\left(R_t(f),\, T_\tau(f)\right),
+```
+
+refined by a parabola through the neighbouring correlations; frames with a
+correlation below 0.3 get no index. The **formant** reported with it is the
+model formant of the matched position, $F_{\text{model}}(\hat\tau_t)$, which
+falls monotonically from ≈2.5 kHz (front) to ≈1.2 kHz (back).
+
+On synthetic drones whose tongue glides from front to back or back to front on
+the nine archive bores, the index follows the true position with a correlation
+of 0.99 (median error 0.03). It stays usable when the player spends most of the
+time at the back or at the front (correlation 0.65–0.69) or when the mouth
+differs from the model (jaw half closed 0.42, tongue height 0.3 / 0.7:
+0.21 / 0.75).
+
+Because the reference is the recording's own median, the index measures the
+tongue *relative to the player's average position*. Movements are measured;
+whether a player is mostly at the front or at the back cannot be determined.
+
+*An earlier tracker took the strongest (later: the lowest strong) peak of
+$R_t$ after removing an affine trend in $\log f$, and translated its frequency
+into a tongue position with the model. On the synthetic glides it moved in the
+wrong direction (correlation −0.2 to −0.4): when the formant falls, the trend
+removal turns the upper end of the band (3–4 kHz) into the strongest peak. The
+tongue results of the first version of §9 came from this tracker.*
 
 ### 8.3 Learning the articulations from synthetic performances
 
@@ -689,8 +715,8 @@ classifier that never sees a real recording during training:
 2. **Features** per frame: level and its derivatives and deviation from a running
    median, lip mode and pitch deviation from the resonance, inharmonic energy,
    non-harmonic high-band noise, amplitude modulation depth and rate (15–45 Hz),
-   band energies (9 bands) and their derivatives, formant, its prominence and the
-   tongue index, the inverted vocal tract; stacked with ±100 ms context and local
+   band energies (9 bands) and their derivatives, the tongue index, its match
+   quality and the model formant, the inverted vocal tract; stacked with ±100 ms context and local
    mean/standard deviation.
 3. **Model.** One gradient-boosted tree ensemble per technique (stop front, stop
    back, trill, voice, circular breath, fricative). A stop is reported for every
@@ -834,10 +860,12 @@ difference tones fill the spectrum between the harmonics).*
 * **Linearised coupling.** The series formula of §4 linearises the valve; the
   harmonics are generated by the prescribed pulse shape, not by the nonlinear
   interaction with the bore.
-* **Formant range.** The articulated mouth shapes move the formant between
-  ≈1.1 and ≈2.6 kHz; the recordings show formants from 0.6 to 3.4 kHz. The
-  tongue index extrapolates outside this range, but the synthesizer cannot yet
-  produce the lowest and highest formants with the same prominence.
+* **Tongue tracking is relative and model-bound.** The tongue index (§8.2) is
+  measured relative to the player's median mouth shape, so absolute front/back
+  positions are unknown, and it assumes the model's tongue axis (open jaw,
+  fixed tongue height). Real mouths that deviate from it are tracked less
+  well; on the archive songs the templates match with a median correlation of
+  only about 0.6.
 * **Variability.** In synthesized performances the band levels vary more than
   in the recordings between 1 and 1.5 kHz and less between 2.2 and 4.5 kHz.
 * **Identifiability.** $Z_s$ and the width of the tract are fixed by the

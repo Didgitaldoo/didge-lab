@@ -47,6 +47,23 @@ def test_tongue_index_from_formant():
     assert np.nanmedian(fa.formant_hz[front]) > np.nanmedian(fa.formant_hz[back])
 
 
+def test_tongue_index_follows_a_glide():
+    # the tongue glides from front to back: the index must follow it, also
+    # where the formant falls below the starting point (a peak tracker with a
+    # tilt correction reported "front" there)
+    from didgelab.synth import song
+    s = song.parse("tempo: 60\n[rhythm]\n| uh _ _ _ | _ _ _ _ |\n[tongue]\n| 0 ~ ~ ~ | ~ ~ ~ 1 |\n")
+    b = Bore(GEO)
+    p = ModelParams()
+    y = song.render(s, b, params=p)
+    fa = analyse(y, 48000, b, p, invert=False)
+    truth = (song.tongue_track(s)(fa.t)[:, 0] - 0.4) / 0.55
+    m = np.isfinite(fa.tongue_index) & (fa.t > 0.5) & (fa.t < 7.5)
+    assert m.mean() > 0.6
+    assert np.corrcoef(fa.tongue_index[m], truth[m])[0, 1] > 0.9
+    assert np.median(np.abs(fa.tongue_index[m] - truth[m])) < 0.1
+
+
 
 def test_rule_based_detector_uses_the_labels_of_the_learned_detector():
     from didgelab.synth.detect import detect

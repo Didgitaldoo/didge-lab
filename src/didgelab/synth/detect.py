@@ -6,8 +6,9 @@ For every 10 ms frame of a recording ``analyse`` computes
 1. the lip frequency, constrained to the DidgeLab resonances of the
    instrument, and the resonance it is played on (drone / toot k)
    (``track_lip_f0``);
-2. the dominant formant (model-free envelope peak) and its translation into a
-   tongue index via the vocal-tract model (``tongue_from_formant``);
+2. the tongue position, by matching the spectral envelope with the
+   vocal-tract model along the tongue axis (``tongue_track``), and the model
+   formant of that position;
 3. a grid inversion of the full vocal tract with Viterbi smoothing
    (``VTInverter``; ill-posed, used only as additional classifier features);
 4. features: level, inharmonic energy, non-harmonic high-band noise,
@@ -56,9 +57,9 @@ class FrameAnalysis:
     am_rate: np.ndarray         # dominant amplitude modulation rate 15-45 Hz
     am_depth: np.ndarray        # its depth (dB)
     bands_db: np.ndarray = None # (T, 9) band energies relative to the frame level
-    formant_hz: np.ndarray = None   # dominant formant (model-free), Hz
-    formant_prom: np.ndarray = None # its prominence, dB
-    tongue_index: np.ndarray = None # formant mapped to tongue position (0 front .. 1 back)
+    formant_hz: np.ndarray = None   # model formant of the matched tongue position, Hz
+    tongue_match: np.ndarray = None # correlation of the envelope with the matched template
+    tongue_index: np.ndarray = None # tongue position (0 front .. 1 back)
 
 
 @dataclass
@@ -196,8 +197,8 @@ def analyse(x, fs, bore, params=ModelParams(), n_harm=50, invert=True):
                       for lo, hi in zip(edges[:-1], edges[1:])], 1)
     bands = bands - 10 * np.log10(P[:, (f >= 60) & (f < 7000)].sum(1) + 1e-20)[:, None]
 
-    F, prom = analysis.formant_track(spec, voiced=ok)
-    tongue = tongue_from_formant(F, bore, params)
+    tongue, match = tongue_track(spec, ok, bore, params)
+    F = formant_from_tongue(tongue, bore, params)
 
     vt = np.full((T, 4), np.nan)
     err = np.full(T, np.nan)
@@ -206,7 +207,7 @@ def analyse(x, fs, bore, params=ModelParams(), n_harm=50, invert=True):
         idx, err = inv.track(H, f0)
         vt[idx >= 0] = inv.grid[idx[idx >= 0]]
     return FrameAnalysis(t, f0, level, mode, vt, err, inh, hf_rel, H, am_rate, am_depth, bands,
-                         F, prom, tongue)
+                         F, match, tongue)
 
 
 _TONGUE_CURVES = {}
@@ -217,7 +218,7 @@ def tongue_curve(bore, params=ModelParams(), height=0.5, mouth=ARTICULATED_MOUTH
 
     Along the tongue-position axis (0.4 .. 0.95, where the formant falls
     monotonically) the model formant is computed with the same envelope
-    method as ``analysis.formant_track``. Returns (tongue_pos, formant_hz).
+    envelope method as ``tongue_track``. Returns (tongue_pos, formant_hz).
     """
     key = (id(bore), height, mouth, glottis)
     if key in _TONGUE_CURVES:
@@ -241,6 +242,85 @@ def tongue_curve(bore, params=ModelParams(), height=0.5, mouth=ARTICULATED_MOUTH
     F = np.minimum.accumulate(np.array(F))     # enforce monotonic fall
     _TONGUE_CURVES[key] = (tps, F)
     return tps, F
+
+
+TONGUE_GRID = np.linspace(0.0, 1.0, 41)
+TONGUE_FMIN, TONGUE_FMAX = 600.0, 3000.0
+TONGUE_MIN_MATCH = 0.3
+_TONGUE_TEMPLATES = {}
+
+
+def tongue_vt(x, height=0.5, mouth=ARTICULATED_MOUTH, glottis=0.3):
+    """Articulated mouth along the tongue axis: 0 = front ("ee") .. 1 = back ("oo")."""
+    return np.array([0.4 + 0.55 * x, height, mouth, glottis])
+
+
+def _envelope(S_db, f, df):
+    """Spectral envelope: maximum over +-40 Hz (bridges the harmonics), smoothed over 250 Hz."""
+    from scipy.ndimage import maximum_filter1d
+    E = maximum_filter1d(S_db, int(80 / df) | 1, axis=-1)
+    return uniform_filter1d(E, int(250 / df) | 1, axis=-1)
+
+
+def tongue_templates(bore, freqs, params=ModelParams()):
+    """Change of the radiated spectrum (dB) for every position of ``TONGUE_GRID``,
+    relative to the mean over all positions; shape (len(TONGUE_GRID), len(freqs))."""
+    key = (id(bore), len(freqs), float(freqs[0]), float(freqs[-1]))
+    if key in _TONGUE_TEMPLATES:
+        return _TONGUE_TEMPLATES[key]
+    ref = 20 * np.log10(np.abs(filter_gain(bore, freqs, None, params)) + 1e-30)
+    D = np.array([20 * np.log10(np.abs(filter_gain(bore, freqs, tongue_vt(x), params)) + 1e-30) - ref
+                  for x in TONGUE_GRID])
+    D = uniform_filter1d(D, max(int(250 / (freqs[1] - freqs[0])), 1) | 1, axis=1)
+    D = D - D.mean(0)
+    _TONGUE_TEMPLATES[key] = D
+    return D
+
+
+def tongue_track(spec, voiced, bore, params=ModelParams(), min_match=TONGUE_MIN_MATCH):
+    """Tongue position per frame (0 front .. 1 back) by template matching.
+
+    The spectral envelope of each frame minus the median envelope of the voiced
+    frames (this removes the bore, the radiation and the recording chain) is
+    correlated, between 600 Hz and 3 kHz, with the change of the model spectrum
+    along the tongue axis (``tongue_templates``). The best template, refined by
+    a parabola through the correlations, gives the tongue position. Returns
+    (tongue_index, match); the index is NaN where the correlation is below
+    ``min_match`` or the frame is unvoiced.
+
+    Because the reference is the recording's own median, the index measures the
+    tongue relative to the player's average position: movements are measured
+    reliably, absolute front/back shares are not.
+    """
+    t, f, X = spec
+    m = (f >= TONGUE_FMIN) & (f <= TONGUE_FMAX)
+    fm = f[m]
+    E = _envelope(20 * np.log10(X[:, m] + 1e-9), fm, f[1] - f[0])
+    ok = np.asarray(voiced, bool)
+    if not ok.any():
+        return np.full(len(t), np.nan), np.full(len(t), np.nan)
+    R = E - np.median(E[ok], axis=0)
+    T = tongue_templates(bore, fm, params)
+    Rc = R - R.mean(1, keepdims=True)
+    Tc = T - T.mean(1, keepdims=True)
+    C = (Rc @ Tc.T) / (np.linalg.norm(Rc, axis=1)[:, None] * np.linalg.norm(Tc, axis=1)[None] + 1e-9)
+    j = np.argmax(C, axis=1)
+    rows = np.arange(len(C))
+    jj = np.clip(j, 1, len(TONGUE_GRID) - 2)
+    a, b, c = C[rows, jj - 1], C[rows, jj], C[rows, jj + 1]
+    den = a - 2 * b + c
+    shift = np.where((j == jj) & (den < 0), 0.5 * (a - c) / np.where(den < 0, den, -1), 0.0)
+    step = TONGUE_GRID[1] - TONGUE_GRID[0]
+    x = np.clip(TONGUE_GRID[j] + np.clip(shift, -0.5, 0.5) * step, 0.0, 1.0)
+    match = C[rows, j]
+    good = ok & (match >= min_match)
+    return np.where(good, x, np.nan), np.where(ok, match, np.nan)
+
+
+def formant_from_tongue(x, bore, params=ModelParams()):
+    """Model formant (Hz) at tongue index ``x`` (inverse of ``tongue_from_formant``)."""
+    tps, Fc = tongue_curve(bore, params)
+    return np.interp(0.4 + 0.55 * np.asarray(x, float), tps, Fc, left=np.nan, right=np.nan)
 
 
 def tongue_from_formant(F, bore, params=ModelParams()):
@@ -418,7 +498,11 @@ def detect(fa: FrameAnalysis, cfg=DetectorConfig()):
 
 
 def tongue_summary(fa: FrameAnalysis, split=(0.35, 0.65)):
-    """Share of voiced time with the tongue front / middle / back (from the formant)."""
+    """Share of voiced time with the tongue front / middle / back.
+
+    The tongue index is relative to the player's average position (see
+    ``tongue_track``), so these shares describe the spread of the movement,
+    not the absolute position."""
     tp = fa.tongue_index if fa.tongue_index is not None else fa.vt[:, 0]
     tp = tp[np.isfinite(tp)]
     if len(tp) == 0:

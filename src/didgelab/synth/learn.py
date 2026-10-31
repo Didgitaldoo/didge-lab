@@ -78,7 +78,7 @@ def base_features(fa, bore):
     feats += [np.nan_to_num(fa.vt[:, k], nan=-1) for k in range(4)]
     if fa.formant_hz is not None:
         lf = np.nan_to_num(np.log2(fa.formant_hz / 1000.0), nan=-3.0)
-        feats += [lf, np.gradient(lf), np.nan_to_num(fa.formant_prom, nan=0.0),
+        feats += [lf, np.gradient(lf), np.nan_to_num(fa.tongue_match, nan=0.0),
                   np.nan_to_num(fa.tongue_index, nan=-1.0)]
     B = np.nan_to_num(fa.bands_db, nan=-60.0)
     feats += [B[:, k] for k in range(B.shape[1])]
