@@ -33,6 +33,8 @@ import numpy as np
 from scipy.ndimage import median_filter, uniform_filter1d
 from scipy.signal import find_peaks
 
+from .vocaltract import ARTICULATED_MOUTH
+
 from . import analysis
 from .model import ModelParams, filter_gain, source
 
@@ -210,7 +212,7 @@ def analyse(x, fs, bore, params=ModelParams(), n_harm=50, invert=True):
 _TONGUE_CURVES = {}
 
 
-def tongue_curve(bore, params=ModelParams(), height=0.5, mouth=0.45, glottis=0.3):
+def tongue_curve(bore, params=ModelParams(), height=0.5, mouth=ARTICULATED_MOUTH, glottis=0.3):
     """Output formant of the model as a function of tongue position.
 
     Along the tongue-position axis (0.4 .. 0.95, where the formant falls
@@ -227,12 +229,15 @@ def tongue_curve(bore, params=ModelParams(), height=0.5, mouth=0.45, glottis=0.3
     A = np.stack([np.ones_like(lf), lf], 1)
     P = A @ np.linalg.pinv(A)
     tps = np.linspace(0.4, 0.95, 23)
+    search = ff >= 600.0
     F = []
     for tp in tps:
         g = 20 * np.log10(np.abs(filter_gain(bore, ff, np.array([tp, height, mouth, glottis]), params)) + 1e-30)
         D = uniform_filter1d(g - ref, 40)
         R = D - P @ D
-        F.append(ff[np.argmax(R)])
+        # above the first mouth resonance (~500 Hz with an open jaw), which would
+        # otherwise win at the front positions and flatten the whole curve
+        F.append(ff[search][np.argmax(R[search])])
     F = np.minimum.accumulate(np.array(F))     # enforce monotonic fall
     _TONGUE_CURVES[key] = (tps, F)
     return tps, F

@@ -129,3 +129,20 @@ def test_very_low_drone_renders():
     assert b.drone < 40
     y, fs = synthesize([[0, 30], [3000, 32]], "tempo = 60\ndoo:1", reverb=0.0)
     assert np.isfinite(y).all() and np.abs(y).max() > 0
+
+
+def test_articulated_playing_keeps_the_mids():
+    # Didge Archive songs: 300 Hz - 1 kHz carries about as much of the energy as
+    # in the neutral drone; a nearly closed jaw made the articulated shapes 7 dB darker
+    b = Bore(GEO)
+
+    def share(score):
+        c = score_controls(b, score, ModelParams())
+        y = Synthesizer(b, ModelParams(), seed=0).render(c, reverb=0.0)
+        X = np.abs(np.fft.rfft(y)) ** 2
+        f = np.fft.rfftfreq(len(y), 1 / 48000)
+        return 10 * np.log10(X[(f >= 300) & (f < 1000)].sum() / X[(f >= 40) & (f < 20000)].sum())
+
+    drone = share("tempo = 60\nuh:3")
+    groove = share("tempo = 100\ndi:.5 ga:.5 ti:.5 ka:.5 di:.5 ga:.5 ti:.5 ka:.5 ee:1 oo:1")
+    assert groove > drone - 4

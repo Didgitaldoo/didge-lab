@@ -118,7 +118,7 @@ def resynthesize(fa, bore, params=ModelParams(), fs=48000, rate=500.0, seed=0, r
     """
     from scipy.ndimage import median_filter
     from .synth import Controls, Synthesizer
-    from .vocaltract import VOWELS
+    from .vocaltract import VOWELS, ARTICULATED_MOUTH
 
     dur = fa.t[-1] + (fa.t[1] - fa.t[0])
     c = Controls.constant(dur, rate, bore.drone, params, VOWELS["neutral"])
@@ -140,7 +140,7 @@ def resynthesize(fa, bore, params=ModelParams(), fs=48000, rate=500.0, seed=0, r
     # frames without a clear formant keep the last tongue position
     ti = fill(fa.tongue_index, 0.5)
     vt = np.stack([0.4 + 0.55 * np.clip(ti, 0, 1), np.full_like(ti, 0.5),
-                   np.full_like(ti, 0.45), np.full_like(ti, 0.3)], 1)
+                   np.full_like(ti, ARTICULATED_MOUTH), np.full_like(ti, 0.3)], 1)
     for k in range(4):
         c.vt[:, k] = np.interp(tc, fa.t, median_filter(vt[:, k], 5))
     syn = Synthesizer(bore, params, fs=fs, seed=seed)

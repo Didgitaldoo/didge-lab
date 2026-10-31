@@ -576,6 +576,7 @@ harmonic band levels.
 | directivity tilt | −1.5 dB/octave | band levels |
 | neutral mouth | tongue (0.1, 0.0), jaw 1.0, glottis 0.6 | band levels: relaxed, open mouth, open glottis, flat tongue |
 | toot offset | −34 cents | §7.2 |
+| jaw of the articulated shapes | 1.0 (open) | band levels of the songs, 300 Hz–3 kHz (below) |
 | tract area scale, $Z_s$ | 0.2, 0.1 MPa s m⁻³ | formant shape in the performances (below) |
 | broadband noise | −20 dB at 4 kHz, high-pass 1 kHz, −6 dB/octave | full-spectrum third-octave bands up to 12.7 kHz |
 
@@ -590,6 +591,16 @@ a narrow articulating tract (jaw nearly closed, tongue near the palate) with a
 small lip source impedance reproduces the bright formant line with a prominence
 of 12–18 dB (figure 6, bottom). The same model with a wide open jaw explains
 the neutral drones, so "jaw opening" is one of the four articulatory parameters.
+
+The articulated shapes first had a nearly closed jaw as well (0.45). Rhythmic
+playing then came out far too dark: in synthesized grooves (`dong-tiki-ritititi`
+on the archive bores) the band 300 Hz–1 kHz held −17.5 dB of the total energy,
+in the archive song recordings −8 dB (spectral centroid 132 vs 311 Hz). With the
+jaw open (1.0) the grooves reach −10.2 dB (1–3 kHz: −15.0 vs −14.8 dB in the
+recordings, centroid 226 Hz), while the formant prominence measured with the
+tracker of §8.2 stays the same (about 7 dB; recordings 6–10 dB) and the formant
+still falls from about 2.75 kHz ("ee") to 1.3 kHz ("oo"). The articulated shapes
+therefore use an open jaw and differ only in the tongue.
 
 ![Tongue sweep](figures/tongue_sweep.png)
 

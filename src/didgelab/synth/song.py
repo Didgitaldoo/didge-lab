@@ -254,7 +254,8 @@ def tongue_value(tok):
 
 def tongue_axis(x):
     """Articulated mouth along the tongue axis: 0 = front ("ee") .. 1 = back ("oo")."""
-    return np.array([0.4 + 0.55 * x, 0.5, 0.45, 0.3])
+    from .vocaltract import ARTICULATED_MOUTH
+    return np.array([0.4 + 0.55 * x, 0.5, ARTICULATED_MOUTH, 0.3])
 
 
 def _check_tongue(song):

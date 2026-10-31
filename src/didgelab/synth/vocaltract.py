@@ -53,22 +53,28 @@ class VocalTract:
         return np.array([getattr(self, f.name) for f in fields(self)])
 
 
+# Jaw opening of the articulated mouth shapes. An open jaw matches the band
+# levels of the Didge Archive songs (300 Hz - 3 kHz); a nearly closed jaw (0.45,
+# the earlier value) made rhythmic playing 7-10 dB too weak there, without a
+# clearer formant (prominence ~7 dB either way, as in the recordings).
+ARTICULATED_MOUTH = 1.0
+
 # Vowel-like presets ("mouth shapes" used by didgeridoo players).
 VOWELS = {
     # "neutral" is the relaxed, wide-open mouth (open glottis, flat tongue)
     # that best explains the neutral drones of the Didge Archive (third-octave
     # band levels; the earlier tongue (0.3, 0.2) gave a formant 5-8 dB too
-    # strong at 1.6-2 kHz). The articulated
-    # mouth shapes have a nearly closed jaw and lie on the tongue-position
-    # axis; their output formant (prominence 12-18 dB) falls monotonically
-    # from front to back (values for the Matema bore).
+    # strong at 1.6-2 kHz). The articulated mouth shapes have an open jaw
+    # (ARTICULATED_MOUTH) and lie on the tongue-position axis; their output
+    # formant falls monotonically from front to back (values for the Matema
+    # bore).
     "neutral": VocalTract(0.10, 0.00, 1.00, 0.6),
-    "i":   VocalTract(0.40, 0.50, 0.45, 0.3),   # "ee": tongue front   (~2500 Hz)
-    "e":   VocalTract(0.50, 0.50, 0.45, 0.3),   #                       (~2100 Hz)
-    "ae":  VocalTract(0.60, 0.50, 0.60, 0.3),   # open "wa"            (~1800 Hz)
-    "a":   VocalTract(0.70, 0.50, 0.55, 0.3),   #                       (~1550 Hz)
-    "o":   VocalTract(0.80, 0.50, 0.45, 0.3),   #                       (~1350 Hz)
-    "u":   VocalTract(0.90, 0.50, 0.45, 0.3),   # "oo": tongue back    (~1180 Hz)
+    "i":   VocalTract(0.40, 0.50, ARTICULATED_MOUTH, 0.3),   # "ee": tongue front   (~2750 Hz)
+    "e":   VocalTract(0.50, 0.50, ARTICULATED_MOUTH, 0.3),   #                       (~2250 Hz)
+    "ae":  VocalTract(0.60, 0.50, ARTICULATED_MOUTH, 0.3),   # open "wa"            (~1850 Hz)
+    "a":   VocalTract(0.70, 0.50, ARTICULATED_MOUTH, 0.3),   #                       (~1650 Hz)
+    "o":   VocalTract(0.80, 0.50, ARTICULATED_MOUTH, 0.3),   #                       (~1280 Hz)
+    "u":   VocalTract(0.90, 0.50, ARTICULATED_MOUTH, 0.3),   # "oo": tongue back    (~1270 Hz)
 }
 
 # Place of articulation for consonants: (tongue_pos of the closure, closure type)
