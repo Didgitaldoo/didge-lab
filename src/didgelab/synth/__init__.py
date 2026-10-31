@@ -23,11 +23,12 @@ from .synth import Synthesizer, Controls
 from .techniques import Player, parse_score, score_controls, random_score
 from . import song as _song
 from .impedance import estimate as estimate_impedance
+from .geofit import fit_geometry, GeometryFit
 
 __all__ = ["Bore", "ModalBore", "Resonance", "ModelParams", "VocalTract", "VOWELS", "Synthesizer", "Controls", "Player",
            "parse_score", "score_controls", "random_score", "synthesize", "filter_gain",
            "harmonic_spectrum", "SONGS", "render_song_loop", "render_song_loop_from_peaks",
-           "estimate_impedance"]
+           "estimate_impedance", "fit_geometry", "GeometryFit"]
 
 DEFAULT_SCORE = """tempo = 100
 doo:2 di:.5 ga:.5 di:.5 ga:.5 ^ doo:1 ti:.5 ka:.5 ti:.5 ka:.5 *too:1 doo:1 rr:1 doo:1 wa:1 ya:1 ee:1 oo:1 ^ ~oo:2@C4 doo:2
@@ -77,17 +78,28 @@ def render_song_loop(geometry, song, temperature=28.0, tempo=100.0, fs=48000):
 
 
 def render_song_loop_from_peaks(peaks, song, mouth_diameter=32.0, temperature=28.0, tempo=100.0,
-                                fs=48000):
+                                fs=48000, method="modal"):
     """Like :func:`render_song_loop`, but for a bore given by its impedance peaks.
 
     ``peaks`` are (freq_hz, impedance, q) tuples or dicts with keys freq,
     impedance, q (see :class:`ModalBore`); impedance is in Pa s/m^3 as
     computed by DidgeLab.
+
+    ``method="modal"`` renders a :class:`ModalBore` (instant, pitches exact,
+    timbre approximate). ``method="geometry"`` fits a bore to the peaks with
+    :func:`fit_geometry` (a few seconds) and renders that bore; the pitches
+    are those of the fitted bore, see ``fit_geometry(...).cents``.
     """
     if song not in SONGS:
         raise ValueError(f"unknown song {song!r}, available: {sorted(SONGS)}")
     constants = compute_moist_air_properties(temp_celsius=temperature)
-    bore = ModalBore(peaks, mouth_diameter=mouth_diameter, constants=constants)
+    if method == "modal":
+        bore = ModalBore(peaks, mouth_diameter=mouth_diameter, constants=constants)
+    elif method == "geometry":
+        fit = fit_geometry(peaks, mouth_diameter=mouth_diameter, constants=constants)
+        bore = Bore(fit.geometry, constants=constants)
+    else:
+        raise ValueError(f"unknown method {method!r}, use 'modal' or 'geometry'")
     s = _song.load(SONGS[song])
     return _song.render(s, bore, tempo=tempo, repeats=1, loop=True, fs=fs,
                          fadeout=0.0), fs
