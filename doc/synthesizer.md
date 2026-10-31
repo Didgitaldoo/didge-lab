@@ -524,7 +524,7 @@ model $i$:
 
 | model | correct instrument | mean rank of the correct one | rms difference |
 |---|---|---|---|
-| this synthesizer | **7 / 9** (78 %) | 0.56 | 5.2 dB |
+| this synthesizer | **7 / 9** (78 %) | 0.56 | 5.0 dB |
 | Didge2Wav ($\lvert Z\rvert^{1.2}$ · Hindle) | 1 / 9 (11 %) | 1.8 | 11.9 dB |
 | chance | 12.5 % | | |
 
@@ -539,8 +539,8 @@ cross-validation:
 
 | model | rms band error |
 |---|---|
-| this synthesizer, leave-one-out | **4.9 dB** |
-| this synthesizer, final defaults | 5.1 dB |
+| this synthesizer, leave-one-out | **4.6 dB** |
+| this synthesizer, final defaults | 4.8 dB |
 | generic $1/n$ harmonic spectrum | 6.1 dB |
 | Didge2Wav | 26.7 dB |
 
@@ -555,10 +555,12 @@ Comparing the full long-term spectra (harmonics and noise) of the recordings
 and the synthesized drones in third-octave bands up to 16 kHz (levels matched
 at 125 Hz–1 kHz) showed that the synthesis was 7–12 dB too weak at 6–10 kHz and
 silent above 12 kHz; the broadband noise of §5.5 was calibrated on these bands
-(63 Hz–12.7 kHz). Now the mean deviation (recording minus synthesis) is −2 … −1 dB at 4–8 kHz,
-−6 … −7 dB at 10–16 kHz (the synthesis slightly brighter) and rms
-6.9 dB over all bands and instruments. The largest remaining deviation
-is an excess of the synthesis around 2 kHz (−8 dB).
+(63 Hz–12.7 kHz). Now the mean deviation (recording minus synthesis) is within ±0.3 dB at 4–8 kHz,
+−2 … −6 dB at 10–16 kHz (the synthesis slightly brighter) and rms 6.4 dB over all
+bands and instruments. A formant of the neutral mouth shape made the synthesis
+5–8 dB too strong at 1.6–2 kHz; with the tongue flat and slightly forward
+(below) the excess is −4 dB at 2 kHz in the full spectrum and below 1 dB in the
+harmonic band levels.
 
 ![Full spectrum](figures/archive_neutral_bands.png)
 
@@ -572,7 +574,7 @@ is an excess of the synthesis around 2 kHz (−8 dB).
 | bore losses | DidgeLab unchanged | fingerprint and band levels did not improve with extra wall loss |
 | open quotient OQ, skew | 0.60, 0.85 | band levels of the neutral drones (at $Z_s = 0.1$) |
 | directivity tilt | −1.5 dB/octave | band levels |
-| neutral mouth | tongue (0.3, 0.2), jaw 1.0, glottis 0.6 | band levels: relaxed, open mouth, open glottis |
+| neutral mouth | tongue (0.1, 0.0), jaw 1.0, glottis 0.6 | band levels: relaxed, open mouth, open glottis, flat tongue |
 | toot offset | −34 cents | §7.2 |
 | tract area scale, $Z_s$ | 0.2, 0.1 MPa s m⁻³ | formant shape in the performances (below) |
 | broadband noise | −20 dB at 4 kHz, high-pass 1 kHz, −6 dB/octave | full-spectrum third-octave bands up to 12.7 kHz |

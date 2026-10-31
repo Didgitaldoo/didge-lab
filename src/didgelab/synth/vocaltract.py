@@ -55,12 +55,14 @@ class VocalTract:
 
 # Vowel-like presets ("mouth shapes" used by didgeridoo players).
 VOWELS = {
-    # "neutral" is the relaxed, wide-open mouth (open glottis) that best
-    # explains the neutral drones of the Didge Archive. The articulated
+    # "neutral" is the relaxed, wide-open mouth (open glottis, flat tongue)
+    # that best explains the neutral drones of the Didge Archive (third-octave
+    # band levels; the earlier tongue (0.3, 0.2) gave a formant 5-8 dB too
+    # strong at 1.6-2 kHz). The articulated
     # mouth shapes have a nearly closed jaw and lie on the tongue-position
     # axis; their output formant (prominence 12-18 dB) falls monotonically
     # from front to back (values for the Matema bore).
-    "neutral": VocalTract(0.30, 0.20, 1.00, 0.6),
+    "neutral": VocalTract(0.10, 0.00, 1.00, 0.6),
     "i":   VocalTract(0.40, 0.50, 0.45, 0.3),   # "ee": tongue front   (~2500 Hz)
     "e":   VocalTract(0.50, 0.50, 0.45, 0.3),   #                       (~2100 Hz)
     "ae":  VocalTract(0.60, 0.50, 0.60, 0.3),   # open "wa"            (~1800 Hz)

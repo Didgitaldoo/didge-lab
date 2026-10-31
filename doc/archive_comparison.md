@@ -74,9 +74,9 @@ The numbers are produced by `scripts/synth/evaluate_archive.py` and stored in
 | toots, 2 clear cases (Tamaki1, Tamaki2) | played **27–40 cents below** the resonance |
 | hand closed ↔ maxima of $\lvert Z_{in}\rvert$, n = 20 | median error 31 cents, 75 % within 50 cents |
 | hand open ↔ minima of $\lvert Z_{in}\rvert$, n = 20 | median error 25 cents, 95 % within 50 cents |
-| harmonic fingerprint | correct instrument for **7 of 9** recordings (chance 12.5 %), rms 5.2 dB |
-| third-octave envelope, leave-one-out | rms error **4.9 dB** (default parameters 5.1 dB, generic 1/n spectrum 6.1 dB) |
-| full spectrum (harmonics and noise), 63 Hz–12.7 kHz | rms 6.9 dB; mean deviation within ±3 dB at 4–8 kHz, synthesis 4–7 dB brighter at 10–16 kHz, 8 dB too strong around 2 kHz |
+| harmonic fingerprint | correct instrument for **7 of 9** recordings (chance 12.5 %), rms 5.0 dB |
+| third-octave envelope, leave-one-out | rms error **4.6 dB** (default parameters 4.8 dB, generic 1/n spectrum 6.1 dB) |
+| full spectrum (harmonics and noise), 63 Hz–12.7 kHz | rms 6.4 dB; mean deviation within ±0.3 dB at 4–8 kHz, synthesis 2–6 dB brighter at 10–16 kHz, 4 dB too strong around 2 kHz |
 
 What this means:
 
