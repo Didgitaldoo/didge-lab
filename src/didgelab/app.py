@@ -70,7 +70,7 @@ class App:
                 conf_str += f"\n{key}: {conf[key]}"
             logging.info(conf_str)
 
-        if "ipykernel" in sys.modules:
+        elif "ipykernel" in sys.modules:
             self.start_message()
 
     def register_service(self, service):
