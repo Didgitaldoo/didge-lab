@@ -344,6 +344,8 @@ class DetectorConfig:
     breath_seal_tp: float = 0.6    # fitted tongue position of a sealed mouth
     breath_seal_th: float = 0.75
     breath_hf_db: float = 6.0      # sniff noise rise above the local median
+    breath_min_len: float = 0.2    # s; consonants also raise the high-band noise, but briefly
+                                   # (synthetic performances: F1 0.42 at 0.12 s, 0.72 at 0.2 s)
     toot_min_len: float = 0.08
 
 
@@ -373,9 +375,11 @@ def detect(fa: FrameAnalysis, cfg=DetectorConfig()):
         tp = np.nanmedian(fa.vt[lo:hi, 0]) if np.any(np.isfinite(fa.vt[lo:hi, 0])) else np.nan
         front = (not np.isfinite(tp)) or tp < cfg.front_back_split
         deep = h >= cfg.dip_deep_db
-        label = ("t" if front else "k") if deep else ("d" if front else "g")
-        segs.append(Segment(t[p] - 0.02, t[p] + 0.02, label,
-                            {"depth_db": float(h), "tongue_pos": float(tp) if np.isfinite(tp) else None}))
+        consonant = ("t" if front else "k") if deep else ("d" if front else "g")
+        # same labels as the learned detector (learn.CLASSES)
+        segs.append(Segment(t[p] - 0.02, t[p] + 0.02, "stop_front" if front else "stop_back",
+                            {"consonant": consonant, "voiced": not deep, "depth_db": float(h),
+                             "tongue_pos": float(tp) if np.isfinite(tp) else None}))
 
     # --- trills
     trill = (fa.am_depth > cfg.trill_depth_db) & voiced
@@ -397,7 +401,7 @@ def detect(fa: FrameAnalysis, cfg=DetectorConfig()):
     sniff = np.nan_to_num(hf - hf_ref, nan=0) > cfg.breath_hf_db
     sniff = uniform_filter1d(sniff.astype(float), int(0.1 / dt)) > 0.3
     cand = median_filter((sealed | sniff).astype(int), size=5) > 0
-    for i, j in _runs(cand, t, 0.12):
+    for i, j in _runs(cand, t, cfg.breath_min_len):
         if t[j - 1] - t[i] > 0.8:
             continue
         score = float(np.mean(sealed[i:j]) + np.mean(sniff[i:j]))

@@ -45,3 +45,18 @@ def test_tongue_index_from_formant():
     back = (t > 2.6) & (t < 3.8) | (t > 6.6) & (t < 7.8)
     assert np.nanmedian(fa.tongue_index[front]) < np.nanmedian(fa.tongue_index[back])
     assert np.nanmedian(fa.formant_hz[front]) > np.nanmedian(fa.formant_hz[back])
+
+
+
+def test_rule_based_detector_uses_the_labels_of_the_learned_detector():
+    from didgelab.synth.detect import detect
+    from didgelab.synth.learn import CLASSES
+    b = Bore([[0, 32], [800, 32], [1100, 40], [1450, 75]])
+    p = ModelParams()
+    c = score_controls(b, "tempo = 60\ndoo:2 *too:1 doo:2", p)
+    y = Synthesizer(b, p, seed=0).render(c, reverb=0.0)
+    segs = detect(analyse(y, 48000, b, p))
+    stops = [s for s in segs if s.label.startswith("stop")]
+    assert stops
+    assert all(s.info["consonant"] in "tdkg" for s in stops)
+    assert all(s.label in CLASSES or s.label.startswith("toot") for s in segs)
