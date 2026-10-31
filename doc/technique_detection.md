@@ -76,12 +76,12 @@ detector never saw during training
 
 | technique | precision | recall | F1 |
 |---|---|---|---|
-| stop consonants (±60 ms) | 0.97 | 0.97 | 0.97 |
-| place of articulation (t/d vs. k/g) | | | accuracy 0.987 |
-| rolled-r trill | 0.97 | 1.00 | 0.98 |
-| vocalisation | 0.92 | 0.90 | 0.91 |
+| stop consonants (±60 ms) | 0.98 | 0.97 | 0.97 |
+| place of articulation (t/d vs. k/g) | | | accuracy 0.955 |
+| rolled-r trill | 0.95 | 0.98 | 0.97 |
+| vocalisation | 0.94 | 1.00 | 0.97 |
 | circular breathing | 1.00 | 0.99 | 0.99 |
-| fricatives / aspiration | 0.88 | 0.82 | 0.85 |
+| fricatives / aspiration | 0.84 | 0.77 | 0.80 |
 | toots (lip tracker) | 0.99 | 1.00 | 0.99 |
 
 These numbers say how well the techniques **as modelled** are recognised on

@@ -708,16 +708,22 @@ detector trained on 80 performances on random bores:
 
 | technique | precision | recall | F1 | events |
 |---|---|---|---|---|
-| stop consonants (±60 ms) | 0.97 | 0.97 | 0.97 | 844 |
-| place of articulation (t/d vs. k/g) of detected stops | | | accuracy 0.987 | 823 |
-| rolled-r trill | 0.97 | 1.00 | 0.98 | 64 |
-| vocalisation | 0.92 | 0.90 | 0.91 | 72 |
+| stop consonants (±60 ms) | 0.98 | 0.97 | 0.97 | 844 |
+| place of articulation (t/d vs. k/g) of detected stops | | | accuracy 0.955 | 816 |
+| rolled-r trill | 0.95 | 0.98 | 0.97 | 64 |
+| vocalisation | 0.94 | 1.00 | 0.97 | 72 |
 | circular breathing | 1.00 | 0.99 | 0.99 | 139 |
-| fricatives / aspiration | 0.88 | 0.82 | 0.85 | 77 |
+| fricatives / aspiration | 0.84 | 0.77 | 0.80 | 77 |
 | toots (lip tracker, no learning) | 0.99 | 1.00 | 0.99 | 67 |
 
-(Detector retrained in DidgeLab, `scripts/synth/train_detector.py`; the stored
-result is [results/synth/detector_eval.json](results/synth/detector_eval.json).)
+(Detector retrained in DidgeLab, `scripts/synth/train_detector.py`, on the current
+synthesis (Levine–Schwinger radiation, open jaw of the articulated vowels, lip
+open quotient falling with pitch); the stored result is
+[results/synth/detector_eval.json](results/synth/detector_eval.json). Compared with
+the detector trained on the earlier synthesis, vocalisation is found better
+(F1 0.91 → 0.97); the place of articulation (0.987 → 0.955) and fricatives
+(0.85 → 0.80) are slightly worse: with the open jaw, front and back tongue
+positions are less different in sound.)
 
 These numbers measure how well the techniques *as modelled* can be recognised
 on unseen instruments and recording conditions. They are an upper bound for real
