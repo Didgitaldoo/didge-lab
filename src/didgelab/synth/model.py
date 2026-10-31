@@ -13,7 +13,8 @@ and the far-field pressure radiated from the bell is
 
 Peaks of Z_vt choke the flow at those frequencies and produce the
 characteristic formant-like bands of the didgeridoo sound
-(Tarnopolsky et al., Nature 2005).
+(Tarnopolsky et al., Nature 2005). The series formula has the same form as
+the first-order lip-valve solution of Fletcher et al. (JASA 119, 2006, eq. 23).
 """
 
 from dataclasses import dataclass, asdict, replace

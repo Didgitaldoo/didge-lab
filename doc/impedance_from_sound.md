@@ -104,3 +104,34 @@ the neutral drone (blue) and the song (red); dotted: repeated decay modes.*
   groove.
 * For an accurate measurement, use a loudspeaker and a microphone at the
   mouthpiece with a sine sweep. That measures $Z_{\text{in}}$ directly.
+
+## Sources
+
+The forward model is the one of `didgelab.synth`:
+
+* **Bore:** DidgeLab's transmission-line model, which follows Geipel's CADSD
+  (Geipel, 2003; see [transmission_line_model.md](simulation_methods/acoustical_simulation/transmission_line_model.md)).
+* **Lips:** a beating-lip flow pulse of the Rosenberg (1971) type, whose
+  harmonics fall off as $n^{-2}$, as measured on the lips of a didgeridoo
+  player (Fletcher et al., 2006). The smooth-flow alternative
+  (`ModelParams(source="hindle")`, used by Didge2Wav) is the excitation of
+  Hindle and Posnett (2017), who attribute it to Fletcher (1996).
+* **Coupling:** lips, vocal tract and bore in series,
+  $`U = U_s\,Z_s/(Z_s + Z_{vt} + Z_{\text{in}})`$. This has the same form as the
+  first-order lip-valve solution of Fletcher et al. (2006, eq. 23).
+  Impedance minima of the vocal tract produce the formant bands
+  (Fletcher, 1983; Tarnopolsky et al., 2005).
+* **Estimation:** free decays are fitted with the matrix-pencil method (Hua and
+  Sarkar, 1990), the bore with differential evolution (Storn and Price, 1997).
+
+## References
+
+- Fletcher, N. H. (1983): *Acoustics of the Australian didjeridu*. Australian Aboriginal Studies 1, 28–37.
+- Fletcher, N. H. (1996): *The didjeridu (didgeridoo)*. Acoustics Australia 24, 11–16.
+- Fletcher, N. H., Hollenberg, L. C. L., Smith, J., Tarnopolsky, A. Z., Wolfe, J. (2006): *Vocal tract resonances and the sound of the Australian didjeridu (yidaki) II. Theory*. J. Acoust. Soc. Am. 119(2), 1205–1213. [PDF](https://www.phys.unsw.edu.au/~jw/reprints/Fletcheretal.pdf)
+- Geipel, F. (2003): *CADSD – Computer Aided Didgeridoo Sound Design*. [didgeridoo-physik.de/cadsd/cadsd-method](https://www.didgeridoo-physik.de/cadsd/cadsd-method/)
+- Hindle, A., Posnett, D. (2017): *Performance with an electronically excited didgeridoo*. Proc. NIME'17, Copenhagen. [PDF](https://softwareprocess.es/pubs/hindle2017NIME-didgeridoo.pdf)
+- Hua, Y., Sarkar, T. K. (1990): *Matrix pencil method for estimating parameters of exponentially damped/undamped sinusoids in noise*. IEEE Trans. Acoustics, Speech, and Signal Processing 38(5), 814–824.
+- Rosenberg, A. E. (1971): *Effect of glottal pulse shape on the quality of natural vowels*. J. Acoust. Soc. Am. 49, 583–590.
+- Storn, R., Price, K. (1997): *Differential evolution: a simple and efficient heuristic for global optimization over continuous spaces*. Journal of Global Optimization 11, 341–359.
+- Tarnopolsky, A. Z., Fletcher, N. H., Hollenberg, L. C. L., Lange, B. D., Smith, J., Wolfe, J. (2005): *The vocal tract and the sound of a didgeridoo*. Nature 436, 39.

@@ -30,7 +30,7 @@ If you are not into Python programming, I suggest you use the web-based software
 
 ## 2. Related works
 
-- **Frank Geipel** — [Computer-Aided Didgeridoo Sound Design](https://www.didgeridoo-physik.de/) (CADSD). DidgeLab’s approach is based on our reading of his ideas and descriptions.
+- **Frank Geipel (2003)** — [CADSD – Computer Aided Didgeridoo Sound Design](https://www.didgeridoo-physik.de/cadsd/cadsd-method/), see also [didgeridoo-physik.de](https://www.didgeridoo-physik.de/). DidgeLab’s approach is based on our reading of his ideas and descriptions.
 - **Dan Mapes-Riordan (1991)** — *Horn Modeling with Conical and Cylindrical Transmission Line Elements*. Foundation for the transmission-line acoustical model.
 - **Andrea Ferroni ([YouTube](https://www.youtube.com/@AndreaFerroni))** — Didgeridoo acoustics and playing; e.g. DIDGMO explanation, backpressure, cylindrical vs conical bore.
 - **Didgmo / Didjimp** — Existing tools for didgeridoo sound design; used here as a reference (DidgeLab’s impedance spectra match when given the same geometry).
