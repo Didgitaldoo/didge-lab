@@ -527,7 +527,7 @@ model $i$:
 
 | model | correct instrument | mean rank of the correct one | rms difference |
 |---|---|---|---|
-| this synthesizer | **7 / 9** (78 %) | 0.56 | 4.7 dB |
+| this synthesizer | **7 / 9** (78 %) | 0.67 | 5.5 dB |
 | Didge2Wav ($\lvert Z\rvert^{1.2}$ · Hindle) | 1 / 9 (11 %) | 1.8 | 11.9 dB |
 | chance | 12.5 % | | |
 
@@ -542,8 +542,8 @@ cross-validation:
 
 | model | rms band error |
 |---|---|
-| this synthesizer, leave-one-out | **4.6 dB** |
-| this synthesizer, final defaults | 7.7 dB |
+| this synthesizer, leave-one-out | **5.1 dB** |
+| this synthesizer, final defaults | 5.5 dB |
 | generic $1/n$ harmonic spectrum | 6.1 dB |
 | Didge2Wav | 26.7 dB |
 
@@ -561,8 +561,8 @@ silent above 12 kHz; the broadband noise of §5.5 was calibrated on these bands
 (63 Hz–12.7 kHz). Fitted to these bands, the noise would be at −20 dB (at 4 kHz); the mean
 deviation (recording minus synthesis) is then within ±0.3 dB at 4–8 kHz and the
 rms 6.4 dB. Without the noise (the default, chosen by ear, §5.5) the synthesis
-is silent above 12 kHz; with the lips set to blow hard (OQ 0.12, §7.5) it is
-11–13 dB brighter than these calm drones at 1–2 kHz (rms 10.4 dB); how much of the recordings' high band is the instrument and how
+is silent above 12 kHz and, with the default lips (§7.5), 3–13 dB darker at
+4–10 kHz (rms 9.1 dB); how much of the recordings' high band is the instrument and how
 much room and microphone remains open. A formant of the neutral mouth shape made the synthesis
 5–8 dB too strong at 1.6–2 kHz; with the tongue flat and slightly forward
 (below) the excess was −4 dB at 2 kHz in the full spectrum and below 1 dB in the
@@ -578,7 +578,8 @@ harmonic band levels (both at OQ 0.6).
 | parameter | value | determined by |
 |---|---|---|
 | bore losses | DidgeLab unchanged | fingerprint and band levels did not improve with extra wall loss |
-| open quotient OQ, skew | 0.12, 0.85 | by ear ("blowing harder"); the calm neutral drones fit OQ 0.60 best (band error 4.8 vs 7.7 dB; harmonic fingerprint 4.7 dB at 0.12) |
+| open quotient OQ | 0.30 · (94 Hz / drone)^2.1 (Malveira 0.30, 74-Hz drones 0.50) | by ear: higher drones with harder blowing; the best fits of the archive drones (0.25 for Malveira at 94 Hz, 0.6–0.7 for the 72–77 Hz drones) rise towards low drones as well |
+| skew | 0.9 | by ear: a steep closure gives the buzz of hard blowing while the fundamental stays as strong as in the recordings (share of 40–125 Hz −4.0 dB, recordings −3.4 dB); a low OQ alone (0.12) made it 6.5 dB too weak |
 | directivity tilt | −1.5 dB/octave | band levels |
 | neutral mouth | tongue (0.1, 0.0), jaw 1.0, glottis 0.6 | band levels: relaxed, open mouth, open glottis, flat tongue |
 | toot offset | −34 cents | §7.2 |

@@ -35,9 +35,14 @@ class ModelParams:
     zs_mpa: float = 0.1          # lip source impedance, MPa s/m^3
     loss_factor: float = 1.0     # wall-loss multiplier of the bore (1 = DidgeLab)
     source: str = "lips"         # 'lips' (beating lips) or 'hindle' (Didge2Wav)
-    oq: float = 0.12             # open quotient of the lips: lower = pressed, "blowing harder"
-                                 # (the calm archive drones fit 0.6 best; 0.12 chosen by ear)
-    skew: float = 0.85           # opening fraction of the open phase
+    oq: float = 0.3              # open quotient of the lips at a drone of oq_ref_hz (lower =
+                                 # pressed, brighter, weaker fundamental)
+    oq_ref_hz: float = 94.0      # lower drones are played with softer lips (higher open quotient):
+    oq_pitch_exponent: float = 2.1   # oq * (oq_ref_hz / f_drone) ** exponent (by ear; the best fits
+                                 # of the archive drones rise towards low drones as well)
+    skew: float = 0.9            # opening fraction of the open phase: a steep closure gives the
+                                 # buzz of hard blowing while the fundamental stays strong (by ear;
+                                 # with oq 0.3 the bass share matches the archive recordings)
     alpha: float = 0.85          # shape of the Hindle source
     tilt_db_oct: float = -1.5    # on-axis directivity of the bell / microphone, dB/octave (calibrated)
     pitch_cents: float = 0.0     # played drone relative to the impedance peak
@@ -53,6 +58,12 @@ class ModelParams:
     hf_noise_db: float = -200.0
     hf_noise_hp_hz: float = 1000.0
     hf_noise_slope_db_oct: float = -6.0
+
+    def oq_at(self, f_drone):
+        """Open quotient for an instrument with drone frequency ``f_drone`` (Hz)."""
+        from .excitation import OQS
+        oq = self.oq * (self.oq_ref_hz / max(float(f_drone), 1.0)) ** self.oq_pitch_exponent
+        return float(np.clip(oq, OQS[0], OQS[-1]))
 
     def to_dict(self):
         return asdict(self)
@@ -90,7 +101,7 @@ def source(params: ModelParams, n_harm, oq=None, skew=None):
 def harmonic_spectrum(bore, f0, vt, params: ModelParams, n_harm=40):
     """Complex amplitudes of the first n_harm harmonics of the radiated sound."""
     n = np.arange(1, n_harm + 1)
-    return source(params, n_harm) * filter_gain(bore, n * f0, vt, params)
+    return source(params, n_harm, oq=params.oq_at(bore.drone)) * filter_gain(bore, n * f0, vt, params)
 
 
 def harmonic_db(bore, f0, vt, params, n_harm=40):

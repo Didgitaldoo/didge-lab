@@ -74,9 +74,9 @@ The numbers are produced by `scripts/synth/evaluate_archive.py` and stored in
 | toots, 2 clear cases (Tamaki1, Tamaki2) | played **27–40 cents below** the resonance |
 | hand closed ↔ maxima of $\lvert Z_{in}\rvert$, n = 20 | median error 31 cents, 75 % within 50 cents |
 | hand open ↔ minima of $\lvert Z_{in}\rvert$, n = 20 | median error 25 cents, 95 % within 50 cents |
-| harmonic fingerprint | correct instrument for **7 of 9** recordings (chance 12.5 %), rms 4.7 dB |
-| third-octave envelope, leave-one-out | rms error **4.6 dB** (default parameters 7.7 dB: the lips are set by ear to "blow harder" than in these calm drones; generic 1/n spectrum 6.1 dB) |
-| full spectrum (harmonics and noise), 63 Hz–12.7 kHz | rms 10.4 dB; synthesis 11–13 dB brighter than the calm drones at 1–2 kHz (lips blowing hard), darker above 8 kHz and silent above 12 kHz (the broadband noise that would fill this band is off by default: it sounds like a hiss, and the recordings' high band includes room noise), 4 dB too strong around 2 kHz |
+| harmonic fingerprint | correct instrument for **7 of 9** recordings (chance 12.5 %), rms 5.5 dB |
+| third-octave envelope, leave-one-out | rms error **5.1 dB** (default parameters 5.5 dB, generic 1/n spectrum 6.1 dB) |
+| full spectrum (harmonics and noise), 63 Hz–12.7 kHz | rms 9.1 dB; synthesis 3–13 dB darker at 4–10 kHz and silent above 12 kHz (the broadband noise that would fill this band is off by default: it sounds like a hiss, and the recordings' high band includes room noise), 3–9 dB too strong at 1–2 kHz |
 
 What this means:
 

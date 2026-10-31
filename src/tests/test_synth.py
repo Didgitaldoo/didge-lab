@@ -153,7 +153,7 @@ def test_low_open_quotient_reaches_the_sound():
     b = Bore(GEO)
 
     def centroid(oq):
-        p = ModelParams(oq=oq)
+        p = ModelParams(oq=oq, oq_pitch_exponent=0.0)
         c = score_controls(b, "tempo = 60\nuh:2", p)
         assert abs(np.median(c.oq) - oq) < 1e-9
         y = Synthesizer(b, p, seed=0).render(c, reverb=0.0)
@@ -162,3 +162,9 @@ def test_low_open_quotient_reaches_the_sound():
         return (f * X).sum() / X.sum()
 
     assert centroid(0.1) > 1.3 * centroid(0.2)
+
+
+def test_lower_drones_get_softer_lips():
+    p = ModelParams()
+    assert abs(p.oq_at(p.oq_ref_hz) - p.oq) < 1e-12
+    assert p.oq_at(74.0) > p.oq_at(94.0) > p.oq_at(110.0)

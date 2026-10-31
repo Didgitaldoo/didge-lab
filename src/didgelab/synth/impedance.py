@@ -42,6 +42,10 @@ from ..geo import Geo
 from ..sim.sim_interface import compute_moist_air_properties
 
 MOUTHPIECE_MM = 31.0
+# The estimator analyses real recordings, so it uses the lip open quotient fitted on
+# the Didge Archive drones (0.6, no pitch rule) instead of the brighter by-ear default
+# of the synthesizer; this is also what its evaluation (doc/impedance_from_sound.md) used.
+RECORDING_PARAMS = ModelParams(oq=0.6, oq_pitch_exponent=0.0)
 KNOTS = np.array([0.0, 0.15, 0.35, 0.55, 0.75, 0.9, 1.0])   # relative positions of the free diameters
 N_SEG = 24
 PEAK_GRID = 30.0 * 2 ** (np.arange(0, 1200 * np.log2(1600 / 30.0), 4.0) / 1200)
@@ -324,7 +328,7 @@ class Estimate:
         return [Resonance(f, z * 1e6, q) for f, z, q in self.resonances]
 
 
-def estimate(x, fs, params=ModelParams(), weights=Weights(), restarts=3, maxiter=50,
+def estimate(x, fs, params=RECORDING_PARAMS, weights=Weights(), restarts=3, maxiter=50,
              fmax=3000.0, seed=0, obs=None, progress=None, fit_tract=True):
     """Estimate Z_in(f) of the didgeridoo that produced the sample ``x``.
 

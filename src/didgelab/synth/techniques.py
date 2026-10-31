@@ -243,7 +243,7 @@ class Player:
         vt_t = np.tile(VOWELS[self.base_vowel].as_array(), (n, 1))
         f0_t = np.full(n, f_drone)
         amp_t = np.ones(n)
-        oq_t = np.full(n, p.oq)
+        oq_t = np.full(n, p.oq_at(self.bore.drone))      # instrument, not note: toots keep it
         voice_t = np.zeros(n)
         vf_t = np.full(n, note_to_freq(settings.get("voice", "A3")) if isinstance(settings.get("voice", "A3"), str) else 220.0)
 

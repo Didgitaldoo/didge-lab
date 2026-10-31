@@ -56,7 +56,7 @@ class Controls:
         n = int(round(duration * rate))
         one = np.ones(n)
         vt = np.asarray(vt.as_array() if hasattr(vt, "as_array") else vt, float)
-        return cls(rate, f0 * one, one.copy(), params.oq * one, params.skew * one,
+        return cls(rate, f0 * one, one.copy(), params.oq_at(f0) * one, params.skew * one,
                    np.tile(vt, (n, 1)), 10 ** (params.noise_db / 20) * one,
                    0 * one, 3000 * one, 0 * one, 150 * one, 0 * one)
 
