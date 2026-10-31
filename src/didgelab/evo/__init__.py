@@ -14,6 +14,8 @@ from .operators import (
     PartAverageCrossover,
 )
 from .evolution import Nuevolution
+from .cmaes import CMAES
+from .local_search import refine, refine_population
 from .schedulers import AdaptiveProbabilities
 from .writer import NumpyEncoder, load_latest_evolution
 
@@ -33,6 +35,9 @@ __all__ = [
     "PartSwapCrossover",
     "PartAverageCrossover",
     "Nuevolution",
+    "CMAES",
+    "refine",
+    "refine_population",
     "AdaptiveProbabilities",
     "NumpyEncoder",
     "load_latest_evolution"
