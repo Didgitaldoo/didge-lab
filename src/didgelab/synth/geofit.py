@@ -66,8 +66,8 @@ def find_peaks(geo, fmax, constants=None, fmin=25.0):
 
     |Z| is simulated on a logarithmic grid; frequency and height of each peak
     come from a parabola through ln|Z| at the three grid points around the
-    maximum, Q from its curvature (for a resonance, ln|Z| ~ ln Z_n - 4 Q^2
-    (f - f_n)^2 / f_n^2 near the peak).
+    maximum, Q from its curvature (for a resonance, ln|Z| ~ ln Z_n - 2 Q^2
+    (f - f_n)^2 / f_n^2 near the peak, so Q = f_n sqrt(-(ln|Z|)'' / 4)).
     """
     constants = constants or compute_moist_air_properties()
     f = np.exp(np.arange(np.log(fmin), np.log(fmax), PEAK_STEP))

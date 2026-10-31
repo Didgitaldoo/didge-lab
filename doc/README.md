@@ -21,6 +21,7 @@ This folder contains documentation for DidgeLab: computer-aided design of didger
 | File | Description |
 |------|-------------|
 | [impedance_from_sound.md](impedance_from_sound.md) | Estimating the impedance spectrum of an unknown didgeridoo from a sound sample (`didgelab.synth.estimate_impedance`): method, accuracy on the Didge Archive, recording tips. |
+| [examples/geometry_fit.ipynb](examples/geometry_fit.ipynb) | Geometry fit (`didgelab.synth.fit_geometry`): finding a bore for target impedance peaks. Introduction, maths (peak extraction, bore model, misfit, least squares), code examples (fitting, checking a target, listening), sound accuracy on the Didge Archive and the bell in the TLM. |
 
 ## Examples
 
