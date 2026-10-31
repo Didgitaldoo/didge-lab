@@ -74,9 +74,9 @@ The numbers are produced by `scripts/synth/evaluate_archive.py` and stored in
 | toots, 2 clear cases (Tamaki1, Tamaki2) | played **27–40 cents below** the resonance |
 | hand closed ↔ maxima of $\lvert Z_{in}\rvert$, n = 20 | median error 31 cents, 75 % within 50 cents |
 | hand open ↔ minima of $\lvert Z_{in}\rvert$, n = 20 | median error 25 cents, 95 % within 50 cents |
-| harmonic fingerprint | correct instrument for **7 of 9** recordings (chance 12.5 %), rms 5.0 dB |
-| third-octave envelope, leave-one-out | rms error **4.6 dB** (default parameters 4.8 dB, generic 1/n spectrum 6.1 dB) |
-| full spectrum (harmonics and noise), 63 Hz–12.7 kHz | rms 9.1 dB; synthesis 4–13 dB darker at 4–12 kHz and silent above 12 kHz (the broadband noise that would fill this band is off by default: it sounds like a hiss, and the recordings' high band includes room noise), 4 dB too strong around 2 kHz |
+| harmonic fingerprint | correct instrument for **7 of 9** recordings (chance 12.5 %), rms 5.7 dB |
+| third-octave envelope, leave-one-out | rms error **4.6 dB** (default parameters 6.1 dB: the lips are set by ear to "blow harder" than in these calm drones; generic 1/n spectrum 6.1 dB) |
+| full spectrum (harmonics and noise), 63 Hz–12.7 kHz | rms 9.7 dB; synthesis 3–12 dB darker at 4–12 kHz and silent above 12 kHz (the broadband noise that would fill this band is off by default: it sounds like a hiss, and the recordings' high band includes room noise), 4 dB too strong around 2 kHz |
 
 What this means:
 

@@ -527,7 +527,7 @@ model $i$:
 
 | model | correct instrument | mean rank of the correct one | rms difference |
 |---|---|---|---|
-| this synthesizer | **7 / 9** (78 %) | 0.56 | 5.0 dB |
+| this synthesizer | **7 / 9** (78 %) | 0.56 | 5.7 dB |
 | Didge2Wav ($\lvert Z\rvert^{1.2}$ · Hindle) | 1 / 9 (11 %) | 1.8 | 11.9 dB |
 | chance | 12.5 % | | |
 
@@ -543,7 +543,7 @@ cross-validation:
 | model | rms band error |
 |---|---|
 | this synthesizer, leave-one-out | **4.6 dB** |
-| this synthesizer, final defaults | 4.8 dB |
+| this synthesizer, final defaults | 6.1 dB |
 | generic $1/n$ harmonic spectrum | 6.1 dB |
 | Didge2Wav | 26.7 dB |
 
@@ -561,8 +561,8 @@ silent above 12 kHz; the broadband noise of §5.5 was calibrated on these bands
 (63 Hz–12.7 kHz). Fitted to these bands, the noise would be at −20 dB (at 4 kHz); the mean
 deviation (recording minus synthesis) is then within ±0.3 dB at 4–8 kHz and the
 rms 6.4 dB. Without the noise (the default, chosen by ear, §5.5) the synthesis
-is 4–13 dB darker than the recordings at 4–12 kHz and silent above 12 kHz
-(rms 9.1 dB); how much of the recordings' high band is the instrument and how
+is 3–12 dB darker than the recordings at 4–12 kHz and silent above 12 kHz
+(rms 9.7 dB with OQ 0.3); how much of the recordings' high band is the instrument and how
 much room and microphone remains open. A formant of the neutral mouth shape made the synthesis
 5–8 dB too strong at 1.6–2 kHz; with the tongue flat and slightly forward
 (below) the excess is −4 dB at 2 kHz in the full spectrum and below 1 dB in the
@@ -578,7 +578,7 @@ harmonic band levels.
 | parameter | value | determined by |
 |---|---|---|
 | bore losses | DidgeLab unchanged | fingerprint and band levels did not improve with extra wall loss |
-| open quotient OQ, skew | 0.60, 0.85 | band levels of the neutral drones (at $Z_s = 0.1$) |
+| open quotient OQ, skew | 0.30, 0.85 | by ear ("blowing harder"); the calm neutral drones fit OQ 0.60 best (band error 4.8 vs 6.1 dB) |
 | directivity tilt | −1.5 dB/octave | band levels |
 | neutral mouth | tongue (0.1, 0.0), jaw 1.0, glottis 0.6 | band levels: relaxed, open mouth, open glottis, flat tongue |
 | toot offset | −34 cents | §7.2 |

@@ -35,7 +35,8 @@ class ModelParams:
     zs_mpa: float = 0.1          # lip source impedance, MPa s/m^3
     loss_factor: float = 1.0     # wall-loss multiplier of the bore (1 = DidgeLab)
     source: str = "lips"         # 'lips' (beating lips) or 'hindle' (Didge2Wav)
-    oq: float = 0.6              # open quotient of the lips
+    oq: float = 0.3              # open quotient of the lips: lower = pressed, "blowing harder"
+                                 # (the calm archive drones fit 0.6 best; 0.3 chosen by ear)
     skew: float = 0.85           # opening fraction of the open phase
     alpha: float = 0.85          # shape of the Hindle source
     tilt_db_oct: float = -1.5    # on-axis directivity of the bell / microphone, dB/octave (calibrated)
