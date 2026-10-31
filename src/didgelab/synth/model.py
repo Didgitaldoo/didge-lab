@@ -42,7 +42,14 @@ class ModelParams:
     pitch_cents: float = 0.0     # played drone relative to the impedance peak
     toot_cents: float = -34.0    # played toots relative to the impedance peak (archive: Tamaki1 -27,
                                  # Tamaki2 -40 cents)
-    noise_db: float = -30.0      # breath noise relative to the tone
+    noise_db: float = -30.0      # breath noise relative to the tone (filtered by the bore)
+    # broadband noise that does not pass through the bore (turbulence at the lips, air,
+    # room and microphone noise): lip-modulated white noise with the power of the tone,
+    # shaped by a 4th-order high-pass and a slope, hf_noise_db at 4 kHz. Calibrated on
+    # the third-octave bands 63 Hz - 12.7 kHz of the Didge Archive neutral drones.
+    hf_noise_db: float = -20.0
+    hf_noise_hp_hz: float = 1000.0
+    hf_noise_slope_db_oct: float = -6.0
 
     def to_dict(self):
         return asdict(self)

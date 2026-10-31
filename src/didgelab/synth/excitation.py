@@ -32,7 +32,7 @@ from functools import lru_cache
 import numpy as np
 
 N_PERIOD = 4096
-N_TABLE_HARM = 256
+N_TABLE_HARM = 512          # enough for a 24 Hz drone at fmax = 12 kHz
 
 
 def _normalised_harmonics(u, n_harm=N_TABLE_HARM):

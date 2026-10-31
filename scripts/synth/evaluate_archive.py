@@ -226,6 +226,20 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+# full spectrum (harmonics and noise) in third-octave bands up to 16 kHz, levels
+# matched on 125 Hz - 1 kHz: the harmonic band levels above stop at 5 kHz
+CENT = 1000 * 2 ** (np.arange(-14, 13) / 3)
+
+
+def ltas_bands(x, n=8192):
+    w = np.hanning(n)
+    P = sum(np.abs(np.fft.rfft(x[s:s + n] * w)) ** 2 for s in range(0, len(x) - n, n // 2))
+    f = np.fft.rfftfreq(n, 1 / 48000)
+    return np.array([10 * np.log10(P[(f >= c * 2 ** (-1 / 6)) & (f < c * 2 ** (1 / 6))].sum() + 1e-30)
+                     for c in CENT])
+
+
+full = {}
 fig, axs = plt.subplots(3, 3, figsize=(15, 10))
 for ax, ins in zip(axs.ravel(), insts):
     b = bores[ins.name]
@@ -233,6 +247,10 @@ for ax, ins in zip(axs.ravel(), insts):
     c = score_controls(b, "tempo = 60\nuh:2", params)
     y = Synthesizer(b, params, seed=0).render(c, reverb=0.15)
     write_audio(AUD / f"{ins.name.lower().replace(' ', '-')}-neutral-synth.mp3", y, 48000)
+    n = len(x)
+    rb, sb = ltas_bands(x[n // 10:-n // 10]), ltas_bands(y[int(0.3 * 48000):int(1.8 * 48000)])
+    m = (CENT >= 125) & (CENT <= 1000)
+    full[ins.name] = rb - (sb + np.mean(rb[m] - sb[m]))
     for sig, lab, col in [(x, "recording", "#555"), (y[int(0.3 * 48000):int(1.8 * 48000)], "synthesis", "#d62728")]:
         N = len(sig)
         X = np.abs(np.fft.rfft(sig * np.hanning(N), 2 * N))
@@ -250,6 +268,25 @@ for ax in axs[-1]:
     ax.set_xlabel("Hz")
 plt.tight_layout()
 plt.savefig(FIG / "archive_neutral_spectra.png", dpi=80)
+
+D = np.array(list(full.values()))
+sel = (CENT >= 63) & (CENT <= 12700)
+out["full_spectrum_third_octave"] = {
+    "centres_hz": CENT.tolist(),
+    "mean_rec_minus_synth_db": D.mean(0).tolist(),
+    "rms_63_12700_db": float(np.sqrt(np.mean(D[:, sel] ** 2))),
+    "per_instrument_db": {k: v.tolist() for k, v in full.items()},
+}
+print("full spectrum", out["full_spectrum_third_octave"]["rms_63_12700_db"], flush=True)
+fig, ax = plt.subplots(figsize=(9, 3.5))
+for v in D:
+    ax.semilogx(CENT, v, color="#bbb", lw=0.8)
+ax.semilogx(CENT, D.mean(0), color="#d62728", lw=2, label="mean over the instruments")
+ax.axhline(0, color="k", lw=0.6)
+ax.set(xlabel="third-octave band (Hz)", ylabel="recording − synthesis (dB)", ylim=(-25, 25), xlim=(50, 16000))
+ax.legend(fontsize=8)
+plt.tight_layout()
+plt.savefig(FIG / "archive_neutral_bands.png", dpi=80)
 
 json.dump(out, open("doc/results/synth/archive_eval.json", "w"), indent=2, default=float)
 print("done")

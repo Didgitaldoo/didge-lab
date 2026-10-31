@@ -326,7 +326,7 @@ y(t) = \sum_{n=1}^{N} \mathrm{Re}\Big\lbrace A_n(t)\,e^{\,jn\theta(t)}\Big\rbrac
 \qquad A_n(t) = a(t)\,S_n(t)\,G\big(nf_0(t); \mathbf v(t)\big),
 ```
 
-with all harmonics up to 10 kHz. $A_n$ is computed per control frame and
+with all harmonics up to 12 kHz. $A_n$ is computed per control frame and
 linearly interpolated to the audio rate. Because the complex gain $G$ includes
 the phase of the bore, vocal tract and lips, moving the tongue changes amplitudes
 *and* phases of the partials, as in reality. The vocal-tract impedance is
@@ -384,7 +384,15 @@ Breath noise at the lips, $`\nu(t)\,b(t)\,\tfrac{1 + 0.8\cos\theta(t)}{1.8}`$
 (pulsed with the lip cycle), and frication noise of consonants (band-pass
 around the place of articulation) are filtered frame by frame with $|G|$ in the
 STFT domain. The nasal inhalation of circular breathing does not pass the bore
-and is added as band-pass noise (1.5–6 kHz). A short exponential-noise reverb
+and is added as band-pass noise (1.5–6 kHz).
+
+Above about 4 kHz the harmonics of a real didgeridoo are only a few dB above the
+noise in the recordings (turbulence at the lips, air, room, microphone). This
+part does not pass through the bore: a white noise with the power of the tone,
+pulsed with the lip cycle and following the lip amplitude, is shaped by a
+4th-order high-pass at 1 kHz and a slope of −6 dB/octave and added at −20 dB
+(at 4 kHz). Without it the synthesized drones were 7–12 dB too weak at
+6–10 kHz and silent above 12 kHz (§7.4). A short exponential-noise reverb
 (RT60 = 0.45 s) imitates a small room.
 
 ---
@@ -542,6 +550,21 @@ cross-validation:
 drones (red) for all instruments of the Didge Archive; dotted: DidgeLab
 resonances.*
 
+**The whole spectrum.** The band levels above use the harmonics up to 5 kHz.
+Comparing the full long-term spectra (harmonics and noise) of the recordings
+and the synthesized drones in third-octave bands up to 16 kHz (levels matched
+at 125 Hz–1 kHz) showed that the synthesis was 7–12 dB too weak at 6–10 kHz and
+silent above 12 kHz; the broadband noise of §5.5 was calibrated on these bands
+(63 Hz–12.7 kHz). Now the mean deviation (recording minus synthesis) is −2 … −1 dB at 4–8 kHz,
+−6 … −7 dB at 10–16 kHz (the synthesis slightly brighter) and rms
+6.9 dB over all bands and instruments. The largest remaining deviation
+is an excess of the synthesis around 2 kHz (−8 dB).
+
+![Full spectrum](figures/archive_neutral_bands.png)
+
+*Figure 5b. Recording minus synthesis in third-octave bands for the neutral drones
+(grey: instruments, red: mean).*
+
 ### 7.5 Calibrated parameters and what the data could not decide
 
 | parameter | value | determined by |
@@ -552,6 +575,7 @@ resonances.*
 | neutral mouth | tongue (0.3, 0.2), jaw 1.0, glottis 0.6 | band levels: relaxed, open mouth, open glottis |
 | toot offset | −34 cents | §7.2 |
 | tract area scale, $Z_s$ | 0.2, 0.1 MPa s m⁻³ | formant shape in the performances (below) |
+| broadband noise | −20 dB at 4 kHz, high-pass 1 kHz, −6 dB/octave | full-spectrum third-octave bands up to 12.7 kHz |
 
 Two things were *not* identifiable from the neutral drones: the source impedance
 $Z_s$ and the overall width of the vocal tract. Band-level fits and frame-wise

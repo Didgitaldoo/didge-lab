@@ -10,7 +10,10 @@ typically 500 Hz (see :class:`Controls`):
 * vocalisation (singing into the instrument) modulates the lip flow and adds
   sum- and difference tones n*f0 + k*fv (k = +-1, +-2, ...);
 * breath noise and frication bursts are filtered by the same G in the STFT
-  domain; the nasal inhalation of circular breathing bypasses the bore.
+  domain; the nasal inhalation of circular breathing bypasses the bore;
+* a broadband noise that does not pass through the bore (lip turbulence, air,
+  room) fills the high frequencies, where the harmonics of a real didgeridoo
+  are only a few dB above the noise.
 """
 
 from dataclasses import dataclass, field
@@ -80,7 +83,7 @@ class Synthesizer:
     fmax : highest partial frequency
     """
 
-    def __init__(self, bore, params: ModelParams = ModelParams(), fs=48000, fmax=10000.0,
+    def __init__(self, bore, params: ModelParams = ModelParams(), fs=48000, fmax=12000.0,
                  seed=None, inertia=True):
         self.bore = bore
         self.params = params
@@ -318,6 +321,29 @@ class Synthesizer:
         X *= np.exp(-0.5 * (np.log2(np.maximum(f, 1) / 3000) / 0.8) ** 2)
         return np.fft.irfft(X, n_out) * env
 
+    def render_hf_noise(self, c: Controls, n_out, theta, ref):
+        """Broadband noise outside the bore (see ``ModelParams.hf_noise_db``).
+
+        White noise, modulated by the lip cycle and the amplitude of the tone,
+        with the power ``ref**2`` (the tone's) at 48 kHz, shaped by a 4th-order
+        high-pass at ``hf_noise_hp_hz`` and a slope of ``hf_noise_slope_db_oct``
+        relative to 4 kHz, at ``hf_noise_db``. The spectral density does not
+        depend on ``fs``.
+        """
+        p = self.params
+        if p.hf_noise_db <= -120:
+            return np.zeros(n_out)
+        amp = _upsample(c.amp, n_out, c.rate, self.fs)
+        env = amp / (np.sqrt(np.mean(amp ** 2)) + 1e-12)
+        x = self.rng.standard_normal(n_out) * (1 + 0.8 * np.cos(theta)) / 1.8 * env
+        X = np.fft.rfft(x)
+        f = np.maximum(np.fft.rfftfreq(n_out, 1 / self.fs), 1.0)
+        power = (f / 4000.0) ** (p.hf_noise_slope_db_oct / (10 * np.log10(2))) \
+            / (1 + (p.hf_noise_hp_hz / f) ** 4)
+        X *= np.sqrt(power)
+        scale = ref * 10 ** (p.hf_noise_db / 20) * np.sqrt(self.fs / 48000.0)
+        return np.fft.irfft(X, n_out) * scale
+
     # ------------------------------------------------------------------ main
     def render(self, c: Controls, reverb=0.25, normalize=True):
         n_out = int(round(c.duration * self.fs))
@@ -326,6 +352,7 @@ class Synthesizer:
         noise = self.render_noise(c, n_out, theta)
         y = tone + noise
         ref = np.sqrt(np.mean(tone ** 2)) + 1e-12
+        y += self.render_hf_noise(c, n_out, theta, ref)
         y += self.render_sniff(c, n_out) * ref
         if reverb:
             y = add_reverb(y, self.fs, rt60=0.45, wet=reverb, rng=self.rng)

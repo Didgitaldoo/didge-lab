@@ -105,3 +105,27 @@ def test_inertia_equals_resonance_bandwidth():
     # a single modal resonance: tau = Q / (pi f)
     m = ModalBore([(70.0, 2e7, 30.0), (200.0, 8e6, 30.0)])
     assert abs(Synthesizer(m, ModelParams()).envelope_time_constant(70.0) * np.pi * 70.0 / 30.0 - 1) < 0.02
+
+
+def test_high_frequencies_are_filled_by_the_broadband_noise():
+    b = Bore(GEO)
+    c = score_controls(b, "tempo = 60\nuh:2", ModelParams())
+
+    def band_db(params):
+        y = Synthesizer(b, params, seed=0).render(c, reverb=0.0, normalize=False)
+        X = np.abs(np.fft.rfft(y)) ** 2
+        f = np.fft.rfftfreq(len(y), 1 / 48000)
+        lo = X[(f > 125) & (f < 1000)].sum()
+        return 10 * np.log10(X[(f > 12000) & (f < 16000)].sum() / lo)
+
+    with_noise = band_db(ModelParams())
+    without = band_db(ModelParams().with_(hf_noise_db=-200, noise_db=-200))
+    assert with_noise > without + 15          # the tone stops at 12 kHz (leakage: ~-53 dB)
+    assert -70 < with_noise < -20
+
+
+def test_very_low_drone_renders():
+    b = Bore([[0, 30], [3000, 32]])
+    assert b.drone < 40
+    y, fs = synthesize([[0, 30], [3000, 32]], "tempo = 60\ndoo:1", reverb=0.0)
+    assert np.isfinite(y).all() and np.abs(y).max() > 0
