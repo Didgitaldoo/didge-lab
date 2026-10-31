@@ -20,8 +20,21 @@ This folder contains documentation for DidgeLab: computer-aided design of didger
 
 | File | Description |
 |------|-------------|
+| [synthesizer.md](synthesizer.md) | The DidgeLab synthesizer (`didgelab.synth`), from a bore geometry to the sound of a played didgeridoo: transmission-line model and transfer function, beating lips, vocal tract, coupling, rendering, playing techniques, calibration on the Didge Archive, finding techniques in recordings. |
+| [song_format.md](song_format.md) | The `.didge` song format: writing grooves and loops for the synthesizer, and the `didgelab-synth play` command. |
+| [technique_detection.md](technique_detection.md) | Finding playing techniques (toots, stops, trills, vocalisation, circular breathing, tongue position) in recordings with `didgelab.synth.transcribe`: usage, method, accuracy, retraining the detector. |
+| [archive_comparison.md](archive_comparison.md) | Comparing the synthesizer with the Didge Archive recordings: drone and toot pitch, hand slaps, harmonic fingerprint and spectral envelope of the drone. |
 | [impedance_from_sound.md](impedance_from_sound.md) | Estimating the impedance spectrum of an unknown didgeridoo from a sound sample (`didgelab.synth.estimate_impedance`): method, accuracy on the Didge Archive, recording tips. |
+
+## Examples: Synthesis
+
+| File | Description |
+|------|-------------|
+| [examples/geometry_to_sound.ipynb](examples/geometry_to_sound.ipynb) | Geometry to sound: how a bore is played (Z_in and H, lip source, vocal tract, coupling, rendering, the effect of a bell). Introduction, maths, code examples with audio. |
+| [examples/impedance_to_sound.ipynb](examples/impedance_to_sound.ipynb) | Impedance to sound: listening to a didgeridoo given only by its impedance peaks (`ModalBore`, `render_song_loop_from_peaks`, modal vs. fitted geometry). Introduction, maths, code examples with audio. |
 | [examples/geometry_fit.ipynb](examples/geometry_fit.ipynb) | Geometry fit (`didgelab.synth.fit_geometry`): finding a bore for target impedance peaks. Introduction, maths (peak extraction, bore model, misfit, least squares), code examples (fitting, checking a target, listening), sound accuracy on the Didge Archive and the bell in the TLM. |
+| [examples/technique_detection.ipynb](examples/technique_detection.ipynb) | Finding playing techniques in a synthetic and a real recording: lip tracking on the resonances, formant and tongue index, the learned detector, evaluation. |
+| [examples/didge_archive_comparison.ipynb](examples/didge_archive_comparison.ipynb) | The synthesizer vs. the Didge Archive recordings: drone pitch, toots, spectra, harmonic fingerprint, third-octave envelope. |
 
 ## Examples
 

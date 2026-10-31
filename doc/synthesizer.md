@@ -655,13 +655,16 @@ detector trained on 80 performances on random bores:
 
 | technique | precision | recall | F1 | events |
 |---|---|---|---|---|
-| stop consonants (±60 ms) | 0.97 | 0.98 | 0.97 | 844 |
-| place of articulation (t/d vs. k/g) of detected stops | | | accuracy 0.995 | 823 |
-| rolled-r trill | 0.95 | 0.98 | 0.97 | 64 |
-| vocalisation | 0.93 | 0.89 | 0.91 | 72 |
-| circular breathing | 1.00 | 0.98 | 0.99 | 139 |
-| fricatives / aspiration | 0.95 | 0.79 | 0.87 | 77 |
+| stop consonants (±60 ms) | 0.97 | 0.97 | 0.97 | 844 |
+| place of articulation (t/d vs. k/g) of detected stops | | | accuracy 0.987 | 823 |
+| rolled-r trill | 0.97 | 1.00 | 0.98 | 64 |
+| vocalisation | 0.92 | 0.90 | 0.91 | 72 |
+| circular breathing | 1.00 | 0.99 | 0.99 | 139 |
+| fricatives / aspiration | 0.88 | 0.82 | 0.85 | 77 |
 | toots (lip tracker, no learning) | 0.99 | 1.00 | 0.99 | 67 |
+
+(Detector retrained in DidgeLab, `scripts/synth/train_detector.py`; the stored
+result is [results/synth/detector_eval.json](results/synth/detector_eval.json).)
 
 These numbers measure how well the techniques *as modelled* can be recognised
 on unseen instruments and recording conditions. They are an upper bound for real
