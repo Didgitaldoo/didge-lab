@@ -3,7 +3,8 @@ Lip excitation (and voice source).
 
 Two lip-flow models are provided.
 
-``hindle``  -- the "dijj" excitation of Hindle & Posnett used in Didge2Wav:
+``hindle``  -- the "dijj" excitation used in Didge2Wav (Hindle & Posnett 2017,
+  who attribute it to Fletcher 1996):
 
     u(t) = p0/R - (p0^2/R^3) / (a0 + a sin(2 pi f t))^2
 

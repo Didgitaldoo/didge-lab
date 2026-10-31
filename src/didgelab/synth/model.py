@@ -29,7 +29,7 @@ class ModelParams:
     """Parameters of the player/recording model.
 
     Defaults are the values calibrated on the Didge Archive
-    (see ``didgesynth.calibrate`` and the article).
+    (see the article, doc/synthesizer.md).
     """
     zs_mpa: float = 0.1          # lip source impedance, MPa s/m^3
     loss_factor: float = 1.0     # wall-loss multiplier of the bore (1 = DidgeLab)

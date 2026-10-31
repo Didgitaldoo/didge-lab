@@ -74,7 +74,7 @@ class Synthesizer:
 
     Parameters
     ----------
-    bore : didgesynth.bore.Bore
+    bore : didgelab.synth.bore.Bore
     params : ModelParams
     fs : sample rate of the output
     fmax : highest partial frequency

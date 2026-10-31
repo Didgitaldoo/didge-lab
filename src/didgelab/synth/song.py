@@ -440,6 +440,18 @@ def render(song, bore, tempo=None, repeats=1, loop=False, fs=48000, seed=None, p
     return out / (np.max(np.abs(out)) + 1e-12) * 0.89
 
 
+def load_bore(song, override=None, archive_path=None):
+    """Bore of the song's instrument (archive name or geometry JSON path)."""
+    import json
+    from .bore import Bore
+    spec = override or song.header.get("instrument", "Arusha")
+    for cand in (Path(spec), Path(song.header.get("_dir", ".")) / spec):
+        if cand.suffix == ".json" and cand.exists():
+            return Bore(json.loads(cand.read_text()))
+    from . import archive
+    return Bore(archive.get(spec, archive_path).geometry)
+
+
 def describe(song, tempo=None):
     """Human-readable listing of the timed syllables (for checking a song)."""
     lines = []
