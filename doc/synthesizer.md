@@ -390,9 +390,12 @@ Above about 4 kHz the harmonics of a real didgeridoo are only a few dB above the
 noise in the recordings (turbulence at the lips, air, room, microphone). This
 part does not pass through the bore: a white noise with the power of the tone,
 pulsed with the lip cycle and following the lip amplitude, is shaped by a
-4th-order high-pass at 1 kHz and a slope of −6 dB/octave and added at −20 dB
-(at 4 kHz). Without it the synthesized drones were 7–12 dB too weak at
-6–10 kHz and silent above 12 kHz (§7.4). A short exponential-noise reverb
+4th-order high-pass at 1 kHz and a slope of −6 dB/octave
+(`ModelParams.hf_noise_db` at 4 kHz). The fit to the recordings gives −20 dB
+(§7.4), but the noise floor of the recordings includes room and microphone
+noise, and already at −20 dB and −32 dB the synthesis sounded like it had a
+background hiss. By ear it is best **off** (the default); without it the
+synthesis is silent above 12 kHz, where the harmonics end. A short exponential-noise reverb
 (RT60 = 0.45 s) imitates a small room.
 
 ---
@@ -555,9 +558,12 @@ Comparing the full long-term spectra (harmonics and noise) of the recordings
 and the synthesized drones in third-octave bands up to 16 kHz (levels matched
 at 125 Hz–1 kHz) showed that the synthesis was 7–12 dB too weak at 6–10 kHz and
 silent above 12 kHz; the broadband noise of §5.5 was calibrated on these bands
-(63 Hz–12.7 kHz). Now the mean deviation (recording minus synthesis) is within ±0.3 dB at 4–8 kHz,
-−2 … −6 dB at 10–16 kHz (the synthesis slightly brighter) and rms 6.4 dB over all
-bands and instruments. A formant of the neutral mouth shape made the synthesis
+(63 Hz–12.7 kHz). Fitted to these bands, the noise would be at −20 dB (at 4 kHz); the mean
+deviation (recording minus synthesis) is then within ±0.3 dB at 4–8 kHz and the
+rms 6.4 dB. Without the noise (the default, chosen by ear, §5.5) the synthesis
+is 4–13 dB darker than the recordings at 4–12 kHz and silent above 12 kHz
+(rms 9.1 dB); how much of the recordings' high band is the instrument and how
+much room and microphone remains open. A formant of the neutral mouth shape made the synthesis
 5–8 dB too strong at 1.6–2 kHz; with the tongue flat and slightly forward
 (below) the excess is −4 dB at 2 kHz in the full spectrum and below 1 dB in the
 harmonic band levels.
@@ -578,7 +584,7 @@ harmonic band levels.
 | toot offset | −34 cents | §7.2 |
 | jaw of the articulated shapes | 1.0 (open) | band levels of the songs, 300 Hz–3 kHz (below) |
 | tract area scale, $Z_s$ | 0.2, 0.1 MPa s m⁻³ | formant shape in the performances (below) |
-| broadband noise | −20 dB at 4 kHz, high-pass 1 kHz, −6 dB/octave | full-spectrum third-octave bands up to 12.7 kHz |
+| broadband noise | off (fit: −20 dB at 4 kHz, high-pass 1 kHz, −6 dB/octave) | full-spectrum bands up to 12.7 kHz; switched off by ear (background hiss) |
 
 Two things were *not* identifiable from the neutral drones: the source impedance
 $Z_s$ and the overall width of the vocal tract. Band-level fits and frame-wise

@@ -45,9 +45,11 @@ class ModelParams:
     noise_db: float = -30.0      # breath noise relative to the tone (filtered by the bore)
     # broadband noise that does not pass through the bore (turbulence at the lips, air,
     # room and microphone noise): lip-modulated white noise with the power of the tone,
-    # shaped by a 4th-order high-pass and a slope, hf_noise_db at 4 kHz. Calibrated on
-    # the third-octave bands 63 Hz - 12.7 kHz of the Didge Archive neutral drones.
-    hf_noise_db: float = -20.0
+    # shaped by a 4th-order high-pass and a slope, hf_noise_db at 4 kHz. The fit to
+    # the third-octave bands 63 Hz - 12.7 kHz of the Didge Archive neutral drones gives
+    # -20 dB, but that includes room and microphone noise and sounds like a hiss;
+    # off by default (chosen by ear), e.g. -32 for a little air above 12 kHz.
+    hf_noise_db: float = -200.0
     hf_noise_hp_hz: float = 1000.0
     hf_noise_slope_db_oct: float = -6.0
 

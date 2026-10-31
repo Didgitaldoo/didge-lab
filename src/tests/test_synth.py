@@ -118,7 +118,7 @@ def test_high_frequencies_are_filled_by_the_broadband_noise():
         lo = X[(f > 125) & (f < 1000)].sum()
         return 10 * np.log10(X[(f > 12000) & (f < 16000)].sum() / lo)
 
-    with_noise = band_db(ModelParams())
+    with_noise = band_db(ModelParams().with_(hf_noise_db=-20))   # off by default
     without = band_db(ModelParams().with_(hf_noise_db=-200, noise_db=-200))
     assert with_noise > without + 15          # the tone stops at 12 kHz (leakage: ~-53 dB)
     assert -70 < with_noise < -20
