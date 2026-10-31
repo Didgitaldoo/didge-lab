@@ -74,7 +74,7 @@ def lips_waveform(oq, skew=0.6, n=N_PERIOD):
     return u - u.mean()
 
 
-OQS = np.linspace(0.2, 0.95, 31)
+OQS = np.linspace(0.05, 0.95, 37)   # step 0.025 (the grid from 0.2 up is unchanged)
 SKEWS = np.linspace(0.3, 0.9, 13)
 
 

@@ -146,3 +146,19 @@ def test_articulated_playing_keeps_the_mids():
     drone = share("tempo = 60\nuh:3")
     groove = share("tempo = 100\ndi:.5 ga:.5 ti:.5 ka:.5 di:.5 ga:.5 ti:.5 ka:.5 ee:1 oo:1")
     assert groove > drone - 4
+
+
+def test_low_open_quotient_reaches_the_sound():
+    # the player used to clamp oq to >= 0.2: lower values sounded the same
+    b = Bore(GEO)
+
+    def centroid(oq):
+        p = ModelParams(oq=oq)
+        c = score_controls(b, "tempo = 60\nuh:2", p)
+        assert abs(np.median(c.oq) - oq) < 1e-9
+        y = Synthesizer(b, p, seed=0).render(c, reverb=0.0)
+        X = np.abs(np.fft.rfft(y)) ** 2
+        f = np.fft.rfftfreq(len(y), 1 / 48000)
+        return (f * X).sum() / X.sum()
+
+    assert centroid(0.1) > 1.3 * centroid(0.2)

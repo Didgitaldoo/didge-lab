@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from .excitation import OQS
 from .model import ModelParams
 from .synth import Controls
 from .vocaltract import VOWELS, CONSONANTS, VocalTract
@@ -308,7 +309,7 @@ class Player:
             c.vt[:, k] += size * hum * _noise(rng, n, rate, 0.3)
         # fade in/out
         c.amp *= np.clip(t / 0.08, 0, 1) * np.clip((end - t) / 0.15, 0, 1)
-        c.oq = np.clip(c.oq, 0.2, 0.95)
+        c.oq = np.clip(c.oq, OQS[0], OQS[-1])         # range of the lip-source table
         c.vt = np.clip(c.vt, 0, 1)
         return c
 
