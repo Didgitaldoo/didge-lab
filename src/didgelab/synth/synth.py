@@ -91,6 +91,9 @@ class Synthesizer:
         self._tau = None
 
     # ------------------------------------------------------- bore inertia
+    TAU_FINE_DF = 0.02      # Hz, group-delay grid below TAU_FINE_FMAX
+    TAU_FINE_FMAX = 1500.0
+
     def envelope_time_constant(self, f):
         """Time constant (s) with which the envelope of a partial at ``f`` can change.
 
@@ -99,16 +102,27 @@ class Synthesizer:
         the group delay -d(arg H)/d(omega) of the bore's flow transfer
         function H with the lips as a (nearly) closed end, which is used here
         (clipped to 2..300 ms).
+
+        The group delay is -Im(d ln H / d omega) (no phase unwrapping). The
+        low resonances are only 1-3 Hz wide, so below TAU_FINE_FMAX it is
+        evaluated on a TAU_FINE_DF grid (bores with a ``transfer`` method);
+        the 0.5 Hz grid of the bore underestimates the drone peak by 10-15 %.
         """
         if self._tau is None:
             b = self.bore
-            phase = np.unwrap(np.angle(b.H))
-            tg = -np.gradient(phase, 2 * np.pi * b.freqs)
-            # smooth over 2 Hz to remove numerical noise, keep the peaks
-            k = max(1, int(round(2.0 / (b.freqs[1] - b.freqs[0]))))
-            tg = np.convolve(tg, np.ones(k) / k, mode="same")
-            self._tau = np.clip(tg, 0.002, 0.3)
-        return np.interp(f, self.bore.freqs, self._tau)
+
+            def group_delay(freqs, H):
+                return -(np.gradient(H, 2 * np.pi * freqs) / H).imag
+
+            tf, tg = b.freqs, group_delay(b.freqs, b.H)
+            if hasattr(b, "transfer"):
+                fine = np.arange(self.TAU_FINE_DF, min(self.TAU_FINE_FMAX, b.freqs[-1]), self.TAU_FINE_DF)
+                coarse = b.freqs > fine[-1]
+                tf = np.concatenate([fine, b.freqs[coarse]])
+                tg = np.concatenate([group_delay(fine, b.transfer(fine)), tg[coarse]])
+            self._tau_f = tf
+            self._tau = np.clip(np.nan_to_num(tg, nan=0.002), 0.002, 0.3)
+        return np.interp(f, self._tau_f, self._tau)
 
     def _apply_inertia(self, A, freqs, rate):
         """Time-varying one-pole smoothing of each partial's complex amplitude."""

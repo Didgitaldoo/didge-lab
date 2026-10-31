@@ -123,6 +123,12 @@ class Bore:
         d0 = self.geo.geo[0][1] / 1000
         self.Z0 = self.constants.air_density * self.constants.speed_of_sound / (np.pi * d0 * d0 / 4)
 
+    def transfer(self, freqs):
+        """Complex H at arbitrary ``freqs`` (e.g. a grid finer than ``self.freqs``)."""
+        A, B, C, D, Zrad = chain_matrix(self.geo, np.asarray(freqs, dtype=float), self.constants,
+                                        self.loss_factor)
+        return 1.0 / (C * Zrad + D)
+
     # -- DidgeLab ---------------------------------------------------------------
     def didgelab_impedance(self, freqs):
         """|Z_in| computed by DidgeLab's own (Cython) simulation."""
@@ -248,6 +254,10 @@ class ModalBore:
             g = 2.0 / (1 + (r.freq / self.H_CORNER) ** self.H_EXPONENT)
             h = h + g * r.impedance / self.Z0 * mode
         return zin, -1j * h
+
+    def transfer(self, freqs):
+        """Complex H at arbitrary ``freqs``."""
+        return self.spectra(freqs)[1]
 
     def didgelab_impedance(self, freqs):
         """|Z_in| at ``freqs`` (the counterpart of DidgeLab's simulation)."""

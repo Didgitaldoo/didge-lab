@@ -89,3 +89,19 @@ def test_bore_inertia_time_constant():
     assert 0.5 * q_based < tau_drone < 1.5 * q_based
     # between two resonances the bore responds quickly
     assert s.envelope_time_constant(0.5 * (b.resonances[0].freq + b.resonances[1].freq)) < 0.02
+
+
+def test_inertia_equals_resonance_bandwidth():
+    # tau = 1 / (pi B) with B the exact -3 dB bandwidth of the drone peak
+    from didgelab.synth import ModalBore
+    from didgelab.synth.bore import chain_matrix
+    b = Bore(GEO)
+    f = np.arange(b.drone - 6, b.drone + 6, 0.002)
+    A, B, C, D, Zr = chain_matrix(b.geo, f, b.constants)
+    h = np.abs(1 / (C * Zr + D))
+    above = f[h > h.max() / np.sqrt(2)]
+    tau = Synthesizer(b, ModelParams()).envelope_time_constant(f[np.argmax(h)])
+    assert abs(tau * np.pi * (above[-1] - above[0]) - 1) < 0.03
+    # a single modal resonance: tau = Q / (pi f)
+    m = ModalBore([(70.0, 2e7, 30.0), (200.0, 8e6, 30.0)])
+    assert abs(Synthesizer(m, ModelParams()).envelope_time_constant(70.0) * np.pi * 70.0 / 30.0 - 1) < 0.02

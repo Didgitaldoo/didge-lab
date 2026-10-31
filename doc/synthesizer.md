@@ -352,9 +352,10 @@ whose time constant is the **group delay of the bore**,
 A_n[k] \leftarrow e^{-\Delta t/\tau_n}A_n[k-1] + \big(1-e^{-\Delta t/\tau_n}\big)A_n[k].
 ```
 
-For a resonance the group delay equals $1/(\pi B)$: for the Tamaki1 drone it
-is 119 ms (the $Q$ of the impedance peak gives 127 ms), between resonances only
-2–10 ms. Partials on resonances therefore change slowly, partials between them
+For a resonance the group delay equals $1/(\pi B)$: for the Tamaki1 drone
+(bandwidth 1.98 Hz, $Q = 38.9$) it is 161 ms, between resonances only 2–10 ms.
+The low resonances are only 1–3 Hz wide, so below 1.5 kHz the group delay is
+evaluated on a 0.02 Hz grid as $-\mathrm{Im}(d\ln H/d\omega)$. Partials on resonances therefore change slowly, partials between them
 quickly — consonants appear as short vertical stripes in the upper spectrum
 while the drone keeps sounding, exactly as in the recordings.
 
