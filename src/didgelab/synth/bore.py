@@ -88,8 +88,10 @@ def chain_matrix(geo, freqs, constants: AcousticConstants, loss_factor=1.0):
         seg = (L, d1, Zc)
 
     L, d1, Zc = seg
-    # radiation impedance at the bell, identical to didgelab's Za()
-    Zrad = 0.5 * Zc * (w * w * d1 * d1 / c / c + 1j * 0.6 * L * w * d1 / c)
+    # radiation impedance at the bell opening, identical to didgelab's Za():
+    # Levine & Schwinger (1948), unflanged pipe, low ka, a = d1 / 2
+    kd = w * d1 / c
+    Zrad = rho * c / (np.pi * d1 * d1 / 4) * (kd * kd / 16 + 1j * 0.3 * kd)
     return A, B, C, D, Zrad
 
 

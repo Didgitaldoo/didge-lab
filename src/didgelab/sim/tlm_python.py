@@ -124,18 +124,13 @@ def ap(w, segments, p=DEFAULT_P, n=DEFAULT_N, c=DEFAULT_C):
 
 def Za(w, segments, p=DEFAULT_P, n=DEFAULT_N, c=DEFAULT_C):
     """Radiation impedance at the bell (last segment) for angular frequency w."""
-    t_seg = segments[-1]
-
-    L = t_seg.L
-    d1 = t_seg.d1
-    a01 = t_seg.a01
-    r0 = t_seg.r0
-
-    rvw = math.sqrt (p * w * a01 / (n * PI))
-    Zcw = np.complex128(r0*(1.0 + 0.369 / rvw) - 1j*r0 * 0.369 / rvw)
-
-    res = 0.5 * Zcw * np.complex128(w * w * d1 * d1 / c / c + 1j*0.6 * L * w * d1 / c)  # from Geipel
-    return res
+    d1 = segments[-1].d1
+    # Levine & Schwinger (1948), unflanged pipe, low ka: Z = rho c / S (k^2 a^2 / 4 + j 0.6 k a)
+    # with a = d1 / 2 and S the area of the bell opening. (Earlier versions multiplied the
+    # imaginary part by the length of the last segment and took Z_c at its start, which
+    # shortened the end correction.)
+    kd = w * d1 / c
+    return p * c / (PI * d1 * d1 / 4) * np.complex128(kd * kd / 16 + 1j * 0.3 * kd)
 
 
 def cadsd_Ze(segments, f, p=DEFAULT_P, n=DEFAULT_N, c=DEFAULT_C):

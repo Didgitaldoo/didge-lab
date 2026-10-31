@@ -275,18 +275,11 @@ cdef inline double _cadsd_Ze_one(Segment[:] segs, double f) nogil:
         x10 = z10
         x11 = z11
 
-    # Radiation impedance at bell (Za), computed from the last segment
-    cdef double L_last = segs[n_seg - 1].L
+    # Radiation impedance at the bell opening (Za): Levine & Schwinger (1948),
+    # unflanged pipe, low ka: Z = rho c / S (k^2 a^2 / 4 + j 0.6 k a), a = d1 / 2
     cdef double d1_last = segs[n_seg - 1].d1
-    cdef double a01_last = segs[n_seg - 1].a01
-    cdef double r0_last = segs[n_seg - 1].r0
-
-    cdef double rvw_a = sqrt(p * w * a01_last / (n * PI))
-    cdef double complex Zcw_a = (r0_last * (1.0 + 0.369 / rvw_a)) - 1j * (r0_last * 0.369 / rvw_a)
-    cdef double complex a = 0.5 * Zcw_a * (
-        w * w * d1_last * d1_last / c / c
-        + 1j * 0.6 * L_last * w * d1_last / c
-    )
+    cdef double kd = w * d1_last / c
+    cdef double complex a = p * c / (PI * d1_last * d1_last / 4) * (kd * kd / 16 + 1j * 0.3 * kd)
 
     cdef double complex num = a * x00 + x01
     cdef double complex den = a * x10 + x11

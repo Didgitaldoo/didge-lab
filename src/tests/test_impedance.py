@@ -3,6 +3,7 @@ import numpy as np
 from didgelab.synth import synthesize
 from didgelab.synth.bore import Bore, ModalBore
 from didgelab.synth import impedance as imp
+from didgelab.synth.techniques import score_controls
 
 GEO = [[0, 32], [800, 32], [900, 38], [970, 42], [1050, 40], [1180, 48], [1350, 60], [1390, 68], [1500, 72]]
 
@@ -32,8 +33,10 @@ def test_true_bore_fits_its_own_drone():
     b = Bore(GEO, fmax=3000)
     assert abs(1200 * np.log2(obs.f0 / b.drone)) < 20
     fw = imp._Forward(obs, imp.ModelParams())
-    terms, pk = imp.geo_terms(GEO, fw, imp.Weights())
-    other, _ = imp.geo_terms([[0, 31], [1500, 120]], fw, imp.Weights())
+    # the mouth shape of the "doo" (the neutral default differs more than the bores do)
+    vt = np.median(np.asarray(score_controls(b, "tempo = 60\ndoo:3", imp.ModelParams(), seed=0).vt), 0)
+    terms, pk = imp.geo_terms(GEO, fw, imp.Weights(), vt=vt)
+    other, _ = imp.geo_terms([[0, 31], [1500, 120]], fw, imp.Weights(), vt=vt)
     assert terms["harm"] < other["harm"]
     assert abs(pk[0] / b.drone - 1) < 0.005
 

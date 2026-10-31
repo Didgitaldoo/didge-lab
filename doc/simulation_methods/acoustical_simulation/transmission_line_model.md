@@ -35,9 +35,11 @@ Conical ($d_0 \neq d_1$): Uses a more complex derivation for spherical waves. It
 ## 4. Radiation Impedance ($Z_a$)
 
 The Za function calculates what happens when the sound hits the end of the didgeridoo (the bell).
-Sound doesn't just vanish; some of it reflects back into the tube. This "load" at the end of the line depends on the frequency and the diameter of the bell. The formula used here is a variation of the Levine and Schwinger (1948) radiation model, simplified by Geipel (2003):
+Sound doesn't just vanish; some of it reflects back into the tube. This "load" at the end of the line depends on the frequency and the diameter of the bell. DidgeLab uses the low-frequency limit of the Levine and Schwinger (1948) radiation impedance of an unflanged pipe with radius $a = d/2$ at the bell opening:
 
-$$Z_{rad} \approx \frac{1}{2} Z_c \left( \left(\frac{\omega d}{c}\right)^2 + i \cdot 0.6 \frac{\omega d}{c} \right)$$
+$$Z_{rad} \approx \frac{\rho c}{S}\left( \frac{(ka)^2}{4} + i \cdot 0.6\, ka \right) = \frac{\rho c}{S}\left( \frac{1}{16}\left(\frac{\omega d}{c}\right)^2 + i \cdot 0.3 \frac{\omega d}{c} \right), \qquad S = \frac{\pi d^2}{4},\ k = \frac{\omega}{c}.$$
+
+The real part is the radiated sound power, the imaginary part an end correction: the bore acts as if it were $0.6\,a$ longer. (Up to version 3.0.x, DidgeLab used $\frac{1}{2} Z_c ((\omega d/c)^2 + i\,0.6\,L\,\omega d/c)$ after Geipel (2003), with $Z_c$ at the start of the last segment and $L$ its length; this shortened the end correction by the factor $L$ in metres. On the Didge Archive the Levine–Schwinger form predicts the open-hand slap resonances and the toots clearly better, see [synthesizer.md](../../synthesizer.md) §7.)
 
 ## 5. Input Impedance ($Z_e$)
 

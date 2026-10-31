@@ -52,8 +52,7 @@ class TestAcousticalSimulation:
         assert all(z > 0 for z in imp)
 
     def test_all_backends_agree_on_fundamental(self):
-        """All four backends should locate the first impedance peak at the
-        same frequency, within 6 cents.
+        """The backends should agree on the first impedance peak.
 
         Uses the geometry and log-spaced frequency grid from
         ``doc/examples/acoustical_simulations.ipynb`` so this test guards
@@ -62,10 +61,11 @@ class TestAcousticalSimulation:
         only the *frequency* of the first impedance peak, which is the
         fundamental and a physical quantity that must agree.
 
-        6 cents (~0.35%) is a musically meaningful tolerance: anything looser
-        and two backends would be heard as tuned differently. (The FEM
-        backends sit ~5 cents above the TLM ones on this geometry, so 5 was
-        too tight.)
+        The two TLM implementations must agree exactly, the two FEM backends
+        within 6 cents (~0.35%, musically meaningful). The FEM backends set
+        p = 0 at the bell and have no radiation impedance, so they lack the
+        end correction (0.6 a, Levine & Schwinger) of the TLM: their peak lies
+        above the TLM one, by ~17 cents on this geometry.
 
         The 2D FEM backend solves the axisymmetric Helmholtz equation (r-
         weighted forms over the meridional half-plane), which is equivalent
@@ -186,13 +186,13 @@ class TestAcousticalSimulation:
 
         # Compare every pair; assert max separation < 5 cents.
         # cents = 1200 * log2(f1 / f2)
-        vals = list(peak_freqs.values())
-        max_cents = 1200.0 * np.log2(max(vals) / min(vals))
-        assert max_cents < 6.0, (
-            f"First-peak frequencies disagree by {max_cents:.2f} cents "
-            f"(> 6 cent tolerance). Peaks: "
-            + ", ".join(f"{m}={f:.3f} Hz" for m, f in peak_freqs.items())
-        )
+        pk = peak_freqs
+        msg = "Peaks: " + ", ".join(f"{m}={f:.3f} Hz" for m, f in pk.items())
+        cents = lambda a, b: 1200.0 * np.log2(pk[a] / pk[b])
+        assert abs(cents("tlm_python", "tlm_cython")) < 0.1, msg
+        assert abs(cents("1d_fem", "2d_fem")) < 6.0, msg
+        # end correction: the TLM (with radiation) plays lower than the FEM (p = 0 at the bell)
+        assert 5.0 < cents("1d_fem", "tlm_cython") < 30.0, msg
 
     def test_temperature_humidity_changes_all_methods(self):
         """For every simulation backend, swapping cold/dry (20 C, 0% RH) air

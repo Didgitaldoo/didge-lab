@@ -106,20 +106,11 @@ def ap (w, segments):
     return z
 
 def Za( w, segments):
-    t_seg=segments[-1]
-
-    L = t_seg.L
-    d1 = t_seg.d1
-    a01 = t_seg.a01
-    r0 = t_seg.r0
-
-    rvw = (p * w * a01 / (n * PI)).sqrt()
-
-    Zcw = torch.complex(r0*(1.0 + 0.369 / rvw), -1*r0 * 0.369 / rvw)
-
-    res = 0.5 * Zcw * torch.complex(w * w * d1 * d1 / c / c, 0.6 * L * w * d1 / c)
-
-    return res
+    d1 = segments[-1].d1
+    # Levine & Schwinger (1948), unflanged pipe, low ka (same as tlm_python.Za)
+    kd = w * d1 / c
+    Z0 = p * c / (PI * d1 * d1 / 4)
+    return Z0 * torch.complex(kd * kd / 16, 0.3 * kd)
 
 def cadsd_Ze (segments, f):
   w = 2.0 * PI * f
