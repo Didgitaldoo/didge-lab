@@ -710,16 +710,16 @@ mouth shape taken from the recording, §8.2) in `outputs/synth-audio/resynth-*.w
 
 | recording | dur. / s | drone / Hz (DidgeLab) | toots | formant median / p90 / Hz | tongue front / back | tongue moves / s | vocalisation / s | stops / s | circ. breaths |
 |---|---|---|---|---|---|---|---|---|---|
-| malveira-short-song | 24.7 | 93.4 (93.9) | – | 996 / 2681 | 0.25 / 0.68 | 1.38 | 0.5 | 1.34 | 1 |
-| arusha-short-song | 22.3 | 75.5 (74.8) | – | 1951 / 3550 | 0.53 / 0.31 | 1.88 | 2.1 | 0.27 | 0 |
-| nazare-short-song | 19.4 | 74.7 (74.9) | – | 1751 / 3279 | 0.47 / 0.40 | 1.18 | 1.8 | 0.88 | 1 |
-| kizimkazi-short-song | 26.4 | 76.1 (74.7) | – | 1666 / 3927 | 0.41 / 0.28 | 1.21 | 3.3 | 0.42 | 3 |
-| opendidge-short-song | 19.8 | 74.7 (74.1) | – | 2267 / 3745 | 0.68 / 0.24 | 1.77 | 0.7 | 0.46 | 0 |
-| open-didge-drags | 9.0 | 73.5 (74.1) | 1 | 1593 / 2714 | 0.38 / 0.48 | 1.00 | 0.2 | 0.44 | 3 |
-| opendidge-2-straight-long | 37.4 | 75.0 (74.1) | – | 1347 / 3688 | 0.41 / 0.52 | 2.03 | **30.6** | 0.13 | 0 |
-| tamaki1-long | 37.4 | 76.6 (76.8) | 3 (1.1 s) | 2291 / 3179 | 0.57 / 0.41 | 1.87 | 2.6 | 0.37 | 1 |
-| tamaki-2-long | 37.4 | 72.2 (72.6) | 1 (0.8 s) | 2083 / 3350 | 0.52 / 0.45 | 2.35 | 0 | 0.35 | 0 |
-| matema-long | 32.7 | 73.5 (74.8) | 5 (1.1 s) | 1248 / 3281 | 0.40 / 0.54 | 2.08 | 0.9 | 0.52 | 0 |
+| malveira-short-song | 24.7 | 93.4 (93.1) | – | 996 / 2681 | 0.25 / 0.68 | 1.38 | 0.5 | 1.34 | 1 |
+| arusha-short-song | 22.3 | 75.5 (74.0) | – | 1951 / 3550 | 0.53 / 0.31 | 1.88 | 2.1 | 0.27 | 0 |
+| nazare-short-song | 19.4 | 74.7 (74.1) | – | 1751 / 3279 | 0.47 / 0.40 | 1.18 | 1.8 | 0.88 | 1 |
+| kizimkazi-short-song | 26.4 | 76.1 (74.3) | – | 1666 / 3927 | 0.41 / 0.28 | 1.21 | 3.3 | 0.42 | 3 |
+| opendidge-short-song | 19.8 | 74.7 (73.8) | – | 2267 / 3745 | 0.68 / 0.24 | 1.77 | 0.7 | 0.46 | 0 |
+| open-didge-drags | 9.0 | 73.5 (73.8) | 1 | 1593 / 2714 | 0.38 / 0.48 | 1.00 | 0.2 | 0.44 | 3 |
+| opendidge-2-straight-long | 37.4 | 75.0 (73.8) | – | 1347 / 3688 | 0.41 / 0.52 | 2.03 | **30.6** | 0.13 | 0 |
+| tamaki1-long | 37.4 | 76.6 (76.6) | 3 (1.1 s) | 2291 / 3179 | 0.57 / 0.41 | 1.87 | 2.6 | 0.37 | 1 |
+| tamaki-2-long | 37.4 | 72.2 (72.3) | 1 (0.8 s) | 2083 / 3350 | 0.52 / 0.45 | 2.35 | 0 | 0.35 | 0 |
+| matema-long | 32.7 | 73.5 (74.0) | 5 (1.1 s) | 1248 / 3281 | 0.40 / 0.54 | 2.08 | 0.9 | 0.52 | 0 |
 
 *"tongue moves": front ↔ back excursions of the tongue index per second.*
 
@@ -727,10 +727,9 @@ What can be said with confidence, because it is supported by independent
 physical evidence:
 
 * **Drone.** All recordings are played on the first DidgeLab resonance
-  (median deviation 14 cents, at most 32 cents).
+  (median deviation 13 cents, at most 41 cents).
 * **Toots** appear in Tamaki1 (a 1.5 s toot passage at 26–27.5 s, figure 8),
-  Tamaki2 and Matema, always on the 2nd resonance and 40–50 cents below it
-  (§7.2). The other songs are pure drone songs.
+  Tamaki2 and Matema, always on the 2nd resonance and below it (§7.2). The other songs are pure drone songs.
 * **Tongue front/back is the dominant technique.** In every recording the
   formant moves between ≈1 kHz (tongue back) and ≈3 kHz (tongue front),
   1–2.4 times per second. The players differ: Malveira's song stays mostly at
