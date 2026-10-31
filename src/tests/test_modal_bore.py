@@ -48,3 +48,24 @@ def test_render_song_loop_from_peaks():
     assert np.isfinite(y).all() and 0 < np.abs(y).max() <= 1.0
     with pytest.raises(ValueError):
         render_song_loop_from_peaks(peaks, "no-such-song")
+
+
+def _centroid(bore, f0, n):
+    from didgelab.synth import ModelParams
+    from didgelab.synth.model import harmonic_spectrum
+
+    a = np.abs(harmonic_spectrum(bore, f0, None, ModelParams(), n)) ** 2
+    return (a * np.arange(1, n + 1) * f0).sum() / a.sum()
+
+
+def test_modal_bore_brightness_close_to_geometry():
+    # The peaks alone do not fix the timbre: on the fitting set (didge-archive and
+    # generated bores) the brightness of a ModalBore is 0.66..1.35 x that of the
+    # geometry with the same peaks.
+    from tests.test_bore import GEOS
+
+    for geo in GEOS:
+        b = Bore(geo)
+        m = ModalBore(b.resonances, mouth_diameter=geo[0][1])
+        ratio = _centroid(m, m.drone, 100) / _centroid(b, b.drone, 100)
+        assert 0.65 < ratio < 1.45

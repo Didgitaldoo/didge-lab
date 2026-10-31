@@ -187,12 +187,16 @@ class ModalBore:
         H(f)    = -j sum_n g(f_n) Z_n/Z_0 / (1 + j Q_n (f/f_n - f_n/f)),
 
     with the same poles in H as in Z_in. The residues of H are not known
-    without a geometry; g(f) = 2 / (1 + (f / 1500 Hz)^2) is fitted on the
-    bores of the didge-archive, where |H| / (|Z_in| / Z_0) at the peaks is
-    about 2 below 500 Hz and falls above 1 kHz (equal signs of the residues
-    match the harmonic spectra of these bores better than alternating ones,
-    4.6 vs 6.1 dB mean error per harmonic). Z_bg ramps from 0 to Z_0
-    above ~2 kHz, where the real Z_in of a didgeridoo levels out at Z_0.
+    without a geometry; g(f) = 2 / (1 + (f / 550 Hz)^2.3) and the corner of
+    Z_bg (3 kHz) are fitted on the bores of the didge-archive to match the
+    1/3-octave envelope of the synthesizer's filter gain and the spectral
+    centroid (brightness) of drone and first toot: brightness within ~12 %
+    on average (single bores 0.66..1.35 x, also on generated bores), envelope
+    within ~5 dB on average. Real bores have alternating residue
+    signs and a residue phase that turns from -90 deg towards 0 above ~1 kHz,
+    but with equal signs the brightness fits better (alternating: ~25 %).
+    Z_bg ramps from 0 to Z_0 at high frequencies, where the real Z_in of a
+    didgeridoo levels out at Z_0.
 
     The pitches are those of the peaks; the timbre is an approximation of a
     real bore with the same peaks. Has the interface of :class:`Bore` that the
@@ -206,8 +210,9 @@ class ModalBore:
     mouth_diameter : mouthpiece diameter in mm, sets Z_0
     """
 
-    H_CORNER = 1500.0
-    BG_CORNER = 2000.0
+    H_CORNER = 550.0
+    H_EXPONENT = 2.3
+    BG_CORNER = 3000.0
 
     def __init__(self, peaks, mouth_diameter=32.0, fmax=12000.0, df=0.5, constants=None):
         res = []
@@ -238,7 +243,7 @@ class ModalBore:
         for r in self.resonances:
             mode = 1.0 / (1 + 1j * r.q * (f / r.freq - r.freq / f))
             zin = zin + r.impedance * mode
-            g = 2.0 / (1 + (r.freq / self.H_CORNER) ** 2)
+            g = 2.0 / (1 + (r.freq / self.H_CORNER) ** self.H_EXPONENT)
             h = h + g * r.impedance / self.Z0 * mode
         return zin, -1j * h
 
