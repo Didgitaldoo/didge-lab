@@ -44,6 +44,8 @@ SONGS = {
     "dong-tiki-ritititi": SONGS_DIR / "dong-tiki-ritititi.didge",
     "tiki-du": SONGS_DIR / "tiki-du.didge",
     "drone-back-to-front": SONGS_DIR / "drone-back-to-front.didge",
+    "dong-ti": SONGS_DIR / "dong-ti.didge",
+    "groove-demo": SONGS_DIR / "groove-demo.didge",
 }
 
 
@@ -57,7 +59,7 @@ def synthesize(geometry, score=DEFAULT_SCORE, fs=48000, params=None, reverb=0.25
     return y, fs
 
 
-def render_song_loop(geometry, song, temperature=28.0, tempo=100.0, fs=48000):
+def render_song_loop(geometry, song, temperature=28.0, tempo=None, fs=48000):
     """Render one seamless loop (one pass of the song) on a bore.
 
     Parameters
@@ -65,7 +67,7 @@ def render_song_loop(geometry, song, temperature=28.0, tempo=100.0, fs=48000):
     geometry : list of [x_mm, diameter_mm] or ``didgelab.Geo``
     song : name of a song in ``SONGS``
     temperature : air temperature in degrees Celsius (breath humidity 100 %)
-    tempo : quarter notes per minute, overrides the tempo of the song file
+    tempo : quarter notes per minute; None (default) plays the tempo of the song file
     fs : sample rate in Hz (must be a multiple of the synth control rate, e.g. 48000)
 
     Returns ``(audio, fs)`` where audio is a mono float array whose length is
@@ -80,7 +82,7 @@ def render_song_loop(geometry, song, temperature=28.0, tempo=100.0, fs=48000):
                          fadeout=0.0), fs
 
 
-def render_song_loop_from_peaks(peaks, song, mouth_diameter=32.0, temperature=28.0, tempo=100.0,
+def render_song_loop_from_peaks(peaks, song, mouth_diameter=32.0, temperature=28.0, tempo=None,
                                 fs=48000, method="modal"):
     """Like :func:`render_song_loop`, but for a bore given by its impedance peaks.
 

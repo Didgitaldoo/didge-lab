@@ -71,3 +71,12 @@ def test_render_song_loop_length_and_whitelist():
         pass
     else:
         raise AssertionError("unknown song must be rejected")
+
+
+def test_all_song_files_are_registered_and_play_their_tempo():
+    from didgelab.synth import render_song_loop, SONGS, SONGS_DIR
+    from didgelab.synth import song as S
+    assert set(SONGS) == {p.stem for p in SONGS_DIR.glob("*.didge")}
+    s = S.load(SONGS["dong-ti"])
+    y, fs = render_song_loop([[0, 32], [800, 32], [1500, 72]], "dong-ti")
+    assert len(y) == round(s.length_beats * 60 / s.tempo * fs)
