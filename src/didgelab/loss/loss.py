@@ -14,8 +14,12 @@ class LossComponent(ABC):
     """
     Abstract base for individual loss terms.
     Each component evaluates a specific psychoacoustic or physical property.
+
+    Components that set ``uses_peak_q = True`` also receive ``peak_qs`` (quality factor per
+    peak, measured by CompositeTairuaLoss on the fine peak windows) as a keyword argument.
     """
-    
+    uses_peak_q = False
+
     @abstractmethod
     def calculate(self, peak_freqs_log: np.ndarray, peak_impedances: np.ndarray, 
                   all_freqs: np.ndarray, all_impedances: np.ndarray, peak_indices: np.ndarray) -> float:
@@ -91,30 +95,51 @@ class FrequencyTuningLoss(LossComponent):
         ]
         return formula, explanations
 
+def half_power_q(all_freqs: np.ndarray, all_impedances: np.ndarray, peak_indices: np.ndarray) -> np.ndarray:
+    """Q = f_c / (f_high - f_low) per peak, from the half-power (|Z| / sqrt(2)) crossings
+    nearest to the peak, linearly interpolated in log frequency. A side that reaches a valley
+    or the end of the spectrum before crossing is cut there (overlapping peaks)."""
+    log_f = np.log2(all_freqs)
+    n = len(all_impedances)
+    qs = []
+    for p in peak_indices:
+        threshold = all_impedances[p] / np.sqrt(2)
+        edges = []
+        for step in (-1, 1):
+            i = p
+            while 0 <= i + step < n and threshold < all_impedances[i + step] <= all_impedances[i]:
+                i += step
+            j = i + step
+            if 0 <= j < n and all_impedances[j] <= threshold:
+                frac = (all_impedances[i] - threshold) / (all_impedances[i] - all_impedances[j])
+                edges.append(log_f[i] + (log_f[j] - log_f[i]) * frac)
+            else:
+                edges.append(log_f[i])
+        f_low, f_high = np.power(2.0, edges)
+        qs.append(all_freqs[p] / (f_high - f_low + 1e-9))
+    return np.array(qs)
+
+
 class QFactorLoss(LossComponent):
     """
-    Q-FACTOR: Controls the sharpness/damping of resonances. 
+    Q-FACTOR: Controls the sharpness/damping of resonances.
     High Q creates a piercing tone; Low Q creates a warm, woody tone.
+
+    Q is the -3 dB quality factor f_c / bandwidth. Inside CompositeTairuaLoss it comes from
+    the curvature of the refined peak (``peak_qs``); called directly, it is measured from
+    the half-power crossings in the given spectrum.
     """
+    uses_peak_q = True
+
     def __init__(self, target_q: float, weight: float):
         self.target_q = target_q
         self.weight = weight
 
-    def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices):
-        qs = []
-        for p_idx in peak_indices:
-            f_center = all_freqs[p_idx]
-            target_amp = all_impedances[p_idx] / np.sqrt(2)
-            
-            left_side = all_impedances[:p_idx]
-            f_low = all_freqs[np.argmin(np.abs(left_side - target_amp))]
-            
-            right_side = all_impedances[p_idx:]
-            f_high = all_freqs[p_idx + np.argmin(np.abs(right_side - target_amp))]
-            
-            qs.append(f_center / (f_high - f_low + 1e-9))
-            
-        avg_q = np.mean(qs) if qs else 0.0
+    def calculate(self, peak_freqs_log, peak_impedances, all_freqs, all_impedances, peak_indices,
+                  peak_qs=None):
+        if peak_qs is None:
+            peak_qs = half_power_q(all_freqs, all_impedances, peak_indices)
+        avg_q = np.mean(peak_qs) if len(peak_qs) else 0.0
         return np.abs(avg_q - self.target_q) * self.weight
 
     def get_formula(self) -> Tuple[str, List[str]]:
@@ -122,7 +147,7 @@ class QFactorLoss(LossComponent):
         explanations = [
             "w: Global weight for Q-factor consistency.",
             "f_c: Center frequency of the peak.",
-            "Δf_-3dB: Bandwidth at half-power (Full Width at Half Maximum).",
+            "Δf_-3dB: Bandwidth between the half-power points (|Z| / √2) around the peak.",
             "Q_target: The desired quality factor.",
             "N: Number of peaks analyzed."
         ]
@@ -287,14 +312,86 @@ class CompositeTairuaLoss:
     Uses real acoustical_simulation when available (didgelab); falls back to dummy data otherwise.
     Compatible with Nuevolution: implement .loss(shape) returning a dict with "total".
     Set .target_freqs (1D array of target frequencies in Hz) when using with init_standard_evolution.
+
+    Simulation runs in two passes: a coarse log grid (``coarse_step`` cents) finds the peaks,
+    then a fine window (``max_error`` cents) around each peak is simulated and the peak
+    position and height are refined by parabolic interpolation of log-impedance. This is
+    ~6x fewer simulated frequencies than a full ``max_error`` grid and gives sub-cent peak
+    frequencies instead of grid-quantized ones. ``all_freqs`` / ``all_impedances`` passed
+    to the components are the coarse grid; ``peak_indices`` index into it.
     """
-    def __init__(self, max_error: float = 5.0):
+    def __init__(self, max_error: float = 5.0, fmin: float = 30.0, fmax: float = 1000.0,
+                 coarse_step: float = 20.0):
+        """
+        Args:
+            max_error: Resolution in cents of the fine window around each peak.
+            fmin, fmax: Simulated band in Hz. Didgeridoo drones lie well above 30 Hz.
+            coarse_step: Resolution in cents of the peak-finding grid (at least max_error).
+        """
         self.max_error = max_error
+        self.fmin = fmin
+        self.fmax = fmax
+        self.coarse_step = coarse_step
         self.components: Dict[str, LossComponent] = {}
         self.target_freqs: Optional[np.ndarray] = None  # for init_standard_evolution / EvolutionMonitor
+        self._grid_key = None
+        self._grid = None
+        self._window_frac = None
 
     def add_component(self, name: str, component: LossComponent):
         self.components[name] = component
+
+    def _freq_grid(self) -> np.ndarray:
+        """Coarse simulation grid, cached until fmin/fmax/coarse_step/max_error change.
+
+        Extends two steps above fmax so a peak just below fmax still has a right neighbour.
+        """
+        step = max(self.coarse_step, self.max_error)
+        key = (self.fmin, self.fmax, step)
+        if key != self._grid_key:
+            fmax_ext = self.fmax * 2 ** (2 * step / 1200)
+            self._grid = get_log_simulation_frequencies(self.fmin, fmax_ext, step)
+            self._grid_key = key
+        return self._grid
+
+    def _refine_peaks(self, geo, freq_grid, impedances, peak_indices) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Return (log2 frequency, impedance, Q) of each peak, refined on a max_error window.
+
+        Q comes from the three samples around the peak: for a resonance
+        1/|Z|^2 = y0 * (1 + 4 Q^2 delta^2) with delta = (f - f_c) / f_c ~ ln 2 * (log2 f - log2 f_c),
+        so a parabola K (x - x0)^2 + y0 through 1/|Z|^2 gives Q = sqrt(K / (4 y0)) / ln 2.
+        Peaks where that parabola does not open upwards fall back to the half-power
+        crossings on the grid.
+        """
+        step = max(self.coarse_step, self.max_error)
+        n = int(np.ceil(2 * step / self.max_error)) + 1
+        if self._window_frac is None or len(self._window_frac) != n:
+            self._window_frac = np.linspace(0, 1, n)
+        lo = np.log2(freq_grid[peak_indices - 1])
+        hi = np.log2(freq_grid[peak_indices + 1])
+        window_log = lo[:, None] + (hi - lo)[:, None] * self._window_frac[None, :]
+        window_imp = np.asarray(acoustical_simulation(geo, np.power(2.0, window_log.ravel())))
+        window_imp = window_imp.reshape(window_log.shape)
+
+        rows = np.arange(len(peak_indices))
+        j = np.clip(np.argmax(window_imp, axis=1), 1, n - 2)
+        a, b, c = (np.log(window_imp[rows, j + k] + 1e-30) for k in (-1, 0, 1))
+        denom = a - 2 * b + c
+        delta = np.where(denom < 0, 0.5 * (a - c) / np.where(denom < 0, denom, 1.0), 0.0)
+        delta = np.clip(delta, -1.0, 1.0)
+        dx = window_log[:, 1] - window_log[:, 0]
+        freqs_log = window_log[rows, j] + delta * dx
+        imps = np.exp(b - 0.25 * (a - c) * delta)
+        ya, yb, yc = (1.0 / window_imp[rows, j + k] ** 2 for k in (-1, 0, 1))
+        curv = ya - 2 * yb + yc
+        valid = curv > 0
+        y0 = yb - (yc - ya) ** 2 / (8 * np.where(valid, curv, 1.0))
+        valid &= y0 > 0
+        qs = np.sqrt(np.where(valid, curv / (2 * dx ** 2 * 4 * np.where(valid, y0, 1.0)), 0.0)) / np.log(2)
+        fallback = ~valid
+        if np.any(fallback):
+            qs[fallback] = half_power_q(freq_grid, impedances, peak_indices[fallback])
+        return freqs_log, imps, qs
 
     def loss(self, shape) -> Dict[str, float]:
         if getattr(shape, "loss", None) is not None:
@@ -302,20 +399,23 @@ class CompositeTairuaLoss:
 
         try:
             geo = shape.genome2geo()
-            freq_grid = get_log_simulation_frequencies(1, 1000, self.max_error)
+            freq_grid = self._freq_grid()
             impedances = np.asarray(acoustical_simulation(geo, freq_grid))
 
             peak_indices, _ = find_peaks(impedances, prominence=0.05)
+            peak_indices = peak_indices[freq_grid[peak_indices] <= self.fmax]
 
             if len(peak_indices) == 0:
                 return {"total": 1_000_000}
 
-            peak_freqs_log = np.log2(freq_grid[peak_indices])
-            peak_impedances = impedances[peak_indices] / (impedances.max() + 1e-9)
+            peak_freqs_log, peak_imps, peak_qs = self._refine_peaks(geo, freq_grid, impedances, peak_indices)
+            peak_impedances = peak_imps / (max(impedances.max(), peak_imps.max()) + 1e-9)
 
             results = {}
             for name, comp in self.components.items():
-                results[name] = comp.calculate(peak_freqs_log, peak_impedances, freq_grid, impedances, peak_indices)
+                kwargs = {"peak_qs": peak_qs} if getattr(comp, "uses_peak_q", False) else {}
+                results[name] = comp.calculate(peak_freqs_log, peak_impedances, freq_grid, impedances,
+                                               peak_indices, **kwargs)
 
             results["total"] = sum(results.values())
             shape.loss = results

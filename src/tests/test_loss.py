@@ -42,6 +42,7 @@ from didgelab.loss.loss import (
     StretchedOddLoss,
     HighInharmonicLoss,
     HarmonicSplittingLoss,
+    half_power_q,
 )
 from didgelab.shapes.KigaliShape import KigaliShape
 
@@ -84,20 +85,19 @@ def _build_full_composite_loss():
     return loss
 
 
-def _make_impedance_with_peaks(peak_freqs_hz):
-    """Create impedance array with clear peaks at given frequencies (for mocking)."""
-    from didgelab.acoustical_simulation import get_log_simulation_frequencies
+def _make_impedance_with_peaks(peak_freqs_hz, q=30.0):
+    """Return a fake acoustical_simulation(geo, freqs) with resonance peaks at the given frequencies.
 
-    freq_grid = get_log_simulation_frequencies(1, 1000, 5.0)
-    impedances = np.ones(len(freq_grid)) * 1e5
-    for f_hz in peak_freqs_hz:
-        idx = np.argmin(np.abs(freq_grid - f_hz))
-        impedances[idx] = 1e7
-        if idx > 0:
-            impedances[idx - 1] = 0.5e7
-        if idx < len(impedances) - 1:
-            impedances[idx + 1] = 0.5e7
-    return impedances
+    Each peak is a resonance curve of quality factor q on a 1e5 floor, so the result is
+    valid for any frequency grid (the loss simulates a coarse grid plus fine peak windows).
+    """
+    def simulate(geo, freqs):
+        freqs = np.asarray(freqs, dtype=float)
+        impedances = np.ones(len(freqs)) * 1e5
+        for f_hz in peak_freqs_hz:
+            impedances += 1e7 / np.sqrt(1 + (2 * q * (freqs / f_hz - 1)) ** 2)
+        return impedances
+    return simulate
 
 
 def _make_dummy_spectrum(n_pts=100, peak_indices=None):
@@ -328,6 +328,36 @@ class TestQFactorLoss:
         assert val >= 0
         assert isinstance(val, (int, float))
 
+    @pytest.mark.parametrize("q", [10.0, 36.0, 80.0])
+    def test_half_power_q_on_known_resonances(self, q):
+        """Direct call: Q is measured from the half-power crossings of the given spectrum.
+        One isolated peak, so the resonance curve is not widened by its neighbours."""
+        from didgelab.acoustical_simulation import get_log_simulation_frequencies
+
+        peaks_hz = [150.0]
+        freqs = get_log_simulation_frequencies(30, 1000, 1.0)
+        impedances = _make_impedance_with_peaks(peaks_hz, q=q)(None, freqs)
+        peak_idx = np.array([np.argmax(np.where(np.abs(freqs / f - 1) < 0.05, impedances, 0)) for f in peaks_hz])
+
+        measured = half_power_q(freqs, impedances, peak_idx)
+        np.testing.assert_allclose(measured, q, rtol=0.05)
+        loss = QFactorLoss(target_q=q, weight=1.0)
+        assert loss.calculate(np.log2(peaks_hz), np.ones(1), freqs, impedances, peak_idx) < 0.05 * q
+
+    @pytest.mark.parametrize("q", [10.0, 36.0, 80.0])
+    def test_composite_q_from_refined_peaks(self, q):
+        """Inside CompositeTairuaLoss the Q of the refined peaks is accurate on the coarse grid."""
+        peaks_hz = [150.0]
+        composite = CompositeTairuaLoss(max_error=5.0)
+        composite.add_component("q_factor", QFactorLoss(target_q=q, weight=1.0))
+        shape = KigaliShape(n_segments=20)
+        shape.loss = None
+
+        with patch("didgelab.loss.loss.acoustical_simulation", side_effect=_make_impedance_with_peaks(peaks_hz, q=q)):
+            result = composite.loss(shape)
+
+        assert result["q_factor"] < 0.05 * q
+
     def test_get_formula_returns_tuple(self):
         loss = QFactorLoss(15.0, 1.0)
         formula, symbols = loss.get_formula()
@@ -478,9 +508,9 @@ class TestCompositeTairuaLossFullExample:
         shape = KigaliShape(n_segments=20)
         shape.loss = None  # Ensure we compute, not use cache
 
-        impedances = _make_impedance_with_peaks([73.4, 146.8])
+        simulate = _make_impedance_with_peaks([73.4, 146.8])
 
-        with patch("didgelab.loss.loss.acoustical_simulation", return_value=impedances):
+        with patch("didgelab.loss.loss.acoustical_simulation", side_effect=simulate):
             result = loss.loss(shape)
 
         assert "total" in result, "Result must contain 'total' key"
@@ -490,3 +520,17 @@ class TestCompositeTairuaLossFullExample:
         assert len(result) == len(EXPECTED_COMPONENT_KEYS) + 1
         assert isinstance(result["total"], (int, float))
         assert result["total"] >= 0
+
+    def test_refined_peaks_are_sub_cent_accurate(self):
+        """Peaks found on the coarse grid are refined to well below the max_error resolution."""
+        loss = CompositeTairuaLoss(max_error=5.0)
+        peaks_hz = [61.7, 173.3, 291.9]
+        loss.add_component("freq", FrequencyTuningLoss(np.log2(peaks_hz), np.full(3, -1.0), [1.0, 1.0, 1.0]))
+        shape = KigaliShape(n_segments=20)
+        shape.loss = None
+
+        with patch("didgelab.loss.loss.acoustical_simulation", side_effect=_make_impedance_with_peaks(peaks_hz)):
+            result = loss.loss(shape)
+
+        # freq loss is sum(cents / 600); allow 0.5 cent per peak
+        assert result["freq"] < 3 * 0.5 / 600

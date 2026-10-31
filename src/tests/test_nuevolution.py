@@ -353,3 +353,37 @@ class TestNuevolution:
         assert evo.get_evolution_progress() == 0.0
         evo.i_generation = 2
         assert evo.get_evolution_progress() == pytest.approx(0.6)
+
+    @patch("didgelab.evo.evolution.get_app")
+    def test_recompute_loss_ignores_cached_loss(self, mock_get_app):
+        """After recompute_loss (e.g. new loss swapped in), the population is re-evaluated,
+        even with a loss function that returns the cached shape.loss."""
+        mock_app = MagicMock()
+        mock_get_app.return_value = mock_app
+
+        class CachingLoss(LossFunction):
+            def __init__(self, value):
+                self.value = value
+
+            def loss(self, genome):
+                if genome.loss is not None:
+                    return genome.loss
+                return {"total": self.value}
+
+        evo = Nuevolution(
+            loss=CachingLoss(1.0),
+            father_genome=DummyGenome(n_genes=4),
+            generation_size=2,
+            num_generations=1,
+            population_size=4,
+        )
+
+        def swap_loss(i_generation, population):
+            evo.loss = CachingLoss(2.0)
+            evo.recompute_losses = True
+
+        mock_app.publish.side_effect = lambda event, *args: (
+            swap_loss(*args[0]) if event == "generation_started" else None
+        )
+        population = evo.evolve()
+        assert all(p.loss["total"] == 2.0 for p in population)

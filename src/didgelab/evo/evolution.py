@@ -202,7 +202,10 @@ class Nuevolution:
             self.i_generation = i_generation
 
             if self.recompute_losses:
-                # Recompute population losses (e.g. after acoustic target change); report progress for this generation
+                # Recompute population losses (e.g. after acoustic target change); report progress for this generation.
+                # Clear the cached loss first: loss functions return shape.loss when it is set.
+                for individual in self.population:
+                    individual.loss = None
                 losses = self._map_losses_with_progress(pool, self.population, i_generation=self.i_generation)
                 for i in range(len(losses)):
                     self.population[i].loss = losses[i]

@@ -30,7 +30,6 @@ class LinearDecreasingMutation:
                 rate = self.rates[self.i]
                 nuevolution.evolution_parameters["mutation_rate"] = rate
                 nuevolution.evolution_parameters["gene_mutation_prob"] = rate
-                get_app().publish("recompute_loss")
 
         get_app().subscribe("generation_started", update)
 
@@ -56,7 +55,6 @@ class LinearDecreasingCrossover:
                 self.i += 1
                 rate = self.rates[self.i]
                 nuevolution.evolution_parameters["crossover_prob"] = rate
-                get_app().publish("recompute_loss")
         get_app().subscribe("generation_started", update)
 
 

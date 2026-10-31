@@ -35,7 +35,7 @@ cimport numpy as np
 cimport cython
 import numpy as npy
 
-from libc.math cimport sqrt, atan, sin, cos, sinh, cosh, M_PI, fabs
+from libc.math cimport sqrt, atan, sin, cos, expm1, M_PI, fabs
 
 np.import_array()
 
@@ -49,23 +49,23 @@ np.import_array()
 # `double _Complex`, which is incompatible with the `__pyx_t_double_complex`
 # type Cython generates and breaks builds with errors like
 # "cannot convert from '__pyx_t_double_complex' to '_Dcomplex'". Instead we
-# implement the three complex functions we need (`ccosh`, `csinh`, `cabs`)
+# implement the complex functions we need (`ccosh_csinh`, `cabs`)
 # inline using only real-valued libc primitives. This is portable across
 # gcc, clang, and MSVC regardless of which complex representation Cython
 # chooses internally.
 
-cdef inline double complex ccosh(double complex z) noexcept nogil:
-    # cosh(x + iy) = cosh(x) cos(y) + i sinh(x) sin(y)
-    cdef double x = z.real
-    cdef double y = z.imag
-    return cosh(x) * cos(y) + 1j * (sinh(x) * sin(y))
-
-
-cdef inline double complex csinh(double complex z) noexcept nogil:
-    # sinh(x + iy) = sinh(x) cos(y) + i cosh(x) sin(y)
-    cdef double x = z.real
-    cdef double y = z.imag
-    return sinh(x) * cos(y) + 1j * (cosh(x) * sin(y))
+cdef inline void ccosh_csinh(double complex z, double complex* ch, double complex* sh) noexcept nogil:
+    # cosh and sinh of the same argument share exp(x), sin(y), cos(y): one expm1
+    # and one sin/cos pair instead of four real hyperbolic/trig calls each.
+    # expm1 keeps sinh(x) accurate for the small loss terms x = Re(z).
+    cdef double em1 = expm1(z.real)
+    cdef double e = em1 + 1.0
+    cdef double shx = 0.5 * (em1 + em1 / e)
+    cdef double chx = 1.0 + 0.5 * em1 * em1 / e
+    cdef double sy = sin(z.imag)
+    cdef double cy = cos(z.imag)
+    ch[0] = chx * cy + 1j * (shx * sy)
+    sh[0] = shx * cy + 1j * (chx * sy)
 
 
 cdef inline double cabs(double complex z) noexcept nogil:
@@ -82,6 +82,7 @@ cdef double p = 1.2929
 cdef double n = 1.708e-5
 cdef double c = 343.37
 cdef double PI = 3.14159265358979323846
+cdef double SQRT_PI = 1.77245385090551602730
 # Minimum length/diameter (m) to avoid zero division; geometry is mm then converted to m
 cdef double EPS_GEO = 1e-12
 
@@ -210,11 +211,15 @@ cdef inline double _cadsd_Ze_one(Segment[:] segs, double f) nogil:
     cdef Py_ssize_t n_seg = segs.shape[0]
     cdef Py_ssize_t i
 
-    cdef double L, d0, d1, a01, l, x0, x1, r0
-    cdef double rvw, kw
+    cdef double L, d0, d1, l, x0, x1, r0
+    cdef double inv_rvw, r10, r01, inv_x0, inv_x0sq
 
-    cdef double complex Tw, Zcw
-    cdef double complex ccoshlwl, csinhlwl, ccoshlwL, csinhlwL
+    # Frequency-only terms, hoisted out of the segment loop.
+    # rvw = sqrt(p * w * a01 / (n * PI)) with sqrt(a01) = sqrt(PI) * (d0 + d1) / 4.
+    cdef double kw = w / c
+    cdef double sqrt_pw = sqrt(p * w / (n * PI))
+
+    cdef double complex Tw, Zcw, inv_Tw, inv_Zcw, ch, sh
     cdef double complex y00, y01, y10, y11
     cdef double complex z00, z01, z10, z11
 
@@ -228,36 +233,37 @@ cdef inline double _cadsd_Ze_one(Segment[:] segs, double f) nogil:
         L = segs[i].L
         d0 = segs[i].d0
         d1 = segs[i].d1
-        a01 = segs[i].a01
-        l = segs[i].l
-        x0 = segs[i].x0
-        x1 = segs[i].x1
         r0 = segs[i].r0
 
-        rvw = sqrt(p * w * a01 / (n * PI))
-        kw = w / c
+        inv_rvw = 1.0 / (sqrt_pw * SQRT_PI * (d0 + d1) * 0.25)
 
         # Tw = kw * 1.045 / rvw + i * (kw * (1 + 1.045/rvw))
-        Tw = (kw * 1.045 / rvw) + 1j * (kw * (1.0 + 1.045 / rvw))
+        Tw = (kw * 1.045 * inv_rvw) + 1j * (kw * (1.0 + 1.045 * inv_rvw))
         # Zcw = r0 * (1 + 0.369/rvw) - i * r0 * 0.369/rvw
-        Zcw = (r0 * (1.0 + 0.369 / rvw)) - 1j * (r0 * 0.369 / rvw)
-
-        ccoshlwl = ccosh(Tw * l)
-        csinhlwl = csinh(Tw * l)
-        ccoshlwL = ccosh(Tw * L)
-        csinhlwL = csinh(Tw * L)
+        Zcw = (r0 * (1.0 + 0.369 * inv_rvw)) - 1j * (r0 * 0.369 * inv_rvw)
+        inv_Zcw = 1.0 / Zcw
 
         if d0 != d1:
-            y00 = x1 / x0 * (ccoshlwl - csinhlwl / (Tw * x1))
-            y01 = x0 / x1 * Zcw * csinhlwl
-            y10 = ((x1 / x0 - 1.0 / (Tw * Tw * x0 * x0)) * csinhlwl
-                   + Tw * l / ((Tw * x0) * (Tw * x0)) * ccoshlwl) / Zcw
-            y11 = x0 / x1 * (ccoshlwl + csinhlwl / (Tw * x0))
+            l = segs[i].l
+            x0 = segs[i].x0
+            x1 = segs[i].x1
+            ccosh_csinh(Tw * l, &ch, &sh)
+            inv_Tw = 1.0 / Tw
+            r10 = x1 / x0
+            r01 = x0 / x1
+            inv_x0 = 1.0 / x0
+            inv_x0sq = inv_x0 * inv_x0
+            y00 = r10 * (ch - sh * inv_Tw / x1)
+            y01 = r01 * Zcw * sh
+            y10 = ((r10 - inv_Tw * inv_Tw * inv_x0sq) * sh
+                   + (l * inv_x0sq) * inv_Tw * ch) * inv_Zcw
+            y11 = r01 * (ch + sh * inv_Tw * inv_x0)
         else:
-            y00 = ccoshlwL
-            y01 = Zcw * csinhlwL
-            y10 = csinhlwL / Zcw
-            y11 = ccoshlwL
+            ccosh_csinh(Tw * L, &ch, &sh)
+            y00 = ch
+            y01 = Zcw * sh
+            y10 = sh * inv_Zcw
+            y11 = ch
 
         # x = x . y
         z00 = x00 * y00 + x01 * y10
