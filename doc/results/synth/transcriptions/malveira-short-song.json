@@ -1,0 +1,305 @@
+{
+ "summary": {
+  "duration_s": 24.71,
+  "voiced_fraction": 0.8135113268608414,
+  "drone_hz": 93.35917579646758,
+  "events": {
+   "stop_front": 19,
+   "stop_back": 14,
+   "voice": 2,
+   "circular_breath": 1
+  },
+  "events_per_s": {
+   "stop_front": 0.7689194658033185,
+   "stop_back": 0.56657223796034,
+   "voice": 0.08093889113719142,
+   "circular_breath": 0.04046944556859571
+  },
+  "tongue": {
+   "front": 0.2451063829787234,
+   "middle": 0.07148936170212766,
+   "back": 0.683404255319149
+  },
+  "median_fit_err_db": 5.5316814647223
+ },
+ "row": {
+  "recording": "malveira-short-song",
+  "instrument": "Malveira",
+  "duration_s": 24.7,
+  "drone_hz": 93.4,
+  "sim_drone_hz": 93.9,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 1.34,
+  "front_stop_share": 0.58,
+  "trills": 0,
+  "voice_s": 0.5,
+  "circular_breaths": 1,
+  "breath_interval_s": 24.7,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   503,
+   996,
+   2681
+  ],
+  "tongue": {
+   "front": 0.25,
+   "middle": 0.07,
+   "back": 0.68
+  },
+  "tongue_moves_per_s": 1.38
+ },
+ "segments": [
+  {
+   "start": 0.27,
+   "end": 0.31,
+   "label": "stop_front",
+   "p": 0.7222571448578212,
+   "tongue_index": null
+  },
+  {
+   "start": 1.57,
+   "end": 1.61,
+   "label": "stop_back",
+   "p": 0.5786753133343621,
+   "tongue_index": 0.06392693195112531
+  },
+  {
+   "start": 1.58,
+   "end": 1.91,
+   "label": "voice",
+   "p": 0.721891774232253,
+   "sideband_db": -19.24117500112275
+  },
+  {
+   "start": 2.18,
+   "end": 2.22,
+   "label": "stop_back",
+   "p": 0.6455594712825284,
+   "tongue_index": 0.7052881741310572
+  },
+  {
+   "start": 2.55,
+   "end": 2.59,
+   "label": "stop_front",
+   "p": 0.6064596819005333,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 2.83,
+   "end": 2.87,
+   "label": "stop_back",
+   "p": 0.8112490279309782,
+   "tongue_index": 1.175754152623995
+  },
+  {
+   "start": 3.55,
+   "end": 3.59,
+   "label": "stop_front",
+   "p": 0.9544292814867343,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 3.98,
+   "end": 4.02,
+   "label": "stop_back",
+   "p": 0.8160411666707741,
+   "tongue_index": null
+  },
+  {
+   "start": 4.19,
+   "end": 4.23,
+   "label": "stop_back",
+   "p": 0.9381446767757329,
+   "tongue_index": 0.036109912058219965
+  },
+  {
+   "start": 4.52,
+   "end": 4.56,
+   "label": "stop_back",
+   "p": 0.9180250654843217,
+   "tongue_index": 0.14159506992380033
+  },
+  {
+   "start": 5.25,
+   "end": 5.29,
+   "label": "stop_front",
+   "p": 0.9057896557828335,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 5.33,
+   "end": 5.37,
+   "label": "stop_back",
+   "p": 0.9368109711456093,
+   "tongue_index": 0.01295774399881755
+  },
+  {
+   "start": 6.84,
+   "end": 6.88,
+   "label": "stop_front",
+   "p": 0.8103293981534739,
+   "tongue_index": null
+  },
+  {
+   "start": 7.36,
+   "end": 7.4,
+   "label": "stop_back",
+   "p": 0.9628739508153643,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 8.18,
+   "end": 8.22,
+   "label": "stop_front",
+   "p": 0.7453732359645102,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 8.51,
+   "end": 8.55,
+   "label": "stop_front",
+   "p": 0.8243111683605945,
+   "tongue_index": 0.3577747205334568
+  },
+  {
+   "start": 9.52,
+   "end": 9.56,
+   "label": "stop_front",
+   "p": 1.0676062815553589,
+   "tongue_index": 0.7100080160399103
+  },
+  {
+   "start": 10.13,
+   "end": 10.17,
+   "label": "stop_front",
+   "p": 0.7300290470187742,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 10.27,
+   "end": 10.31,
+   "label": "stop_front",
+   "p": 0.6938816827171057,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 11.26,
+   "end": 11.3,
+   "label": "stop_back",
+   "p": 0.918619278786618,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 11.69,
+   "end": 11.73,
+   "label": "stop_front",
+   "p": 0.7785677502151281,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 12.87,
+   "end": 12.91,
+   "label": "stop_front",
+   "p": 0.7123867379104413,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 14.04,
+   "end": 14.08,
+   "label": "stop_front",
+   "p": 0.7962676314817887,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 14.98,
+   "end": 15.02,
+   "label": "stop_back",
+   "p": 0.8183788927525175,
+   "tongue_index": 0.5909090909090908
+  },
+  {
+   "start": 15.25,
+   "end": 15.29,
+   "label": "stop_front",
+   "p": 0.8026465365195653,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 15.48,
+   "end": 15.62,
+   "label": "circular_breath",
+   "p": 0.9079530678550665
+  },
+  {
+   "start": 16.06,
+   "end": 16.1,
+   "label": "stop_front",
+   "p": 0.6832700221340284,
+   "tongue_index": null
+  },
+  {
+   "start": 16.17,
+   "end": 16.21,
+   "label": "stop_front",
+   "p": 0.7120934161389666,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 16.98,
+   "end": 17.02,
+   "label": "stop_back",
+   "p": 0.5190498223473599,
+   "tongue_index": 1.128860909876247
+  },
+  {
+   "start": 17.11,
+   "end": 17.15,
+   "label": "stop_front",
+   "p": 0.770085009907267,
+   "tongue_index": 1.1112979034131203
+  },
+  {
+   "start": 17.5,
+   "end": 17.54,
+   "label": "stop_back",
+   "p": 0.9241987531437537,
+   "tongue_index": 1.1538792231008013
+  },
+  {
+   "start": 17.71,
+   "end": 17.86,
+   "label": "voice",
+   "p": 0.6856376628980616,
+   "sideband_db": -15.693012552865959
+  },
+  {
+   "start": 18.18,
+   "end": 18.22,
+   "label": "stop_back",
+   "p": 0.547494420414137,
+   "tongue_index": -0.0553806615688478
+  },
+  {
+   "start": 18.4,
+   "end": 18.44,
+   "label": "stop_front",
+   "p": 0.852870789673975,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 18.61,
+   "end": 18.65,
+   "label": "stop_front",
+   "p": 0.5630547207041313,
+   "tongue_index": 1.132398457975433
+  },
+  {
+   "start": 18.87,
+   "end": 18.91,
+   "label": "stop_back",
+   "p": 0.5610757403233679,
+   "tongue_index": 0.15066190165800084
+  }
+ ]
+}

@@ -1,0 +1,213 @@
+{
+ "summary": {
+  "duration_s": 37.41,
+  "voiced_fraction": 0.7161945483698557,
+  "drone_hz": 76.62836869876307,
+  "events": {
+   "circular_breath": 1,
+   "voice": 5,
+   "stop_back": 14,
+   "toot1": 3
+  },
+  "events_per_s": {
+   "circular_breath": 0.026730820636193534,
+   "voice": 0.13365410318096768,
+   "stop_back": 0.3742314889067095,
+   "toot1": 0.0801924619085806
+  },
+  "tongue": {
+   "front": 0.5662824207492796,
+   "middle": 0.028338136407300672,
+   "back": 0.4053794428434198
+  },
+  "median_fit_err_db": 5.5974301288407275
+ },
+ "row": {
+  "recording": "tamaki1-long",
+  "instrument": "Tamaki1",
+  "duration_s": 37.4,
+  "drone_hz": 76.6,
+  "sim_drone_hz": 76.8,
+  "toots": {
+   "toot1": 3
+  },
+  "toot_s": 1.1,
+  "stops_per_s": 0.37,
+  "front_stop_share": 0.0,
+  "trills": 0,
+  "voice_s": 2.6,
+  "circular_breaths": 1,
+  "breath_interval_s": 37.4,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   597,
+   2291,
+   3179
+  ],
+  "tongue": {
+   "front": 0.57,
+   "middle": 0.03,
+   "back": 0.41
+  },
+  "tongue_moves_per_s": 1.87
+ },
+ "segments": [
+  {
+   "start": 1.15,
+   "end": 1.26,
+   "label": "circular_breath",
+   "p": 0.7803761783447701
+  },
+  {
+   "start": 5.43,
+   "end": 5.91,
+   "label": "voice",
+   "p": 0.6991176119851022,
+   "sideband_db": -14.932977641106362
+  },
+  {
+   "start": 5.93,
+   "end": 6.3,
+   "label": "voice",
+   "p": 0.6988353469745177,
+   "sideband_db": -15.516288256146098
+  },
+  {
+   "start": 8.58,
+   "end": 8.62,
+   "label": "stop_back",
+   "p": 0.693692616738357,
+   "tongue_index": 0.6738927376873071
+  },
+  {
+   "start": 8.85,
+   "end": 8.89,
+   "label": "stop_back",
+   "p": 0.9152696802751472,
+   "tongue_index": -0.16198836341612102
+  },
+  {
+   "start": 8.91,
+   "end": 9.95,
+   "label": "voice",
+   "p": 0.960134882721648,
+   "sideband_db": -19.53938979013548
+  },
+  {
+   "start": 9.5,
+   "end": 9.54,
+   "label": "stop_back",
+   "p": 0.9151563187087733,
+   "tongue_index": -0.10072977536178929
+  },
+  {
+   "start": 10.59,
+   "end": 10.63,
+   "label": "stop_back",
+   "p": 0.8602174045093961,
+   "tongue_index": -0.13836136938242113
+  },
+  {
+   "start": 14.43,
+   "end": 14.47,
+   "label": "stop_back",
+   "p": 0.5135895495907661,
+   "tongue_index": 0.10152931610913749
+  },
+  {
+   "start": 15.51,
+   "end": 15.55,
+   "label": "stop_back",
+   "p": 0.8245922396643212,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 15.72,
+   "end": 15.76,
+   "label": "stop_back",
+   "p": 0.9656329877884258,
+   "tongue_index": 0.2746113600987107
+  },
+  {
+   "start": 17.92,
+   "end": 17.96,
+   "label": "stop_back",
+   "p": 0.654980419438622,
+   "tongue_index": null
+  },
+  {
+   "start": 18.88,
+   "end": 18.92,
+   "label": "stop_back",
+   "p": 1.0756362881927881,
+   "tongue_index": -0.23531489299025252
+  },
+  {
+   "start": 19.68,
+   "end": 19.72,
+   "label": "stop_back",
+   "p": 0.9082858905493675,
+   "tongue_index": -0.17106086969190792
+  },
+  {
+   "start": 20.92,
+   "end": 20.96,
+   "label": "stop_back",
+   "p": 0.8565465942878617,
+   "tongue_index": 0.133253048882209
+  },
+  {
+   "start": 21.14,
+   "end": 21.18,
+   "label": "stop_back",
+   "p": 0.5084363050057776,
+   "tongue_index": -0.1196375943806792
+  },
+  {
+   "start": 21.31,
+   "end": 21.35,
+   "label": "stop_back",
+   "p": 0.9329786051642626,
+   "tongue_index": -0.14100797077566954
+  },
+  {
+   "start": 22.52,
+   "end": 22.87,
+   "label": "voice",
+   "p": 0.8272119351906517,
+   "sideband_db": -8.637053488259873
+  },
+  {
+   "start": 23.17,
+   "end": 23.48,
+   "label": "voice",
+   "p": 0.8325461253659588,
+   "sideband_db": -15.343076822734503
+  },
+  {
+   "start": 24.77,
+   "end": 24.81,
+   "label": "stop_back",
+   "p": 0.9697617740090918,
+   "tongue_index": -0.09526347640195501
+  },
+  {
+   "start": 26.16,
+   "end": 26.83,
+   "label": "toot1",
+   "f0": 212.97201512024432
+  },
+  {
+   "start": 26.86,
+   "end": 26.97,
+   "label": "toot1",
+   "f0": 212.97201512024432
+  },
+  {
+   "start": 26.99,
+   "end": 27.32,
+   "label": "toot1",
+   "f0": 212.35781518741248
+  }
+ ]
+}

@@ -1,0 +1,151 @@
+{
+ "summary": {
+  "duration_s": 37.41,
+  "voiced_fraction": 0.8292357028327098,
+  "drone_hz": 72.18185476915384,
+  "events": {
+   "stop_back": 11,
+   "stop_front": 2,
+   "toot1": 1
+  },
+  "events_per_s": {
+   "stop_back": 0.2940390269981289,
+   "stop_front": 0.05346164127238707,
+   "toot1": 0.026730820636193534
+  },
+  "tongue": {
+   "front": 0.5199849170437406,
+   "middle": 0.026395173453996983,
+   "back": 0.45361990950226244
+  },
+  "median_fit_err_db": 5.230372786794047
+ },
+ "row": {
+  "recording": "tamaki-2-long",
+  "instrument": "Tamaki2",
+  "duration_s": 37.4,
+  "drone_hz": 72.2,
+  "sim_drone_hz": 72.6,
+  "toots": {
+   "toot1": 1
+  },
+  "toot_s": 0.8,
+  "stops_per_s": 0.35,
+  "front_stop_share": 0.15,
+  "trills": 0,
+  "voice_s": 0,
+  "circular_breaths": 0,
+  "breath_interval_s": null,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   503,
+   2083,
+   3350
+  ],
+  "tongue": {
+   "front": 0.52,
+   "middle": 0.03,
+   "back": 0.45
+  },
+  "tongue_moves_per_s": 2.35
+ },
+ "segments": [
+  {
+   "start": 9.06,
+   "end": 9.1,
+   "label": "stop_back",
+   "p": 0.9271397377001229,
+   "tongue_index": 0.17643376629315685
+  },
+  {
+   "start": 9.79,
+   "end": 9.83,
+   "label": "stop_back",
+   "p": 0.7681848030418662,
+   "tongue_index": 0.04122034489300774
+  },
+  {
+   "start": 12.63,
+   "end": 12.67,
+   "label": "stop_back",
+   "p": 0.7401913502947504,
+   "tongue_index": -0.02522196529162972
+  },
+  {
+   "start": 14.13,
+   "end": 14.17,
+   "label": "stop_back",
+   "p": 0.8341105254329135,
+   "tongue_index": null
+  },
+  {
+   "start": 15.55,
+   "end": 15.59,
+   "label": "stop_back",
+   "p": 0.7140043956338181,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 16.05,
+   "end": 16.09,
+   "label": "stop_back",
+   "p": 0.8468002001321895,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 19.48,
+   "end": 19.52,
+   "label": "stop_back",
+   "p": 0.6831355475125613,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 19.8,
+   "end": 19.84,
+   "label": "stop_front",
+   "p": 0.8236906674488853,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 21.2,
+   "end": 21.24,
+   "label": "stop_back",
+   "p": 0.7098604779741751,
+   "tongue_index": 0.6713392063000496
+  },
+  {
+   "start": 24.56,
+   "end": 24.6,
+   "label": "stop_back",
+   "p": 0.5179414189029857,
+   "tongue_index": -0.01989255985660314
+  },
+  {
+   "start": 25.26,
+   "end": 25.3,
+   "label": "stop_back",
+   "p": 0.9240577138464201,
+   "tongue_index": 0.1212042597263569
+  },
+  {
+   "start": 26.71,
+   "end": 26.75,
+   "label": "stop_back",
+   "p": 0.6460683621303689,
+   "tongue_index": -0.022560243228412453
+  },
+  {
+   "start": 29.25,
+   "end": 29.29,
+   "label": "stop_front",
+   "p": 0.5905668244658606,
+   "tongue_index": null
+  },
+  {
+   "start": 29.35,
+   "end": 30.18,
+   "label": "toot1",
+   "f0": 196.6221936445049
+  }
+ ]
+}

@@ -1,0 +1,115 @@
+{
+ "summary": {
+  "duration_s": 9.03,
+  "voiced_fraction": 0.7422566371681416,
+  "drone_hz": 73.46074578098315,
+  "events": {
+   "stop_front": 4,
+   "voice": 1,
+   "circular_breath": 3,
+   "toot1": 1
+  },
+  "events_per_s": {
+   "stop_front": 0.44296788482835,
+   "voice": 0.1107419712070875,
+   "circular_breath": 0.33222591362126247,
+   "toot1": 0.1107419712070875
+  },
+  "tongue": {
+   "front": 0.38146551724137934,
+   "middle": 0.13793103448275862,
+   "back": 0.48060344827586204
+  },
+  "median_fit_err_db": 5.6687497150378885
+ },
+ "row": {
+  "recording": "open-didge-drags",
+  "instrument": "Open Didgeridoo",
+  "duration_s": 9.0,
+  "drone_hz": 73.5,
+  "sim_drone_hz": 74.1,
+  "toots": {
+   "toot1": 1
+  },
+  "toot_s": 0.2,
+  "stops_per_s": 0.44,
+  "front_stop_share": 1.0,
+  "trills": 0,
+  "voice_s": 0.2,
+  "circular_breaths": 3,
+  "breath_interval_s": 3.0,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   509,
+   1593,
+   2714
+  ],
+  "tongue": {
+   "front": 0.38,
+   "middle": 0.14,
+   "back": 0.48
+  },
+  "tongue_moves_per_s": 1.0
+ },
+ "segments": [
+  {
+   "start": 0.5,
+   "end": 0.54,
+   "label": "stop_front",
+   "p": 0.561338660587337,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 0.61,
+   "end": 0.8,
+   "label": "voice",
+   "p": 0.7601512389998802,
+   "sideband_db": 0.0
+  },
+  {
+   "start": 1.06,
+   "end": 1.23,
+   "label": "circular_breath",
+   "p": 0.9091744764332297
+  },
+  {
+   "start": 1.54,
+   "end": 1.58,
+   "label": "stop_front",
+   "p": 0.7499212774448444,
+   "tongue_index": null
+  },
+  {
+   "start": 4.01,
+   "end": 4.05,
+   "label": "stop_front",
+   "p": 0.6504095917311438,
+   "tongue_index": -0.012904946777621244
+  },
+  {
+   "start": 4.59,
+   "end": 4.77,
+   "label": "circular_breath",
+   "p": 0.7875633859369666
+  },
+  {
+   "start": 6.25,
+   "end": 6.29,
+   "label": "stop_front",
+   "p": 0.6780804173998803,
+   "tongue_index": null
+  },
+  {
+   "start": 7.51,
+   "end": 7.68,
+   "label": "toot1",
+   "f0": 193.66918502012342
+  },
+  {
+   "start": 7.78,
+   "end": 7.99,
+   "label": "circular_breath",
+   "p": 0.840711296928839
+  }
+ ]
+}

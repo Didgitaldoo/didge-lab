@@ -1,0 +1,280 @@
+[
+ {
+  "recording": "malveira-short-song",
+  "instrument": "Malveira",
+  "duration_s": 24.7,
+  "drone_hz": 93.4,
+  "sim_drone_hz": 93.9,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 1.34,
+  "front_stop_share": 0.58,
+  "trills": 0,
+  "voice_s": 0.5,
+  "circular_breaths": 1,
+  "breath_interval_s": 24.7,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   503,
+   996,
+   2681
+  ],
+  "tongue": {
+   "front": 0.25,
+   "middle": 0.07,
+   "back": 0.68
+  },
+  "tongue_moves_per_s": 1.38
+ },
+ {
+  "recording": "arusha-short-song",
+  "instrument": "Arusha",
+  "duration_s": 22.3,
+  "drone_hz": 75.5,
+  "sim_drone_hz": 74.8,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.27,
+  "front_stop_share": 0.33,
+  "trills": 0,
+  "voice_s": 2.1,
+  "circular_breaths": 0,
+  "breath_interval_s": null,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   808,
+   1951,
+   3550
+  ],
+  "tongue": {
+   "front": 0.53,
+   "middle": 0.17,
+   "back": 0.31
+  },
+  "tongue_moves_per_s": 1.88
+ },
+ {
+  "recording": "nazare-short-song",
+  "instrument": "Nazare",
+  "duration_s": 19.4,
+  "drone_hz": 74.7,
+  "sim_drone_hz": 74.9,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.88,
+  "front_stop_share": 0.82,
+  "trills": 0,
+  "voice_s": 1.8,
+  "circular_breaths": 1,
+  "breath_interval_s": 19.4,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   503,
+   1751,
+   3279
+  ],
+  "tongue": {
+   "front": 0.47,
+   "middle": 0.13,
+   "back": 0.4
+  },
+  "tongue_moves_per_s": 1.18
+ },
+ {
+  "recording": "kizimkazi-short-song",
+  "instrument": "Kizimkazi",
+  "duration_s": 26.4,
+  "drone_hz": 76.1,
+  "sim_drone_hz": 74.7,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.42,
+  "front_stop_share": 0.36,
+  "trills": 0,
+  "voice_s": 3.3,
+  "circular_breaths": 3,
+  "breath_interval_s": 8.8,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   779,
+   1666,
+   3927
+  ],
+  "tongue": {
+   "front": 0.41,
+   "middle": 0.31,
+   "back": 0.28
+  },
+  "tongue_moves_per_s": 1.21
+ },
+ {
+  "recording": "opendidge-short-song",
+  "instrument": "Open Didgeridoo",
+  "duration_s": 19.8,
+  "drone_hz": 74.7,
+  "sim_drone_hz": 74.1,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.46,
+  "front_stop_share": 0.11,
+  "trills": 0,
+  "voice_s": 0.7,
+  "circular_breaths": 0,
+  "breath_interval_s": null,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   773,
+   2267,
+   3745
+  ],
+  "tongue": {
+   "front": 0.68,
+   "middle": 0.08,
+   "back": 0.24
+  },
+  "tongue_moves_per_s": 1.77
+ },
+ {
+  "recording": "open-didge-drags",
+  "instrument": "Open Didgeridoo",
+  "duration_s": 9.0,
+  "drone_hz": 73.5,
+  "sim_drone_hz": 74.1,
+  "toots": {
+   "toot1": 1
+  },
+  "toot_s": 0.2,
+  "stops_per_s": 0.44,
+  "front_stop_share": 1.0,
+  "trills": 0,
+  "voice_s": 0.2,
+  "circular_breaths": 3,
+  "breath_interval_s": 3.0,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   509,
+   1593,
+   2714
+  ],
+  "tongue": {
+   "front": 0.38,
+   "middle": 0.14,
+   "back": 0.48
+  },
+  "tongue_moves_per_s": 1.0
+ },
+ {
+  "recording": "opendidge-2-straight-long",
+  "instrument": "Open Didgeridoo Straight",
+  "duration_s": 37.4,
+  "drone_hz": 75.0,
+  "sim_drone_hz": 74.1,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.13,
+  "front_stop_share": 0.8,
+  "trills": 0,
+  "voice_s": 30.6,
+  "circular_breaths": 0,
+  "breath_interval_s": null,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   568,
+   1347,
+   3688
+  ],
+  "tongue": {
+   "front": 0.41,
+   "middle": 0.07,
+   "back": 0.52
+  },
+  "tongue_moves_per_s": 2.03
+ },
+ {
+  "recording": "tamaki1-long",
+  "instrument": "Tamaki1",
+  "duration_s": 37.4,
+  "drone_hz": 76.6,
+  "sim_drone_hz": 76.8,
+  "toots": {
+   "toot1": 3
+  },
+  "toot_s": 1.1,
+  "stops_per_s": 0.37,
+  "front_stop_share": 0.0,
+  "trills": 0,
+  "voice_s": 2.6,
+  "circular_breaths": 1,
+  "breath_interval_s": 37.4,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   597,
+   2291,
+   3179
+  ],
+  "tongue": {
+   "front": 0.57,
+   "middle": 0.03,
+   "back": 0.41
+  },
+  "tongue_moves_per_s": 1.87
+ },
+ {
+  "recording": "tamaki-2-long",
+  "instrument": "Tamaki2",
+  "duration_s": 37.4,
+  "drone_hz": 72.2,
+  "sim_drone_hz": 72.6,
+  "toots": {
+   "toot1": 1
+  },
+  "toot_s": 0.8,
+  "stops_per_s": 0.35,
+  "front_stop_share": 0.15,
+  "trills": 0,
+  "voice_s": 0,
+  "circular_breaths": 0,
+  "breath_interval_s": null,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   503,
+   2083,
+   3350
+  ],
+  "tongue": {
+   "front": 0.52,
+   "middle": 0.03,
+   "back": 0.45
+  },
+  "tongue_moves_per_s": 2.35
+ },
+ {
+  "recording": "matema-long",
+  "instrument": "Matema",
+  "duration_s": 32.7,
+  "drone_hz": 73.5,
+  "sim_drone_hz": 74.8,
+  "toots": {
+   "toot1": 5
+  },
+  "toot_s": 1.1,
+  "stops_per_s": 0.52,
+  "front_stop_share": 0.47,
+  "trills": 0,
+  "voice_s": 0.9,
+  "circular_breaths": 0,
+  "breath_interval_s": null,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   503,
+   1248,
+   3281
+  ],
+  "tongue": {
+   "front": 0.4,
+   "middle": 0.05,
+   "back": 0.54
+  },
+  "tongue_moves_per_s": 2.08
+ }
+]

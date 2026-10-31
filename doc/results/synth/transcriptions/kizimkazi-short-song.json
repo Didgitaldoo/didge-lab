@@ -1,0 +1,191 @@
+{
+ "summary": {
+  "duration_s": 26.39,
+  "voiced_fraction": 0.9768939393939394,
+  "drone_hz": 76.0566069846757,
+  "events": {
+   "stop_back": 7,
+   "voice": 6,
+   "stop_front": 4,
+   "circular_breath": 3
+  },
+  "events_per_s": {
+   "stop_back": 0.2652519893899204,
+   "voice": 0.2273588480485032,
+   "stop_front": 0.15157256536566882,
+   "circular_breath": 0.1136794240242516
+  },
+  "tongue": {
+   "front": 0.41206735266604305,
+   "middle": 0.31103835360149673,
+   "back": 0.2768942937324602
+  },
+  "median_fit_err_db": 5.957840226133058
+ },
+ "row": {
+  "recording": "kizimkazi-short-song",
+  "instrument": "Kizimkazi",
+  "duration_s": 26.4,
+  "drone_hz": 76.1,
+  "sim_drone_hz": 74.7,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.42,
+  "front_stop_share": 0.36,
+  "trills": 0,
+  "voice_s": 3.3,
+  "circular_breaths": 3,
+  "breath_interval_s": 8.8,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   779,
+   1666,
+   3927
+  ],
+  "tongue": {
+   "front": 0.41,
+   "middle": 0.31,
+   "back": 0.28
+  },
+  "tongue_moves_per_s": 1.21
+ },
+ "segments": [
+  {
+   "start": 3.86,
+   "end": 3.9,
+   "label": "stop_back",
+   "p": 0.6340148213859026,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 4.48,
+   "end": 4.81,
+   "label": "voice",
+   "p": 0.9015813804465003,
+   "sideband_db": -14.65752281813981
+  },
+  {
+   "start": 4.77,
+   "end": 4.81,
+   "label": "stop_back",
+   "p": 0.631499429611096,
+   "tongue_index": 0.4354447989305084
+  },
+  {
+   "start": 5.67,
+   "end": 5.94,
+   "label": "voice",
+   "p": 0.7233356528151405,
+   "sideband_db": -17.427963409768275
+  },
+  {
+   "start": 5.77,
+   "end": 5.81,
+   "label": "stop_front",
+   "p": 0.9039167312932902,
+   "tongue_index": -0.09218449473229659
+  },
+  {
+   "start": 8.83,
+   "end": 8.87,
+   "label": "stop_back",
+   "p": 0.763873593328871,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 9.04,
+   "end": 9.08,
+   "label": "stop_back",
+   "p": 0.5673403878083013,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 9.37,
+   "end": 9.41,
+   "label": "stop_back",
+   "p": 0.819233480339799,
+   "tongue_index": 0.05972569041014009
+  },
+  {
+   "start": 9.63,
+   "end": 9.67,
+   "label": "stop_front",
+   "p": 0.7839188683564833,
+   "tongue_index": 0.30234904708846355
+  },
+  {
+   "start": 14.66,
+   "end": 14.7,
+   "label": "stop_front",
+   "p": 0.7496116231415013,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 14.77,
+   "end": 14.93,
+   "label": "voice",
+   "p": 0.6618657732649266,
+   "sideband_db": -17.1251183144591
+  },
+  {
+   "start": 15.16,
+   "end": 16.56,
+   "label": "voice",
+   "p": 0.9396279691230089,
+   "sideband_db": -18.341434186692425
+  },
+  {
+   "start": 16.79,
+   "end": 16.92,
+   "label": "circular_breath",
+   "p": 0.9122541806049451
+  },
+  {
+   "start": 16.95,
+   "end": 17.09,
+   "label": "circular_breath",
+   "p": 0.7810506427724826
+  },
+  {
+   "start": 17.55,
+   "end": 17.59,
+   "label": "stop_front",
+   "p": 0.9825514414728475,
+   "tongue_index": 1.0727028510066565
+  },
+  {
+   "start": 18.11,
+   "end": 18.32,
+   "label": "voice",
+   "p": 0.7043991912827291,
+   "sideband_db": -9.522768743969827
+  },
+  {
+   "start": 18.64,
+   "end": 19.59,
+   "label": "voice",
+   "p": 0.7603419043527898,
+   "sideband_db": -15.61746827252096
+  },
+  {
+   "start": 21.63,
+   "end": 21.67,
+   "label": "stop_back",
+   "p": 0.7507172143406913,
+   "tongue_index": 0.14120710402165207
+  },
+  {
+   "start": 24.6,
+   "end": 24.64,
+   "label": "stop_back",
+   "p": 0.7875302078613062,
+   "tongue_index": 0.42853511599711885
+  },
+  {
+   "start": 25.16,
+   "end": 25.37,
+   "label": "circular_breath",
+   "p": 0.9687422040151302
+  }
+ ]
+}

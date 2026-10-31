@@ -1,0 +1,207 @@
+{
+ "summary": {
+  "duration_s": 19.42,
+  "voiced_fraction": 0.7941327843540916,
+  "drone_hz": 74.68399239476062,
+  "events": {
+   "stop_back": 3,
+   "stop_front": 14,
+   "voice": 4,
+   "circular_breath": 1
+  },
+  "events_per_s": {
+   "stop_back": 0.1544799176107106,
+   "stop_front": 0.7209062821833161,
+   "voice": 0.20597322348094746,
+   "circular_breath": 0.051493305870236865
+  },
+  "tongue": {
+   "front": 0.470479704797048,
+   "middle": 0.12638376383763839,
+   "back": 0.40313653136531363
+  },
+  "median_fit_err_db": 5.295509508076319
+ },
+ "row": {
+  "recording": "nazare-short-song",
+  "instrument": "Nazare",
+  "duration_s": 19.4,
+  "drone_hz": 74.7,
+  "sim_drone_hz": 74.9,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.88,
+  "front_stop_share": 0.82,
+  "trills": 0,
+  "voice_s": 1.8,
+  "circular_breaths": 1,
+  "breath_interval_s": 19.4,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   503,
+   1751,
+   3279
+  ],
+  "tongue": {
+   "front": 0.47,
+   "middle": 0.13,
+   "back": 0.4
+  },
+  "tongue_moves_per_s": 1.18
+ },
+ "segments": [
+  {
+   "start": 0.58,
+   "end": 0.62,
+   "label": "stop_back",
+   "p": 0.6081726826062865,
+   "tongue_index": null
+  },
+  {
+   "start": 0.74,
+   "end": 0.78,
+   "label": "stop_front",
+   "p": 0.7854583147029855,
+   "tongue_index": -0.07013497556648278
+  },
+  {
+   "start": 1.16,
+   "end": 1.2,
+   "label": "stop_front",
+   "p": 1.0032018862635657,
+   "tongue_index": -0.0926060070382986
+  },
+  {
+   "start": 1.54,
+   "end": 1.76,
+   "label": "voice",
+   "p": 0.7526983307470996,
+   "sideband_db": -13.776680316592923
+  },
+  {
+   "start": 2.0,
+   "end": 2.04,
+   "label": "stop_front",
+   "p": 0.8457513259504559,
+   "tongue_index": 0.758309849668052
+  },
+  {
+   "start": 2.05,
+   "end": 2.69,
+   "label": "voice",
+   "p": 0.8653267816736372,
+   "sideband_db": -6.290229082882945
+  },
+  {
+   "start": 2.72,
+   "end": 2.76,
+   "label": "stop_front",
+   "p": 0.8414456073161809,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 3.02,
+   "end": 3.06,
+   "label": "stop_front",
+   "p": 1.0062431219262085,
+   "tongue_index": -0.14944087582280755
+  },
+  {
+   "start": 3.43,
+   "end": 3.47,
+   "label": "stop_front",
+   "p": 1.002920644545732,
+   "tongue_index": -0.09372266816732062
+  },
+  {
+   "start": 3.62,
+   "end": 4.28,
+   "label": "voice",
+   "p": 0.8547728048640078,
+   "sideband_db": -17.253592477832946
+  },
+  {
+   "start": 4.49,
+   "end": 4.53,
+   "label": "stop_front",
+   "p": 0.8717489180582629,
+   "tongue_index": 0.628411145342099
+  },
+  {
+   "start": 4.62,
+   "end": 4.66,
+   "label": "stop_back",
+   "p": 0.9037684336354553,
+   "tongue_index": 0.514088554825042
+  },
+  {
+   "start": 4.95,
+   "end": 4.99,
+   "label": "stop_front",
+   "p": 0.9993009082118841,
+   "tongue_index": 1.0486084771991164
+  },
+  {
+   "start": 5.26,
+   "end": 5.3,
+   "label": "stop_front",
+   "p": 0.9152464981532096,
+   "tongue_index": -0.12930428713187514
+  },
+  {
+   "start": 5.86,
+   "end": 6.17,
+   "label": "voice",
+   "p": 0.744242216597013,
+   "sideband_db": -15.932288902576445
+  },
+  {
+   "start": 6.41,
+   "end": 6.45,
+   "label": "stop_front",
+   "p": 0.8991327171962022,
+   "tongue_index": 0.847216954398233
+  },
+  {
+   "start": 6.69,
+   "end": 6.73,
+   "label": "stop_front",
+   "p": 0.9867226511202092,
+   "tongue_index": 0.9651730783288053
+  },
+  {
+   "start": 6.78,
+   "end": 6.82,
+   "label": "stop_front",
+   "p": 1.072597803012718,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 6.9,
+   "end": 6.94,
+   "label": "stop_front",
+   "p": 0.7448497089471589,
+   "tongue_index": -0.041343191458818276
+  },
+  {
+   "start": 7.02,
+   "end": 7.06,
+   "label": "stop_back",
+   "p": 1.1652744712804854,
+   "tongue_index": 0.13858813738144637
+  },
+  {
+   "start": 7.47,
+   "end": 7.51,
+   "label": "stop_front",
+   "p": 1.0972626258968963,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 13.03,
+   "end": 13.15,
+   "label": "circular_breath",
+   "p": 0.7009334867899485
+  }
+ ]
+}

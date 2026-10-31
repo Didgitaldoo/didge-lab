@@ -1,0 +1,108 @@
+{
+ "summary": {
+  "duration_s": 22.31,
+  "voiced_fraction": 0.9413082437275986,
+  "drone_hz": 75.45090838752174,
+  "events": {
+   "voice": 2,
+   "stop_back": 4,
+   "stop_front": 2
+  },
+  "events_per_s": {
+   "voice": 0.08964589870013448,
+   "stop_back": 0.17929179740026896,
+   "stop_front": 0.08964589870013448
+  },
+  "tongue": {
+   "front": 0.5269668480950025,
+   "middle": 0.16674913409203365,
+   "back": 0.3062840178129639
+  },
+  "median_fit_err_db": 7.103256219038321
+ },
+ "row": {
+  "recording": "arusha-short-song",
+  "instrument": "Arusha",
+  "duration_s": 22.3,
+  "drone_hz": 75.5,
+  "sim_drone_hz": 74.8,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.27,
+  "front_stop_share": 0.33,
+  "trills": 0,
+  "voice_s": 2.1,
+  "circular_breaths": 0,
+  "breath_interval_s": null,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   808,
+   1951,
+   3550
+  ],
+  "tongue": {
+   "front": 0.53,
+   "middle": 0.17,
+   "back": 0.31
+  },
+  "tongue_moves_per_s": 1.88
+ },
+ "segments": [
+  {
+   "start": 0.24,
+   "end": 0.65,
+   "label": "voice",
+   "p": 0.8181590546278803,
+   "sideband_db": -15.731511041132158
+  },
+  {
+   "start": 0.42,
+   "end": 0.46,
+   "label": "stop_back",
+   "p": 0.7467167189757216,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 3.54,
+   "end": 3.58,
+   "label": "stop_back",
+   "p": 0.9166976672571056,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 10.73,
+   "end": 10.77,
+   "label": "stop_back",
+   "p": 0.888230193346581,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 13.91,
+   "end": 15.56,
+   "label": "voice",
+   "p": 0.8891934313222339,
+   "sideband_db": -17.070082877264724
+  },
+  {
+   "start": 14.15,
+   "end": 14.19,
+   "label": "stop_back",
+   "p": 0.6967047401972793,
+   "tongue_index": 0.5616733556830764
+  },
+  {
+   "start": 15.8,
+   "end": 15.84,
+   "label": "stop_front",
+   "p": 0.9278140090834247,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 15.92,
+   "end": 15.96,
+   "label": "stop_front",
+   "p": 0.9180303825552589,
+   "tongue_index": 0.5
+  }
+ ]
+}

@@ -1,0 +1,569 @@
+{
+  "drone": {
+    "rows": [
+      {
+        "instrument": "Malveira",
+        "sim_drone_hz": 93.89999999999989,
+        "rec_drone_hz": 94.00716781164208,
+        "error_cents": 1.9747259964119548
+      },
+      {
+        "instrument": "Arusha",
+        "sim_drone_hz": 74.7999999999999,
+        "rec_drone_hz": 75.34272593844253,
+        "error_cents": 12.515953875286263
+      },
+      {
+        "instrument": "Nazare",
+        "sim_drone_hz": 74.89999999999989,
+        "rec_drone_hz": 74.45529845183694,
+        "error_cents": -10.309439905219682
+      },
+      {
+        "instrument": "Kizimkazi",
+        "sim_drone_hz": 74.7499999999999,
+        "rec_drone_hz": 74.49387208539957,
+        "error_cents": -5.94219107024019
+      },
+      {
+        "instrument": "Open Didgeridoo",
+        "sim_drone_hz": 74.09999999999988,
+        "rec_drone_hz": 74.75479546138607,
+        "error_cents": 15.231105001668066
+      },
+      {
+        "instrument": "Open Didgeridoo Straight",
+        "sim_drone_hz": 74.09999999999988,
+        "rec_drone_hz": 75.16912369771754,
+        "error_cents": 24.7999714022479
+      },
+      {
+        "instrument": "Tamaki1",
+        "sim_drone_hz": 76.8499999999999,
+        "rec_drone_hz": 77.2752484061894,
+        "error_cents": 9.553352171593755
+      },
+      {
+        "instrument": "Tamaki2",
+        "sim_drone_hz": 72.59999999999991,
+        "rec_drone_hz": 72.2024512219769,
+        "error_cents": -9.506078165291367
+      },
+      {
+        "instrument": "Matema",
+        "sim_drone_hz": 74.7999999999999,
+        "rec_drone_hz": 72.89467375193523,
+        "error_cents": -44.669839387149814
+      }
+    ],
+    "mean_abs_cents": 14.944739663900997,
+    "mean_cents": -0.7058266756325691
+  },
+  "toots": {
+    "clusters": [
+      {
+        "instrument": "Arusha",
+        "rec_hz": 226.98462672101743,
+        "frames": 15,
+        "resonance": 2,
+        "sim_hz": 224.00000000000045,
+        "error_cents": 22.915028741266767,
+        "nearest_harmonic": 3,
+        "harmonic_cents": 19.826296344680923,
+        "is_toot": false
+      },
+      {
+        "instrument": "Open Didgeridoo",
+        "rec_hz": 225.02285055640823,
+        "frames": 12,
+        "resonance": 1,
+        "sim_hz": 188.7000000000004,
+        "error_cents": 304.7725059942054,
+        "nearest_harmonic": 3,
+        "harmonic_cents": 21.076275482358383,
+        "is_toot": false
+      },
+      {
+        "instrument": "Open Didgeridoo Straight",
+        "rec_hz": 226.82362660150986,
+        "frames": 22,
+        "resonance": 1,
+        "sim_hz": 188.7000000000004,
+        "error_cents": 318.57180052189733,
+        "nearest_harmonic": 3,
+        "harmonic_cents": 34.87557001005002,
+        "is_toot": false
+      },
+      {
+        "instrument": "Tamaki1",
+        "rec_hz": 212.8821354920717,
+        "frames": 101,
+        "resonance": 1,
+        "sim_hz": 217.95000000000044,
+        "error_cents": -40.73077918670804,
+        "nearest_harmonic": 3,
+        "harmonic_cents": -138.02973365621804,
+        "is_toot": true
+      },
+      {
+        "instrument": "Tamaki2",
+        "rec_hz": 196.01208480124018,
+        "frames": 66,
+        "resonance": 1,
+        "sim_hz": 201.8000000000004,
+        "error_cents": -50.38028445910877,
+        "nearest_harmonic": 3,
+        "harmonic_cents": -182.4736199917627,
+        "is_toot": true
+      },
+      {
+        "instrument": "Matema",
+        "rec_hz": 145.46402855204713,
+        "frames": 93,
+        "resonance": 1,
+        "sim_hz": 149.7500000000004,
+        "error_cents": -50.27227961449105,
+        "nearest_harmonic": 2,
+        "harmonic_cents": -48.53728626827047,
+        "is_toot": false
+      }
+    ],
+    "n_toot_clusters": 2,
+    "mean_cents": -45.55553182290841,
+    "mean_abs_cents": 45.55553182290841
+  },
+  "slap_hand-closed": {
+    "n": 20,
+    "median_abs_cents": 29.984504537525993,
+    "within_50_cents": 0.75
+  },
+  "slap_hand-open": {
+    "n": 20,
+    "median_abs_cents": 41.50460867749489,
+    "within_50_cents": 0.65
+  },
+  "slap_rows": [
+    {
+      "instrument": "Malveira",
+      "kind": "hand-closed",
+      "sim_hz": 94.0,
+      "rec_hz": 101.49019607843137,
+      "error_cents": 132.72925001204948
+    },
+    {
+      "instrument": "Malveira",
+      "kind": "hand-closed",
+      "sim_hz": 187.5,
+      "rec_hz": 199.37254901960785,
+      "error_cents": 106.29142518026407
+    },
+    {
+      "instrument": "Malveira",
+      "kind": "hand-closed",
+      "sim_hz": 357.5,
+      "rec_hz": 373.96078431372547,
+      "error_cents": 77.93249618989712
+    },
+    {
+      "instrument": "Malveira",
+      "kind": "hand-closed",
+      "sim_hz": 473.5,
+      "rec_hz": 504.3137254901961,
+      "error_cents": 109.148477730515
+    },
+    {
+      "instrument": "Malveira",
+      "kind": "hand-open",
+      "sim_hz": 141.5,
+      "rec_hz": 137.33333333333331,
+      "error_cents": -51.74425964378432
+    },
+    {
+      "instrument": "Malveira",
+      "kind": "hand-open",
+      "sim_hz": 248.0,
+      "rec_hz": 241.037037037037,
+      "error_cents": -49.30233225337937
+    },
+    {
+      "instrument": "Malveira",
+      "kind": "hand-open",
+      "sim_hz": 401.5,
+      "rec_hz": 388.4444444444444,
+      "error_cents": -57.23005135083446
+    },
+    {
+      "instrument": "Malveira",
+      "kind": "hand-open",
+      "sim_hz": 636.0,
+      "rec_hz": 629.7777777777777,
+      "error_cents": -17.02069657037928
+    },
+    {
+      "instrument": "Arusha",
+      "kind": "hand-closed",
+      "sim_hz": 75.0,
+      "rec_hz": 75.42857142857143,
+      "error_cents": 9.864608165962261
+    },
+    {
+      "instrument": "Arusha",
+      "kind": "hand-closed",
+      "sim_hz": 149.5,
+      "rec_hz": 148.95238095238093,
+      "error_cents": -6.35315960341582
+    },
+    {
+      "instrument": "Arusha",
+      "kind": "hand-closed",
+      "sim_hz": 224.0,
+      "rec_hz": 226.28571428571428,
+      "error_cents": 17.576131157281512
+    },
+    {
+      "instrument": "Arusha",
+      "kind": "hand-closed",
+      "sim_hz": 356.0,
+      "rec_hz": 356.19047619047615,
+      "error_cents": 0.9260412358088351
+    },
+    {
+      "instrument": "Arusha",
+      "kind": "hand-open",
+      "sim_hz": 105.5,
+      "rec_hz": 105.5,
+      "error_cents": 0.0
+    },
+    {
+      "instrument": "Arusha",
+      "kind": "hand-open",
+      "sim_hz": 183.5,
+      "rec_hz": 181.5,
+      "error_cents": -18.972617816954582
+    },
+    {
+      "instrument": "Arusha",
+      "kind": "hand-open",
+      "sim_hz": 314.0,
+      "rec_hz": 311.25,
+      "error_cents": -15.228866323420414
+    },
+    {
+      "instrument": "Arusha",
+      "kind": "hand-open",
+      "sim_hz": 369.0,
+      "rec_hz": 362.75,
+      "error_cents": -29.574242392381855
+    },
+    {
+      "instrument": "Nazare",
+      "kind": "hand-closed",
+      "sim_hz": 75.0,
+      "rec_hz": 73.37931034482759,
+      "error_cents": -37.820700146716135
+    },
+    {
+      "instrument": "Nazare",
+      "kind": "hand-closed",
+      "sim_hz": 185.0,
+      "rec_hz": 181.3793103448276,
+      "error_cents": -34.21844575706354
+    },
+    {
+      "instrument": "Nazare",
+      "kind": "hand-closed",
+      "sim_hz": 285.0,
+      "rec_hz": 280.2758620689655,
+      "error_cents": -28.93730088901233
+    },
+    {
+      "instrument": "Nazare",
+      "kind": "hand-closed",
+      "sim_hz": 421.5,
+      "rec_hz": 415.58620689655174,
+      "error_cents": -24.461830170229508
+    },
+    {
+      "instrument": "Nazare",
+      "kind": "hand-open",
+      "sim_hz": 109.0,
+      "rec_hz": 106.60000000000001,
+      "error_cents": -38.54483628613523
+    },
+    {
+      "instrument": "Nazare",
+      "kind": "hand-open",
+      "sim_hz": 238.0,
+      "rec_hz": 231.8,
+      "error_cents": -45.69720862660075
+    },
+    {
+      "instrument": "Nazare",
+      "kind": "hand-open",
+      "sim_hz": 347.0,
+      "rec_hz": 335.20000000000005,
+      "error_cents": -59.896216519525666
+    },
+    {
+      "instrument": "Nazare",
+      "kind": "hand-open",
+      "sim_hz": 459.0,
+      "rec_hz": 448.40000000000003,
+      "error_cents": -40.44945059489218
+    },
+    {
+      "instrument": "Kizimkazi",
+      "kind": "hand-closed",
+      "sim_hz": 74.5,
+      "rec_hz": 76.48283038501562,
+      "error_cents": 45.474585915047584
+    },
+    {
+      "instrument": "Kizimkazi",
+      "kind": "hand-closed",
+      "sim_hz": 224.0,
+      "rec_hz": 239.5941727367326,
+      "error_cents": 116.51290550648179
+    },
+    {
+      "instrument": "Kizimkazi",
+      "kind": "hand-closed",
+      "sim_hz": 374.0,
+      "rec_hz": 380.07284079084286,
+      "error_cents": 27.885200165038103
+    },
+    {
+      "instrument": "Kizimkazi",
+      "kind": "hand-closed",
+      "sim_hz": 543.5,
+      "rec_hz": 553.3298647242456,
+      "error_cents": 31.031708186039655
+    },
+    {
+      "instrument": "Kizimkazi",
+      "kind": "hand-open",
+      "sim_hz": 154.0,
+      "rec_hz": 160.56338028169014,
+      "error_cents": 72.25505248785961
+    },
+    {
+      "instrument": "Kizimkazi",
+      "kind": "hand-open",
+      "sim_hz": 297.5,
+      "rec_hz": 298.92957746478874,
+      "error_cents": 8.299179034449649
+    },
+    {
+      "instrument": "Kizimkazi",
+      "kind": "hand-open",
+      "sim_hz": 458.5,
+      "rec_hz": 453.85915492957747,
+      "error_cents": -17.612490111542183
+    },
+    {
+      "instrument": "Kizimkazi",
+      "kind": "hand-open",
+      "sim_hz": 626.5,
+      "rec_hz": 618.5915492957747,
+      "error_cents": -21.992861920777806
+    },
+    {
+      "instrument": "Open Didgeridoo",
+      "kind": "hand-closed",
+      "sim_hz": 74.0,
+      "rec_hz": 75.47169811320755,
+      "error_cents": 34.09255736392568
+    },
+    {
+      "instrument": "Open Didgeridoo",
+      "kind": "hand-closed",
+      "sim_hz": 188.5,
+      "rec_hz": 186.511983681795,
+      "error_cents": -18.35543359228736
+    },
+    {
+      "instrument": "Open Didgeridoo",
+      "kind": "hand-closed",
+      "sim_hz": 300.5,
+      "rec_hz": 298.69964303926565,
+      "error_cents": -10.403372853734377
+    },
+    {
+      "instrument": "Open Didgeridoo",
+      "kind": "hand-closed",
+      "sim_hz": 410.0,
+      "rec_hz": 405.78786333503314,
+      "error_cents": -17.877832079504408
+    },
+    {
+      "instrument": "Open Didgeridoo",
+      "kind": "hand-open",
+      "sim_hz": 138.0,
+      "rec_hz": 134.64883940553705,
+      "error_cents": -42.55976676009761
+    },
+    {
+      "instrument": "Open Didgeridoo",
+      "kind": "hand-open",
+      "sim_hz": 240.0,
+      "rec_hz": 232.2804314329738,
+      "error_cents": -56.60014445458211
+    },
+    {
+      "instrument": "Open Didgeridoo",
+      "kind": "hand-open",
+      "sim_hz": 360.0,
+      "rec_hz": 348.06650429941845,
+      "error_cents": -58.360705900084724
+    },
+    {
+      "instrument": "Open Didgeridoo",
+      "kind": "hand-open",
+      "sim_hz": 460.5,
+      "rec_hz": 444.28152492668625,
+      "error_cents": -62.07240837656402
+    }
+  ],
+  "fingerprint": {
+    "model": {
+      "accuracy": 0.6666666666666666,
+      "mean_rank": 1.0,
+      "diag_rms_db": 5.604339576262472
+    },
+    "didge2wav": {
+      "accuracy": 0.3333333333333333,
+      "mean_rank": 2.111111111111111,
+      "diag_rms_db": 10.31249863364355
+    },
+    "chance": 0.125,
+    "matrix": [
+      [
+        7.4678597317410285,
+        8.12976472996542,
+        11.025099194549222,
+        7.173229139557161,
+        9.495069777792676,
+        9.495069777792676,
+        7.069351855894275,
+        8.402615849340272,
+        8.52489368437088
+      ],
+      [
+        6.29012494626521,
+        7.556473824668005,
+        7.373945033388684,
+        9.24650563926452,
+        9.584973759123754,
+        9.584973759123754,
+        9.249681887945792,
+        6.75174520626871,
+        8.749235692536534
+      ],
+      [
+        7.13441126555396,
+        10.185507871889671,
+        5.752994665728382,
+        8.250667572781529,
+        5.179457608589583,
+        5.179457608589583,
+        5.318243962208685,
+        4.778697422868527,
+        9.973529760624885
+      ],
+      [
+        6.828972591058234,
+        9.394478996001784,
+        8.326945244966208,
+        4.50348661186278,
+        7.762215786990932,
+        7.762215786990932,
+        7.237859879787994,
+        8.436191767913739,
+        11.052706106616037
+      ],
+      [
+        8.754074702061953,
+        12.156621555215784,
+        8.176944873979098,
+        8.958941454342764,
+        7.413411943123341,
+        7.413411943123341,
+        8.078738722899606,
+        7.709498760689944,
+        12.034973364959574
+      ],
+      [
+        9.304036354824609,
+        13.148347282721733,
+        9.271650988701982,
+        11.262699359060807,
+        7.958156661045433,
+        7.958156661045433,
+        8.504928548899237,
+        8.902204438711406,
+        11.754213514915607
+      ],
+      [
+        7.299306977949087,
+        10.312486617673281,
+        6.469919609279653,
+        9.33903465826626,
+        5.299617800865336,
+        5.299617800865336,
+        2.7163342346585435,
+        4.263588428353837,
+        9.217490165093128
+      ],
+      [
+        8.406569882139625,
+        8.808234074506995,
+        6.086717441852223,
+        9.179063372081597,
+        6.627357418290759,
+        6.627357418290759,
+        5.1586217202497595,
+        3.7863396596858387,
+        10.489750055964175
+      ],
+      [
+        8.5731127599289,
+        7.878405171030251,
+        7.486052634355705,
+        10.291671568889136,
+        7.293758352899754,
+        7.293758352899754,
+        9.805312291617506,
+        8.82994828030716,
+        3.2839988538488902
+      ]
+    ],
+    "names": [
+      "Malveira",
+      "Arusha",
+      "Nazare",
+      "Kizimkazi",
+      "Open Didgeridoo",
+      "Open Didgeridoo Straight",
+      "Tamaki1",
+      "Tamaki2",
+      "Matema"
+    ]
+  },
+  "ltas_third_octave": {
+    "model_leave_one_out_db": 5.142889151169949,
+    "model_default_db": 5.370131577831932,
+    "didge2wav_db": 26.45286068026097,
+    "generic_1_over_n_db": 6.102126717970321,
+    "per_instrument_default": {
+      "Malveira": 7.36679633390708,
+      "Arusha": 4.765627965607092,
+      "Nazare": 5.684141682925539,
+      "Kizimkazi": 5.254924520025767,
+      "Open Didgeridoo": 5.164813556045524,
+      "Open Didgeridoo Straight": 6.8880088455749595,
+      "Tamaki1": 4.26348583042326,
+      "Tamaki2": 5.049559751288627,
+      "Matema": 3.8938257146895405
+    }
+  }
+}

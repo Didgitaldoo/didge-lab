@@ -1,0 +1,143 @@
+{
+ "summary": {
+  "duration_s": 37.41,
+  "voiced_fraction": 0.9807589524318546,
+  "drone_hz": 74.96100052637235,
+  "events": {
+   "voice": 8,
+   "stop_back": 1,
+   "stop_front": 4
+  },
+  "events_per_s": {
+   "voice": 0.21384656508954827,
+   "stop_back": 0.026730820636193534,
+   "stop_front": 0.10692328254477414
+  },
+  "tongue": {
+   "front": 0.40923268870867124,
+   "middle": 0.07111665626949469,
+   "back": 0.519650655021834
+  },
+  "median_fit_err_db": 6.229360144583893
+ },
+ "row": {
+  "recording": "opendidge-2-straight-long",
+  "instrument": "Open Didgeridoo Straight",
+  "duration_s": 37.4,
+  "drone_hz": 75.0,
+  "sim_drone_hz": 74.1,
+  "toots": {},
+  "toot_s": 0,
+  "stops_per_s": 0.13,
+  "front_stop_share": 0.8,
+  "trills": 0,
+  "voice_s": 30.6,
+  "circular_breaths": 0,
+  "breath_interval_s": null,
+  "fricatives": 0,
+  "formant_p10_p50_p90_hz": [
+   568,
+   1347,
+   3688
+  ],
+  "tongue": {
+   "front": 0.41,
+   "middle": 0.07,
+   "back": 0.52
+  },
+  "tongue_moves_per_s": 2.03
+ },
+ "segments": [
+  {
+   "start": 2.98,
+   "end": 5.15,
+   "label": "voice",
+   "p": 0.9319774822365391,
+   "sideband_db": -16.672428184347183
+  },
+  {
+   "start": 8.26,
+   "end": 11.26,
+   "label": "voice",
+   "p": 0.9693321725257243,
+   "sideband_db": -2.253474286738424
+  },
+  {
+   "start": 11.32,
+   "end": 16.77,
+   "label": "voice",
+   "p": 0.9858160638116056,
+   "sideband_db": -8.096419264095118
+  },
+  {
+   "start": 16.96,
+   "end": 21.53,
+   "label": "voice",
+   "p": 0.9762643810086323,
+   "sideband_db": -6.240061400446194
+  },
+  {
+   "start": 21.59,
+   "end": 25.8,
+   "label": "voice",
+   "p": 0.9257390140737363,
+   "sideband_db": -3.2697863842957986
+  },
+  {
+   "start": 25.85,
+   "end": 32.2,
+   "label": "voice",
+   "p": 0.949845939201078,
+   "sideband_db": -5.567472233620975
+  },
+  {
+   "start": 28.47,
+   "end": 28.51,
+   "label": "stop_back",
+   "p": 0.5211599561906053,
+   "tongue_index": 0.01672380624937628
+  },
+  {
+   "start": 32.28,
+   "end": 34.96,
+   "label": "voice",
+   "p": 0.9488632710637479,
+   "sideband_db": -2.4010181423252988
+  },
+  {
+   "start": 33.17,
+   "end": 33.21,
+   "label": "stop_front",
+   "p": 0.6609067624106604,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 35.03,
+   "end": 35.07,
+   "label": "stop_front",
+   "p": 0.5241231478404161,
+   "tongue_index": -0.25
+  },
+  {
+   "start": 35.11,
+   "end": 37.27,
+   "label": "voice",
+   "p": 0.8681152185862385,
+   "sideband_db": 0.0
+  },
+  {
+   "start": 36.44,
+   "end": 36.48,
+   "label": "stop_front",
+   "p": 0.5952356941168927,
+   "tongue_index": 1.25
+  },
+  {
+   "start": 36.56,
+   "end": 36.6,
+   "label": "stop_front",
+   "p": 0.6081073809850602,
+   "tongue_index": 1.25
+  }
+ ]
+}
