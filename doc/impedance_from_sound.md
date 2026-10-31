@@ -59,9 +59,13 @@ this evidence with differential evolution (3 restarts). The impedance of the
 fitted bore is the result. Its absolute scale is set by the assumed
 mouthpiece diameter, which the sound cannot determine.
 
-Free decays ring about **45–50 cents below** the impedance maxima, the same
-offset as the toots, because the lips and the mouth do not close the
-mouthpiece rigidly. The fit accounts for this.
+Free decays ring about **45–50 cents below** the impedance maxima, because
+the lips and the mouth do not close the mouthpiece rigidly. The fit accounts
+for this (`Weights.decay_offset_cents = -45`). This offset was measured with
+the radiation impedance of DidgeLab ≤ 3.0.x; with the current Levine–Schwinger
+radiation impedance the resonances are lower (the toots, for example, moved from
+40–50 to 27–40 cents below them), and the decay offset has not been
+recalibrated yet. The evaluation below uses the current radiation impedance.
 
 ## How well it works
 
@@ -72,9 +76,9 @@ $Z_{\text{in}}$ of the measured geometries:
 
 | | res. 1 | res. 2 | res. 3 | res. 4 | curve error |
 |---|---|---|---|---|---|
-| estimate: median error | 13 c | 147 c | 84 c | 73 c | 9.2 dB |
-| estimate: within 50 cents | 100 % | 28 % | 28 % | 33 % | |
-| cone tuned to the drone: within 50 cents | 100 % | 0 % | 22 % | 0 % | 11.0 dB |
+| estimate: median error | 17 c | 147 c | 110 c | 42 c | 10.6 dB |
+| estimate: within 50 cents | 100 % | 22 % | 33 % | 61 % | |
+| cone tuned to the drone: within 50 cents | 100 % | 0 % | 28 % | 22 % | 16.1 dB |
 
 * **Resonance 1 is always right**, because it is the drone.
 * **Resonances 2–4 are accurate when the sample contains repeated free
@@ -92,8 +96,8 @@ the neutral drone (blue) and the song (red); dotted: repeated decay modes.*
 
 ![Tamaki2](figures/impedance_tamaki2_song.png)
 
-*Tamaki2, song recording: resonances 1, 2, 3 and 5 within 17 cents; resonance
-4 (no decay mode) 71 cents low.*
+*Tamaki2, song recording: resonances 1–4 within 10 cents; resonance 5 48 cents
+high, resonance 6 (no decay mode) 112 cents low.*
 
 ## Recording tips
 
