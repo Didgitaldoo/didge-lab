@@ -17,6 +17,10 @@ from pathlib import Path
 
 import numpy as np
 
+from .model import ModelParams
+
+_DEFAULTS = ModelParams()
+
 
 def load_geometry(spec, archive_path=None):
     p = Path(spec)
@@ -187,9 +191,9 @@ def main(argv=None):
     p.add_argument("-f", "--file")
     p.add_argument("-o", "--out", default="didge.wav")
     p.add_argument("--fs", type=int, default=48000)
-    p.add_argument("--oq", type=float, default=0.45, help="lip open quotient (brightness)")
-    p.add_argument("--zs", type=float, default=0.1, help="lip source impedance, MPa s/m^3")
-    p.add_argument("--noise", type=float, default=-30.0, help="breath noise, dB")
+    p.add_argument("--oq", type=float, default=_DEFAULTS.oq, help="lip open quotient (brightness)")
+    p.add_argument("--zs", type=float, default=_DEFAULTS.zs_mpa, help="lip source impedance, MPa s/m^3")
+    p.add_argument("--noise", type=float, default=_DEFAULTS.noise_db, help="breath noise, dB")
     p.add_argument("--reverb", type=float, default=0.25)
     p.add_argument("--seed", type=int, default=0)
     p.set_defaults(func=cmd_synth)

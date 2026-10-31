@@ -85,8 +85,8 @@ Z_c = \frac{\rho c}{A_0}\left[1+\frac{0.369}{r_v} - j\frac{0.369}{r_v}\right].
 
 The whole bore is the product $\mathbf M = \prod_i \mathbf T_i =
 \begin{pmatrix}A&B\\C&D\end{pmatrix}$, terminated at the bell by the radiation
-impedance $Z_r$ (DidgeLab: $`Z_r = \tfrac12 Z_c\,[(\omega d/c)^2 + j\,0.6\,L\,\omega d/c]`$
-of the last segment). Air properties are those of DidgeLab's default: moist air
+impedance $Z_r$ of an unflanged pipe (Levine & Schwinger, low $ka$) at the bell
+opening of diameter $d$ and area $S$: $`Z_r = \frac{\rho c}{S}\,[(\omega d/c)^2/16 + j\,0.3\,\omega d/c]`$. Air properties are those of DidgeLab's default: moist air
 at 28 °C ($c = 350.2$ m/s, $\rho = 1.156$ kg/m³).
 
 ### 1.2 What the synthesizer needs from the bore
@@ -302,8 +302,8 @@ directivity of the bell and the microphone. Note what the formula does:
 and the lip source impedance $Z_s$.*
 
 The played drone is the first resonance of DidgeLab; toots are played on the
-higher resonances. The Didge Archive shows that toots sound about 45 cents
-below the DidgeLab resonance (§7.2), which is used as the default.
+higher resonances. The Didge Archive shows that toots sound about 30–40 cents
+below the DidgeLab resonance (§7.2); 34 cents is used as the default.
 
 ---
 
@@ -399,7 +399,7 @@ with a 50 ms time constant (the mouth glides); consonants are applied on top.
 | drone, mouth shape | `doo`, `oo`, `ee`, `wa`, `uh` | target vocal tract; "ee" (tongue front) … "oo" (tongue back) move the formant from ≈2.5 kHz down to ≈1.2 kHz |
 | stop consonants | `di ga`, `ti ka` | tongue closure ($h\to1$) at the alveolar ridge (t, d) or velum (k, g) for 15–45 ms ending on the beat; the closed tract chokes the flow, a small extra dip of the lip amplitude (t/k deeper than d/g); release burst; brightening after the release. Through the bore inertia the total level drops by only 1–8 dB |
 | rolled r / trill | `rr` | tongue tip vibrating at ≈26 Hz: periodic near-closures, amplitude modulation |
-| toot | `*too`, `**too` | lips on the 2nd/3rd bore resonance (−45 cents), louder and brighter |
+| toot | `*too`, `**too` | lips on the 2nd/3rd bore resonance (−34 cents), louder and brighter |
 | vocalisation | `~oo@C4` | voice modulates the lip flow: sum and difference tones; glottis adducted |
 | glides | `wa`, `ya` | start from "oo"/"ee" and move to the vowel |
 | fricatives | `h`, `ch`, `s` | near-closure, frication noise, reduced lip amplitude |
@@ -433,7 +433,7 @@ The Didge Archive contains, for nine didgeridoos, the measured bore together wit
 recordings: a neutral drone, hand slaps on the mouthpiece (open / closed hand)
 and a song or a long performance. One index entry points to the wrong geometry:
 "Tamaki2" refers to the Open Didgeridoo file, but `tamaki2.json` exists and its
-simulated drone matches the recording (−10 instead of −45 cents), so
+simulated drone matches the recording (−4 instead of −38 cents), so
 `tamaki2.json` is used.
 
 ### 7.1 Drone pitch
@@ -443,40 +443,45 @@ pitch of each neutral recording:
 
 | instrument | simulated / Hz | recorded / Hz | error / cents |
 |---|---|---|---|
-| Malveira | 93.9 | 94.0 | +2 |
-| Arusha | 74.8 | 75.3 | +13 |
-| Nazare | 74.9 | 74.5 | −10 |
-| Kizimkazi | 74.7 | 74.5 | −6 |
-| Open Didgeridoo | 74.1 | 74.8 | +15 |
-| Open Didgeridoo Straight | 74.1 | 75.2 | +25 |
-| Tamaki1 | 76.8 | 77.3 | +10 |
-| Tamaki2 | 72.6 | 72.2 | −10 |
-| Matema | 74.8 | 72.9 | −45 |
+| Malveira | 93.1 | 94.0 | +17 |
+| Arusha | 74.0 | 75.3 | +30 |
+| Nazare | 74.1 | 74.5 | +7 |
+| Kizimkazi | 74.3 | 74.5 | +5 |
+| Open Didgeridoo | 73.8 | 74.8 | +22 |
+| Open Didgeridoo Straight | 73.8 | 75.2 | +32 |
+| Tamaki1 | 76.6 | 77.3 | +14 |
+| Tamaki2 | 72.3 | 72.2 | −4 |
+| Matema | 74.0 | 72.9 | −27 |
 
-Mean absolute error 15 cents, mean error −1 cent: DidgeLab predicts the drone
-within the precision with which a player holds it. The model therefore plays the
-drone exactly on the impedance peak.
+Mean absolute error 17.5 cents, mean error +11 cents: the players
+hold the drone on average about 11 cents above the first DidgeLab resonance,
+within the precision with which a player holds it. (With the earlier radiation
+impedance, whose end correction was too short, the resonances were higher and
+this offset happened to vanish; see
+[transmission_line_model.md](simulation_methods/acoustical_simulation/transmission_line_model.md).)
+The model plays the drone exactly on the impedance peak.
 
 ### 7.2 Toots
 
 In the song recordings, stable pitches above the drone were clustered. A cluster
 counts as a toot only if it is closer to a simulated resonance than to a
-harmonic of the drone (a strong harmonic or formant could otherwise be mistaken
-for a toot). Toots were found for three instruments (the Matema one is
-ambiguous):
+harmonic of the drone and at least 50 cents away from that harmonic (a strong
+harmonic or formant could otherwise be mistaken for a toot). Two clusters are
+clear toots, two are ambiguous:
 
 | instrument | recorded / Hz | DidgeLab resonance / Hz | error / cents |
 |---|---|---|---|
-| Tamaki1 | 212.9 | 218.0 | −41 |
-| Tamaki2 | 196.0 | 201.8 | −50 |
-| Matema* | 145.5 | 149.8 | −50 |
+| Tamaki1 | 212.9 | 216.2 | −27 |
+| Tamaki2 | 196.0 | 200.6 | −40 |
+| Matema* | 145.5 | 145.9 | −5 |
+| Arusha* | 227.3 | 222.7 | +36 |
 
-\*the Matema toot is also close to the 2nd harmonic of its (flat) drone.
-Toots are played consistently **40–50 cents below** the resonance, while the
-drone is not. A plausible reason is that the lips cannot follow the higher,
-narrower resonance exactly (an outward-striking lip valve plays below the
-resonance) and that the radiation model, which matters more for the higher
-modes, shifts them. The synthesizer plays toots 45 cents below the resonance.
+\*within 31 (Matema) and 40 cents (Arusha) of a harmonic of the drone.
+The clear toots are played **27–40 cents below** the resonance, while the drone
+is not. A plausible reason is that the lips cannot follow the higher, narrower
+resonance exactly (an outward-striking lip valve plays below the resonance).
+The synthesizer plays toots 34 cents below the resonance. (With the earlier
+radiation impedance the toots appeared 40–50 cents below the resonances.)
 
 ### 7.3 Hand slaps: the resonances themselves
 
@@ -488,13 +493,15 @@ four maxima/minima of each instrument, the strongest spectral peak within
 
 | | n | median error | within 50 cents |
 |---|---|---|---|
-| hand closed ↔ $\max \lvert Z_{\text{in}}\rvert$ | 20 | 30 cents | 75 % |
-| hand open ↔ $\min \lvert Z_{\text{in}}\rvert$ | 20 | 42 cents | 65 % |
+| hand closed ↔ $\max \lvert Z_{\text{in}}\rvert$ | 20 | 31 cents | 75 % |
+| hand open ↔ $\min \lvert Z_{\text{in}}\rvert$ | 20 | 25 cents | 95 % |
 
 The slaps are short (0.1–0.5 s) and noisy, so these numbers are an upper bound
 of the model error; they nevertheless confirm the open/closed assignment —
-e.g. for Arusha the open-hand peaks lie at 105.5, 181.6, 311, 584 Hz and the
-impedance minima at 105.5, 183.5, 314, 584.5 Hz.
+e.g. for Arusha the open-hand peaks lie at 105.5, 181.5, 311, 363 Hz and the
+impedance minima at 104.0, 181.0, 312.5, 359.5 Hz. The open-hand slaps depend
+most on the end correction at the bell: with the earlier radiation impedance
+their median error was 42 cents (65 % within 50 cents).
 
 ### 7.4 The timbre of the drone
 
@@ -509,8 +516,8 @@ model $i$:
 
 | model | correct instrument | mean rank of the correct one | rms difference |
 |---|---|---|---|
-| this synthesizer | **6 / 9** (67 %) | 1.0 | 5.6 dB |
-| Didge2Wav ($\lvert Z\rvert^{1.2}$ · Hindle) | 3 / 9 (33 %) | 2.1 | 10.3 dB |
+| this synthesizer | **7 / 9** (78 %) | 0.56 | 5.2 dB |
+| Didge2Wav ($\lvert Z\rvert^{1.2}$ · Hindle) | 1 / 9 (11 %) | 1.8 | 11.9 dB |
 | chance | 12.5 % | | |
 
 (Open Didgeridoo and its straight version share one geometry and count as one
@@ -524,10 +531,10 @@ cross-validation:
 
 | model | rms band error |
 |---|---|
-| this synthesizer, leave-one-out | **5.1 dB** |
-| this synthesizer, final defaults | 5.7 dB |
+| this synthesizer, leave-one-out | **4.9 dB** |
+| this synthesizer, final defaults | 5.1 dB |
 | generic $1/n$ harmonic spectrum | 6.1 dB |
-| Didge2Wav | 26.5 dB |
+| Didge2Wav | 26.7 dB |
 
 ![Neutral drones](figures/archive_neutral_spectra.png)
 
@@ -540,10 +547,10 @@ resonances.*
 | parameter | value | determined by |
 |---|---|---|
 | bore losses | DidgeLab unchanged | fingerprint and band levels did not improve with extra wall loss |
-| open quotient OQ, skew | 0.45, 0.85 | band levels of the neutral drones (leave-one-out) |
-| directivity tilt | +1 dB/octave | band levels |
+| open quotient OQ, skew | 0.60, 0.85 | band levels of the neutral drones (at $Z_s = 0.1$) |
+| directivity tilt | −1.5 dB/octave | band levels |
 | neutral mouth | tongue (0.3, 0.2), jaw 1.0, glottis 0.6 | band levels: relaxed, open mouth, open glottis |
-| toot offset | −45 cents | §7.2 |
+| toot offset | −34 cents | §7.2 |
 | tract area scale, $Z_s$ | 0.2, 0.1 MPa s m⁻³ | formant shape in the performances (below) |
 
 Two things were *not* identifiable from the neutral drones: the source impedance
@@ -563,9 +570,10 @@ the neutral drones, so "jaw opening" is one of the four articulatory parameters.
 *Figure 6. Top: Matema recording with tongue sweeps. Bottom: synthesis on the
 Matema bore with the tongue moving front → back → front.*
 
-With these values the median band levels of a synthesized performance on the
-Tamaki1 bore are within 0–5 dB of the Tamaki1 recording in all bands from
-300 Hz to 4.5 kHz.
+With the earlier radiation impedance (and OQ 0.45, tilt +1 dB/octave) the median
+band levels of a synthesized performance on the Tamaki1 bore were within 0–5 dB
+of the Tamaki1 recording in all bands from 300 Hz to 4.5 kHz; this comparison
+has not been repeated with the Levine–Schwinger radiation impedance.
 
 
 ---
@@ -769,7 +777,7 @@ difference tones fill the spectrum between the harmonics).*
 ## 10. Limitations
 
 * **The lip oscillation is prescribed, not self-sustained.** The lips play
-  exactly on a resonance (drone) or 45 cents below it (toot). A physical
+  exactly on a resonance (drone) or 34 cents below it (toot). A physical
   lip-valve model that oscillates by itself would predict the playing
   frequency, how easily a toot speaks and the transients, but needs a
   time-domain simulation of the bore (reflection function) instead of the

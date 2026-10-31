@@ -31,8 +31,8 @@ resonance:
 
 **Toots.** Stable pitches above the drone in the songs are clustered. A cluster
 counts as a toot only if it is closer to a simulated resonance than to a harmonic
-of the drone; otherwise a strong harmonic or a formant could be mistaken for a
-toot.
+of the drone, and at least 50 cents away from that harmonic; otherwise a strong
+harmonic or a formant could be mistaken for a toot.
 
 **Hand slaps.** Slapping the mouthpiece makes the bore ring at its own
 resonances. With the hand closing the mouthpiece the bore is closed at one end, and
@@ -70,25 +70,33 @@ The numbers are produced by `scripts/synth/evaluate_archive.py` and stored in
 
 | test | result |
 |---|---|
-| drone pitch, 9 recordings | mean absolute error **15 cents**, mean error −1 cent |
-| toots, 2 clear cases (Tamaki1, Tamaki2) | played **40–50 cents below** the resonance |
-| hand closed ↔ maxima of $\lvert Z_{in}\rvert$, n = 20 | median error 30 cents, 75 % within 50 cents |
-| hand open ↔ minima of $\lvert Z_{in}\rvert$, n = 20 | median error 42 cents, 65 % within 50 cents |
-| harmonic fingerprint | correct instrument for **6 of 9** recordings (chance 12.5 %), rms 5.6 dB |
-| third-octave envelope, leave-one-out | rms error **5.1 dB** (generic 1/n spectrum: 6.1 dB) |
+| drone pitch, 9 recordings | mean absolute error **17.5 cents**, mean error +11 cents |
+| toots, 2 clear cases (Tamaki1, Tamaki2) | played **27–40 cents below** the resonance |
+| hand closed ↔ maxima of $\lvert Z_{in}\rvert$, n = 20 | median error 31 cents, 75 % within 50 cents |
+| hand open ↔ minima of $\lvert Z_{in}\rvert$, n = 20 | median error 25 cents, 95 % within 50 cents |
+| harmonic fingerprint | correct instrument for **7 of 9** recordings (chance 12.5 %), rms 5.2 dB |
+| third-octave envelope, leave-one-out | rms error **4.9 dB** (default parameters 5.1 dB, generic 1/n spectrum 6.1 dB) |
 
 What this means:
 
 * DidgeLab predicts the **drone** within the precision with which a player holds
-  it. Only Matema is clearly off (−45 cents).
+  it; the players hold it on average 11 cents above the first resonance. Only
+  Matema is clearly flat (−27 cents).
 * **Toots** are played consistently below the impedance peak, while the drone is
-  not. The synthesizer therefore plays toots 45 cents below the resonance
+  not. The synthesizer therefore plays toots 34 cents below the resonance
   (`ModelParams.toot_cents`).
 * The **resonances** seen in the hand slaps confirm the simulation. The slaps are
   short and noisy, so these errors are an upper bound.
-* The **timbre** of the synthesized drone identifies the right instrument in two
-  of three cases, and its spectral envelope is within about 5 dB of the
+* The **timbre** of the synthesized drone identifies the right instrument in
+  seven of nine cases, and its spectral envelope is within about 5 dB of the
   recordings.
+
+These numbers use the Levine–Schwinger radiation impedance at the bell (see
+[transmission_line_model.md](simulation_methods/acoustical_simulation/transmission_line_model.md)).
+With the earlier radiation impedance, whose end correction was too short, the
+drone matched better on average (mean absolute error 15 cents) but the
+open-hand slaps (42 cents) and the toots (40–50 cents below the resonance) much
+worse.
 
 ![Neutral drones](figures/archive_neutral_spectra.png)
 
@@ -99,7 +107,7 @@ What this means:
 
 The archive entry "Tamaki2" points to the Open Didgeridoo geometry, but the
 archive also contains `tamaki2.json`. The simulated drone of `tamaki2.json`
-matches the recording (−10 cents) while `opendidgeridoo.json` is 45 cents off, so
+matches the recording (−4 cents) while `opendidgeridoo.json` is 38 cents off, so
 `didgelab.synth.archive` uses `tamaki2.json` (`archive.GEOMETRY_OVERRIDES`).
 
 ## 4. Repeating the comparison

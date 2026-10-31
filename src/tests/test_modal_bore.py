@@ -63,11 +63,11 @@ def _drone_brightness(bore):
 
 def test_modal_bore_brightness_close_to_geometry():
     # The peaks alone do not fix the timbre: on the didge-archive and generated
-    # bores a ModalBore drone is 0.5..1.9 x as bright as the geometry with the
-    # same peaks (a plain cone, GEOS[0], ~3.7 x, so it is left out here).
+    # bores a ModalBore drone is 0.43..1.6 x as bright as the geometry with the
+    # same peaks (0.85 x on average).
     from tests.test_bore import GEOS
 
-    for geo in GEOS[1:]:
+    for geo in GEOS:
         b = Bore(geo)
         m = ModalBore(b.resonances, mouth_diameter=geo[0][1])
-        assert 0.5 < _drone_brightness(m) / _drone_brightness(b) < 1.9
+        assert 0.4 < _drone_brightness(m) / _drone_brightness(b) < 1.7

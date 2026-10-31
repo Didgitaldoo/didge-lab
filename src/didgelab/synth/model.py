@@ -35,12 +35,13 @@ class ModelParams:
     zs_mpa: float = 0.1          # lip source impedance, MPa s/m^3
     loss_factor: float = 1.0     # wall-loss multiplier of the bore (1 = DidgeLab)
     source: str = "lips"         # 'lips' (beating lips) or 'hindle' (Didge2Wav)
-    oq: float = 0.45             # open quotient of the lips
+    oq: float = 0.6              # open quotient of the lips
     skew: float = 0.85           # opening fraction of the open phase
     alpha: float = 0.85          # shape of the Hindle source
-    tilt_db_oct: float = 1.0     # on-axis directivity of the bell / microphone, dB/octave (calibrated)
+    tilt_db_oct: float = -1.5    # on-axis directivity of the bell / microphone, dB/octave (calibrated)
     pitch_cents: float = 0.0     # played drone relative to the impedance peak
-    toot_cents: float = -45.0    # played toots relative to the impedance peak (archive: -40..-58)
+    toot_cents: float = -34.0    # played toots relative to the impedance peak (archive: Tamaki1 -27,
+                                 # Tamaki2 -40 cents)
     noise_db: float = -30.0      # breath noise relative to the tone
 
     def to_dict(self):

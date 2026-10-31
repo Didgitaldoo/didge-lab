@@ -195,18 +195,19 @@ class ModalBore:
         H(f)    = -j sum_n g(f_n) Z_n/Z_0 / (1 + j Q_n (f/f_n - f_n/f)),
 
     with the same poles in H as in Z_in. The residues of H are not known
-    without a geometry; g(f) = 2 / (1 + (f / 1500 Hz)^2) is fitted on the
-    bores of the didge-archive, where |H| / (|Z_in| / Z_0) at the peaks is
-    about 2 below 500 Hz and falls above 1 kHz. Z_bg ramps from 0 to Z_0
-    above ~2 kHz, where the real Z_in of a didgeridoo levels out at Z_0.
+    without a geometry; g(f) = 2 / (1 + (f / H_CORNER)^H_EXPONENT) with
+    H_CORNER = inf (no roll-off; |H| / (|Z_in| / Z_0) at the low peaks of
+    the didge-archive bores is about 2) and the background Z_bg, which ramps
+    from 0 to Z_0 above ~BG_CORNER = 4 kHz (the real Z_in of a didgeridoo
+    levels out at Z_0), are fitted to the brightness of drone and first
+    toot with the vocal tract of a "doo", on the didge-archive and 24
+    generated bores (Levine-Schwinger radiation impedance).
 
-    Accuracy (drone renders, didge-archive and generated bores): the
-    brightness (spectral centroid) is right on average but single bores are
-    0.5..1.9 x as bright as the geometry with the same peaks (a plain
-    cone even ~3.7 x; the archive songs 0.7..2.2 x). Refits of the
-    residues (roll-off, alternating signs with phase, Q dependence, with and
-    without vocal tract) did not reduce this spread: the peaks below 3 kHz
-    do not carry enough information about the timbre.
+    Accuracy: the brightness (spectral centroid) is 0.85 x that of the
+    geometry with the same peaks on average, single bores 0.43..1.6 x (mean
+    deviation 23 %). Earlier refits (roll-off, alternating signs with phase,
+    Q dependence, with and without vocal tract) did not reduce this spread:
+    the peaks below 3 kHz do not carry enough information about the timbre.
 
     The pitches are those of the peaks; the timbre is an approximation of a
     real bore with the same peaks. Has the interface of :class:`Bore` that the
@@ -220,9 +221,9 @@ class ModalBore:
     mouth_diameter : mouthpiece diameter in mm, sets Z_0
     """
 
-    H_CORNER = 1500.0
+    H_CORNER = np.inf
     H_EXPONENT = 2.0
-    BG_CORNER = 2000.0
+    BG_CORNER = 4000.0
 
     def __init__(self, peaks, mouth_diameter=32.0, fmax=12000.0, df=0.5, constants=None):
         res = []

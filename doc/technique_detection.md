@@ -91,7 +91,7 @@ differently, they are an upper bound.
 On the real recordings of the Didge Archive (§9 of the article,
 [results/synth/recordings_summary.md](results/synth/recordings_summary.md)):
 
-* the drone and the **toots** are found reliably; toots are played 40–50 cents
+* the drone and the **toots** are found reliably; toots are played 27–40 cents
   below the 2nd resonance;
 * **tongue movements** between front and back (formant ≈1–3 kHz) are the dominant
   technique in every recording;

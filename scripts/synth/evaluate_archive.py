@@ -64,7 +64,9 @@ print("drone", out["drone"]["mean_abs_cents"], flush=True)
 # Pitch clusters above the drone in the song recordings (generic tracker, no
 # resonance prior). A cluster is attributed to a toot only if it is closer to
 # a simulated resonance than to a harmonic of the drone (otherwise a strong
-# harmonic or a formant could be mistaken for a toot).
+# harmonic or a formant could be mistaken for a toot), and at least
+# HARMONIC_MARGIN cents away from that harmonic (otherwise it is ambiguous).
+HARMONIC_MARGIN = 50.0
 toot_rows = []
 for ins in insts:
     if "song" not in ins.samples:
@@ -87,7 +89,8 @@ for ins in insts:
             d_harm = float(cents(f_rec, harm * res[0]))
             toot_rows.append({"instrument": ins.name, "rec_hz": f_rec, "frames": int(h[i]), "resonance": k,
                               "sim_hz": float(res[k]), "error_cents": d_res, "nearest_harmonic": int(harm),
-                              "harmonic_cents": d_harm, "is_toot": abs(d_res) < abs(d_harm)})
+                              "harmonic_cents": d_harm,
+                              "is_toot": abs(d_res) < abs(d_harm) and abs(d_harm) > HARMONIC_MARGIN})
 toots = [r for r in toot_rows if r["is_toot"]]
 te = np.array([r["error_cents"] for r in toots])
 out["toots"] = {"clusters": toot_rows, "n_toot_clusters": len(toots),
