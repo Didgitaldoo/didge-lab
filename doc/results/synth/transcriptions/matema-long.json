@@ -2,218 +2,193 @@
  "summary": {
   "duration_s": 32.74,
   "voiced_fraction": 0.9523664122137404,
-  "drone_hz": 73.51498077118468,
+  "drone_hz": 73.41117712661001,
   "events": {
-   "stop_front": 8,
+   "stop_front": 13,
    "toot1": 5,
-   "voice": 2,
-   "stop_back": 9
+   "voice": 1,
+   "stop_back": 2
   },
   "events_per_s": {
-   "stop_front": 0.24434941967012827,
+   "stop_front": 0.39706780696395844,
    "toot1": 0.15271838729383017,
-   "voice": 0.06108735491753207,
-   "stop_back": 0.2748930971288943
+   "voice": 0.030543677458766034,
+   "stop_back": 0.06108735491753207
   },
   "tongue": {
-   "front": 0.4038668098818475,
-   "middle": 0.05191550304332259,
-   "back": 0.54421768707483
+   "front": 0.3928442356342609,
+   "middle": 0.16624503071919045,
+   "back": 0.4409107336465486
   },
-  "median_fit_err_db": 5.646669528472232
+  "median_fit_err_db": 5.276974211596787
  },
  "row": {
   "recording": "matema-long",
   "instrument": "Matema",
   "duration_s": 32.7,
-  "drone_hz": 73.5,
-  "sim_drone_hz": 74.8,
+  "drone_hz": 73.4,
+  "sim_drone_hz": 74.0,
   "toots": {
    "toot1": 5
   },
   "toot_s": 1.1,
-  "stops_per_s": 0.52,
-  "front_stop_share": 0.47,
+  "stops_per_s": 0.46,
+  "front_stop_share": 0.87,
   "trills": 0,
-  "voice_s": 0.9,
+  "voice_s": 0.2,
   "circular_breaths": 0,
   "breath_interval_s": null,
   "fricatives": 0,
-  "formant_p10_p50_p90_hz": [
-   503,
-   1248,
-   3281
+  "tongue_p10_p90": [
+   0.0,
+   0.94
   ],
-  "tongue": {
-   "front": 0.4,
-   "middle": 0.05,
-   "back": 0.54
-  },
-  "tongue_moves_per_s": 2.08
+  "tongue_coverage": 0.89,
+  "tongue_match": 0.57,
+  "tongue_moves_per_s": 1.34
  },
  "segments": [
   {
-   "start": 0.61,
-   "end": 0.65,
+   "start": 0.65,
+   "end": 0.69,
    "label": "stop_front",
-   "p": 0.6346407530671448,
-   "tongue_index": 1.25
-  },
-  {
-   "start": 0.67,
-   "end": 0.71,
-   "label": "stop_front",
-   "p": 0.7535419593148335,
-   "tongue_index": 1.25
+   "p": 0.8943911774616641,
+   "tongue_index": 0.16923502683562017
   },
   {
    "start": 0.9,
    "end": 1.43,
    "label": "toot1",
-   "f0": 145.06733170402387
+   "f0": 145.00996581378968
   },
   {
    "start": 1.64,
    "end": 1.73,
    "label": "toot1",
-   "f0": 145.06733170402387
+   "f0": 145.00996581378968
   },
   {
    "start": 1.92,
    "end": 2.04,
    "label": "toot1",
-   "f0": 145.90769820745604
+   "f0": 145.85000000000042
   },
   {
    "start": 2.92,
    "end": 2.96,
    "label": "stop_front",
-   "p": 0.7413595781758175,
-   "tongue_index": 1.25
+   "p": 0.6539287482672859,
+   "tongue_index": 0.0
   },
   {
-   "start": 8.7,
-   "end": 9.14,
+   "start": 8.96,
+   "end": 9.12,
    "label": "voice",
-   "p": 0.9257798631421916,
-   "sideband_db": -17.355558088153032
+   "p": 0.8122497862095085,
+   "sideband_db": -17.20156259518972
   },
   {
-   "start": 11.11,
-   "end": 11.15,
-   "label": "stop_back",
-   "p": 1.0114755297966993,
-   "tongue_index": 0.28965847492428176
-  },
-  {
-   "start": 13.97,
-   "end": 14.01,
+   "start": 9.07,
+   "end": 9.11,
    "label": "stop_front",
-   "p": 0.9735736283965817,
-   "tongue_index": 1.25
+   "p": 0.6452497666840815,
+   "tongue_index": 0.8023915726250299
   },
   {
-   "start": 15.41,
-   "end": 15.45,
-   "label": "stop_back",
-   "p": 0.9038012227836031,
-   "tongue_index": 1.25
+   "start": 13.96,
+   "end": 14.0,
+   "label": "stop_front",
+   "p": 0.9763792234792371,
+   "tongue_index": 1.0
+  },
+  {
+   "start": 14.17,
+   "end": 14.21,
+   "label": "stop_front",
+   "p": 0.8123216776693897,
+   "tongue_index": 0.0
+  },
+  {
+   "start": 17.12,
+   "end": 17.16,
+   "label": "stop_front",
+   "p": 0.7558783317868566,
+   "tongue_index": 0.7475073698383115
+  },
+  {
+   "start": 17.48,
+   "end": 17.52,
+   "label": "stop_front",
+   "p": 0.91208446003499,
+   "tongue_index": 0.907279366722941
   },
   {
    "start": 18.07,
    "end": 18.11,
    "label": "stop_back",
-   "p": 1.033729177095413,
-   "tongue_index": 1.25
+   "p": 0.7537628139432131,
+   "tongue_index": 0.7415316537564673
   },
   {
-   "start": 18.26,
-   "end": 18.3,
-   "label": "stop_back",
-   "p": 0.9505565766413104,
-   "tongue_index": 1.25
-  },
-  {
-   "start": 18.83,
-   "end": 18.87,
-   "label": "stop_back",
-   "p": 0.6348651748139555,
-   "tongue_index": 0.12069402564612744
-  },
-  {
-   "start": 19.3,
-   "end": 19.34,
+   "start": 18.75,
+   "end": 18.79,
    "label": "stop_front",
-   "p": 0.9441859434327197,
-   "tongue_index": 1.25
-  },
-  {
-   "start": 19.53,
-   "end": 20.0,
-   "label": "voice",
-   "p": 0.8707740349531271,
-   "sideband_db": -19.290289303362385
+   "p": 0.7194936687818553,
+   "tongue_index": 0.8713329985582949
   },
   {
    "start": 19.73,
    "end": 19.77,
    "label": "stop_back",
-   "p": 0.9583620883210762,
-   "tongue_index": 0.1121751593295764
+   "p": 0.8085043009338938,
+   "tongue_index": 1.0
   },
   {
-   "start": 21.58,
-   "end": 21.62,
+   "start": 19.81,
+   "end": 19.85,
    "label": "stop_front",
-   "p": 1.24809104156926,
-   "tongue_index": 1.25
+   "p": 0.8177574415740253,
+   "tongue_index": 0.21611765171694725
+  },
+  {
+   "start": 21.6,
+   "end": 21.64,
+   "label": "stop_front",
+   "p": 0.9262971349420077,
+   "tongue_index": 0.8649970267562936
   },
   {
    "start": 22.77,
    "end": 22.81,
    "label": "stop_front",
-   "p": 1.254305779984617,
-   "tongue_index": 1.25
+   "p": 0.6716378565389173,
+   "tongue_index": 0.8730394544103084
   },
   {
-   "start": 25.12,
-   "end": 25.16,
-   "label": "stop_back",
-   "p": 0.8280961257186815,
-   "tongue_index": -0.25
-  },
-  {
-   "start": 25.44,
-   "end": 25.48,
-   "label": "stop_back",
-   "p": 0.7336635765109459,
-   "tongue_index": 0.15576644072260973
-  },
-  {
-   "start": 31.0,
-   "end": 31.04,
-   "label": "stop_back",
-   "p": 0.7741548437492122,
-   "tongue_index": -0.09892340878910441
+   "start": 24.78,
+   "end": 24.82,
+   "label": "stop_front",
+   "p": 0.9047046693241558,
+   "tongue_index": 0.6877485748093213
   },
   {
    "start": 31.47,
    "end": 31.51,
    "label": "stop_front",
-   "p": 0.8204579493710045,
-   "tongue_index": 1.25
+   "p": 0.6222647652059596,
+   "tongue_index": 0.03022806687728475
   },
   {
    "start": 31.64,
    "end": 31.78,
    "label": "toot1",
-   "f0": 147.6030639963685
+   "f0": 147.54469536803583
   },
   {
    "start": 31.81,
    "end": 32.05,
    "label": "toot1",
-   "f0": 146.3297052730287
+   "f0": 146.69490045474686
   }
  ]
 }

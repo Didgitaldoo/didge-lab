@@ -734,22 +734,25 @@ detector trained on 80 performances on random bores:
 
 | technique | precision | recall | F1 | events |
 |---|---|---|---|---|
-| stop consonants (±60 ms) | 0.98 | 0.97 | 0.97 | 844 |
-| place of articulation (t/d vs. k/g) of detected stops | | | accuracy 0.955 | 816 |
-| rolled-r trill | 0.95 | 0.98 | 0.97 | 64 |
-| vocalisation | 0.94 | 1.00 | 0.97 | 72 |
-| circular breathing | 1.00 | 0.99 | 0.99 | 139 |
-| fricatives / aspiration | 0.84 | 0.77 | 0.80 | 77 |
+| stop consonants (±60 ms) | 0.97 | 0.97 | 0.97 | 844 |
+| place of articulation (t/d vs. k/g) of detected stops | | | accuracy 0.954 | 820 |
+| rolled-r trill | 0.97 | 0.98 | 0.98 | 64 |
+| vocalisation | 0.92 | 0.99 | 0.95 | 72 |
+| circular breathing | 0.99 | 0.99 | 0.99 | 139 |
+| fricatives / aspiration | 0.90 | 0.79 | 0.84 | 77 |
 | toots (lip tracker, no learning) | 0.99 | 1.00 | 0.99 | 67 |
 
 (Detector retrained in DidgeLab, `scripts/synth/train_detector.py`, on the current
 synthesis (Levine–Schwinger radiation, open jaw of the articulated vowels, lip
-open quotient falling with pitch); the stored result is
+open quotient falling with pitch) and with the template tongue tracker of §8.2;
+the stored result is
 [results/synth/detector_eval.json](results/synth/detector_eval.json). Compared with
 the detector trained on the earlier synthesis, vocalisation is found better
-(F1 0.91 → 0.97); the place of articulation (0.987 → 0.955) and fricatives
-(0.85 → 0.80) are slightly worse: with the open jaw, front and back tongue
-positions are less different in sound.)
+(F1 0.91 → 0.95) and the place of articulation slightly worse (0.987 → 0.954):
+with the open jaw, front and back tongue positions are less different in sound.
+Replacing the peak-based formant features by the template tongue index changed
+little: fricatives 0.80 → 0.84, trills 0.97 → 0.98, vocalisation 0.97 → 0.95,
+stops unchanged.)
 
 These numbers measure how well the techniques *as modelled* can be recognised
 on unseen instruments and recording conditions. They are an upper bound for real
@@ -784,20 +787,25 @@ archive. The full transcriptions are in [`doc/results/synth/transcriptions/`](re
 `doc/figures/transcription-*.png`, and copy-synthesised excerpts (f0, level and
 mouth shape taken from the recording, §8.2) in `outputs/synth-audio/resynth-*.wav`.
 
-| recording | dur. / s | drone / Hz (DidgeLab) | toots | formant median / p90 / Hz | tongue front / back | tongue moves / s | vocalisation / s | stops / s | circ. breaths |
-|---|---|---|---|---|---|---|---|---|---|
-| malveira-short-song | 24.7 | 93.4 (93.1) | – | 996 / 2681 | 0.25 / 0.68 | 1.38 | 0.5 | 1.34 | 1 |
-| arusha-short-song | 22.3 | 75.5 (74.0) | – | 1951 / 3550 | 0.53 / 0.31 | 1.88 | 2.1 | 0.27 | 0 |
-| nazare-short-song | 19.4 | 74.7 (74.1) | – | 1751 / 3279 | 0.47 / 0.40 | 1.18 | 1.8 | 0.88 | 1 |
-| kizimkazi-short-song | 26.4 | 76.1 (74.3) | – | 1666 / 3927 | 0.41 / 0.28 | 1.21 | 3.3 | 0.42 | 3 |
-| opendidge-short-song | 19.8 | 74.7 (73.8) | – | 2267 / 3745 | 0.68 / 0.24 | 1.77 | 0.7 | 0.46 | 0 |
-| open-didge-drags | 9.0 | 73.5 (73.8) | 1 | 1593 / 2714 | 0.38 / 0.48 | 1.00 | 0.2 | 0.44 | 3 |
-| opendidge-2-straight-long | 37.4 | 75.0 (73.8) | – | 1347 / 3688 | 0.41 / 0.52 | 2.03 | **30.6** | 0.13 | 0 |
-| tamaki1-long | 37.4 | 76.6 (76.6) | 3 (1.1 s) | 2291 / 3179 | 0.57 / 0.41 | 1.87 | 2.6 | 0.37 | 1 |
-| tamaki-2-long | 37.4 | 72.2 (72.3) | 1 (0.8 s) | 2083 / 3350 | 0.52 / 0.45 | 2.35 | 0 | 0.35 | 0 |
-| matema-long | 32.7 | 73.5 (74.0) | 5 (1.1 s) | 1248 / 3281 | 0.40 / 0.54 | 2.08 | 0.9 | 0.52 | 0 |
+| recording | dur. / s | drone / Hz (DidgeLab) | toots | tongue p10–p90 | tongue coverage | tongue match | tongue moves / s | vocalisation / s | stops / s | circ. breaths |
+|---|---|---|---|---|---|---|---|---|---|---|
+| malveira-short-song | 24.7 | 93.4 (93.1) | – | 0.00–0.95 | 0.84 | 0.50 | 1.13 | 0.2 | 1.01 | 0 |
+| arusha-short-song | 22.3 | 75.6 (74.0) | – | 0.13–1.00 | 0.95 | 0.68 | 0.76 | 3.4 | 0.04 | 0 |
+| nazare-short-song | 19.4 | 74.6 (74.1) | – | 0.00–0.94 | 0.95 | 0.70 | 0.88 | 0.4 | 0.88 | 0 |
+| kizimkazi-short-song | 26.4 | 76.0 (74.3) | – | 0.00–1.00 | 0.88 | 0.63 | 0.83 | 3.3 | 0.23 | 6 |
+| opendidge-short-song | 19.8 | 74.9 (73.8) | – | 0.00–0.98 | 0.98 | 0.77 | 0.76 | 0.7 | 0.00 | 1 |
+| open-didge-drags | 9.0 | 73.4 (73.8) | 1 (0.2 s) | 0.00–0.85 | 0.93 | 0.72 | 1.33 | 1.0 | 0.78 | 1 |
+| opendidge-2-straight-long | 37.4 | 75.1 (73.8) | – | 0.08–1.00 | 0.91 | 0.62 | 1.28 | **29.2** | 0.05 | 0 |
+| tamaki1-long | 37.4 | 76.6 (76.6) | 3 (1.1 s) | 0.00–0.90 | 0.93 | 0.61 | 1.10 | 0.2 | 0.24 | 0 |
+| tamaki-2-long | 37.4 | 72.1 (72.3) | 1 (0.8 s) | 0.00–0.94 | 0.93 | 0.63 | 1.34 | 0.0 | 0.16 | 0 |
+| matema-long | 32.7 | 73.4 (74.0) | 5 (1.1 s) | 0.00–0.94 | 0.89 | 0.57 | 1.34 | 0.2 | 0.46 | 0 |
 
-*"tongue moves": front ↔ back excursions of the tongue index per second.*
+*Tongue columns (§8.2): p10–p90 of the tongue index (0 = front, 1 = back of
+the template grid), the share of sounding frames where a template matches
+(correlation ≥ 0.3), the median correlation, and the number of front ↔ back
+excursions per second (swing of at least 0.35 around the recording's median).
+The index is relative to the player's median mouth shape, so the table
+reports movement, not how much time the tongue spends at the front or back.*
 
 What can be said with confidence, because it is supported by independent
 physical evidence:
@@ -806,13 +814,16 @@ physical evidence:
   (median deviation 13 cents, at most 41 cents).
 * **Toots** appear in Tamaki1 (a 1.5 s toot passage at 26–27.5 s, figure 8),
   Tamaki2 and Matema, always on the 2nd resonance and below it (§7.2). The other songs are pure drone songs.
-* **Tongue front/back is the dominant technique.** In every recording the
-  formant moves between ≈1 kHz (tongue back) and ≈3 kHz (tongue front),
-  1–2.4 times per second. The players differ: Malveira's song stays mostly at
-  the back (68 % of the time), the Open Didgeridoo song mostly at the front
-  (68 %); Matema shows long, slow sweeps (figure 6), Tamaki1 and Tamaki2
-  fast rhythmic changes.
-* **Vocalisation** is used throughout `opendidge-2-straight-long` (31 of 37 s).
+* **Tongue movement is the dominant technique.** In every recording the
+  tongue index sweeps over almost the whole template range (p10–p90 ≈ 0–0.95),
+  0.8–1.3 front ↔ back excursions per second; the templates match in 84–98 %
+  of the sounding frames, with a median correlation of 0.5–0.77. The
+  movement is fastest in Tamaki2, Matema, `open-didge-drags` and
+  `opendidge-2-straight-long` (≈1.3 per second) and slowest in the Arusha and
+  Open Didgeridoo songs (≈0.8). Whether a player stays mostly at the front or
+  at the back cannot be said (§8.2): an earlier peak tracker reported such
+  shares, but it inverted the tongue direction on synthetic tests.
+* **Vocalisation** is used throughout `opendidge-2-straight-long` (29 of 37 s).
   The spectrum contains strong partials between the harmonics, e.g. at 274 Hz
   (−2 dB) and 398 Hz (−3 dB) with a drone at 74 Hz; they fit the sum and
   difference tones $n\cdot 74 \pm 199$ Hz of a voice at ≈199 Hz (≈G3) and its
@@ -827,19 +838,19 @@ physical evidence:
   trill remains in the archive.
 * **Detached notes.** The end of Tamaki1 (28–37 s) consists of seven short,
   decaying notes; `open-didge-drags` of seven separate notes that swell and
-  decay with an upward glide of the formant (the tongue moving forward within
-  each note).
+  decay.
 
-What remains uncertain: the **stop consonants** (0.1–1.3 per second detected)
-and **circular breathing** (0–3 events). The rhythmic articulation of these
-players is carried mainly by fast formant changes; tongue stops, where they
+What remains uncertain: the **stop consonants** (0–1.0 per second detected)
+and **circular breathing** (0–6 events). The rhythmic articulation of these
+players is carried mainly by tongue movement; tongue stops, where they
 occur, are subtler than in the model. Without listening tests or annotations
 these detections should be read as hypotheses.
 
 ![Transcription Tamaki1](figures/transcription-tamaki1-long.png)
 
 *Figure 8. Transcription of `tamaki1-long`: spectrogram with lip frequency
-(cyan) and formant (white), level, tongue index and detected events.*
+(cyan) and model formant of the matched tongue position (white), level,
+tongue index and detected events.*
 
 ![Transcription Open Didgeridoo straight](figures/transcription-opendidge-2-straight-long.png)
 

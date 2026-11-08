@@ -78,12 +78,12 @@ detector never saw during training
 
 | technique | precision | recall | F1 |
 |---|---|---|---|
-| stop consonants (±60 ms) | 0.98 | 0.97 | 0.97 |
-| place of articulation (t/d vs. k/g) | | | accuracy 0.955 |
-| rolled-r trill | 0.95 | 0.98 | 0.97 |
-| vocalisation | 0.94 | 1.00 | 0.97 |
-| circular breathing | 1.00 | 0.99 | 0.99 |
-| fricatives / aspiration | 0.84 | 0.77 | 0.80 |
+| stop consonants (±60 ms) | 0.97 | 0.97 | 0.97 |
+| place of articulation (t/d vs. k/g) | | | accuracy 0.954 |
+| rolled-r trill | 0.97 | 0.98 | 0.98 |
+| vocalisation | 0.92 | 0.99 | 0.95 |
+| circular breathing | 0.99 | 0.99 | 0.99 |
+| fricatives / aspiration | 0.90 | 0.79 | 0.84 |
 | toots (lip tracker) | 0.99 | 1.00 | 0.99 |
 
 These numbers say how well the techniques **as modelled** are recognised on
@@ -95,8 +95,10 @@ On the real recordings of the Didge Archive (§9 of the article,
 
 * the drone and the **toots** are found reliably; toots are played 27–40 cents
   below the 2nd resonance;
-* **tongue movements** between front and back (formant ≈1–3 kHz) are the dominant
-  technique in every recording;
+* **tongue movements** are the dominant technique in every recording
+  (0.8–1.3 front ↔ back excursions per second); the tongue index is relative to
+  the player's median position, so how long a player stays at the front or back
+  is not known;
 * **vocalisation** is clearly identified in one recording;
 * **stop consonants and circular breathing** are uncertain: real tongue stops are
   subtler than in the model. Read these detections as hypotheses.

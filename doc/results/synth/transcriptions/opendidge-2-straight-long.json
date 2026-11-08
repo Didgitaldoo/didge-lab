@@ -2,142 +2,157 @@
  "summary": {
   "duration_s": 37.41,
   "voiced_fraction": 0.9807589524318546,
-  "drone_hz": 74.96100052637235,
+  "drone_hz": 75.09000127717815,
   "events": {
-   "voice": 8,
-   "stop_back": 1,
-   "stop_front": 4
+   "voice": 14,
+   "stop_back": 2
   },
   "events_per_s": {
-   "voice": 0.21384656508954827,
-   "stop_back": 0.026730820636193534,
-   "stop_front": 0.10692328254477414
+   "voice": 0.3742314889067095,
+   "stop_back": 0.05346164127238707
   },
   "tongue": {
-   "front": 0.40923268870867124,
-   "middle": 0.07111665626949469,
-   "back": 0.519650655021834
+   "front": 0.3214819241111443,
+   "middle": 0.16432626232446967,
+   "back": 0.514191813564386
   },
-  "median_fit_err_db": 6.229360144583893
+  "median_fit_err_db": 6.434645179639882
  },
  "row": {
   "recording": "opendidge-2-straight-long",
   "instrument": "Open Didgeridoo Straight",
   "duration_s": 37.4,
-  "drone_hz": 75.0,
-  "sim_drone_hz": 74.1,
+  "drone_hz": 75.1,
+  "sim_drone_hz": 73.8,
   "toots": {},
   "toot_s": 0,
-  "stops_per_s": 0.13,
-  "front_stop_share": 0.8,
+  "stops_per_s": 0.05,
+  "front_stop_share": 0.0,
   "trills": 0,
-  "voice_s": 30.6,
+  "voice_s": 29.2,
   "circular_breaths": 0,
   "breath_interval_s": null,
   "fricatives": 0,
-  "formant_p10_p50_p90_hz": [
-   568,
-   1347,
-   3688
+  "tongue_p10_p90": [
+   0.08,
+   1.0
   ],
-  "tongue": {
-   "front": 0.41,
-   "middle": 0.07,
-   "back": 0.52
-  },
-  "tongue_moves_per_s": 2.03
+  "tongue_coverage": 0.91,
+  "tongue_match": 0.62,
+  "tongue_moves_per_s": 1.28
  },
  "segments": [
   {
-   "start": 2.98,
-   "end": 5.15,
+   "start": 0.86,
+   "end": 1.06,
    "label": "voice",
-   "p": 0.9319774822365391,
-   "sideband_db": -16.672428184347183
+   "p": 0.9279715338730419,
+   "sideband_db": -9.367336146627188
   },
   {
-   "start": 8.26,
-   "end": 11.26,
+   "start": 3.34,
+   "end": 3.71,
    "label": "voice",
-   "p": 0.9693321725257243,
-   "sideband_db": -2.253474286738424
+   "p": 0.8171332302709711,
+   "sideband_db": -19.509517190884317
   },
   {
-   "start": 11.32,
-   "end": 16.77,
+   "start": 3.93,
+   "end": 5.5,
    "label": "voice",
-   "p": 0.9858160638116056,
-   "sideband_db": -8.096419264095118
+   "p": 0.8950916879123085,
+   "sideband_db": -15.514844281812607
   },
   {
-   "start": 16.96,
-   "end": 21.53,
+   "start": 8.31,
+   "end": 22.85,
    "label": "voice",
-   "p": 0.9762643810086323,
-   "sideband_db": -6.240061400446194
+   "p": 0.9773639952880645,
+   "sideband_db": -8.234771994327303
   },
   {
-   "start": 21.59,
-   "end": 25.8,
+   "start": 23.07,
+   "end": 24.0,
    "label": "voice",
-   "p": 0.9257390140737363,
-   "sideband_db": -3.2697863842957986
+   "p": 0.9364603840530447,
+   "sideband_db": -1.7024292491421775
   },
   {
-   "start": 25.85,
-   "end": 32.2,
+   "start": 24.06,
+   "end": 26.46,
    "label": "voice",
-   "p": 0.949845939201078,
-   "sideband_db": -5.567472233620975
-  },
-  {
-   "start": 28.47,
-   "end": 28.51,
-   "label": "stop_back",
-   "p": 0.5211599561906053,
-   "tongue_index": 0.01672380624937628
-  },
-  {
-   "start": 32.28,
-   "end": 34.96,
-   "label": "voice",
-   "p": 0.9488632710637479,
-   "sideband_db": -2.4010181423252988
-  },
-  {
-   "start": 33.17,
-   "end": 33.21,
-   "label": "stop_front",
-   "p": 0.6609067624106604,
-   "tongue_index": 1.25
-  },
-  {
-   "start": 35.03,
-   "end": 35.07,
-   "label": "stop_front",
-   "p": 0.5241231478404161,
-   "tongue_index": -0.25
-  },
-  {
-   "start": 35.11,
-   "end": 37.27,
-   "label": "voice",
-   "p": 0.8681152185862385,
+   "p": 0.9267973962136511,
    "sideband_db": 0.0
   },
   {
-   "start": 36.44,
-   "end": 36.48,
-   "label": "stop_front",
-   "p": 0.5952356941168927,
-   "tongue_index": 1.25
+   "start": 26.5,
+   "end": 27.23,
+   "label": "voice",
+   "p": 0.8755166095426575,
+   "sideband_db": -2.5638425304044787
   },
   {
-   "start": 36.56,
-   "end": 36.6,
-   "label": "stop_front",
-   "p": 0.6081073809850602,
-   "tongue_index": 1.25
+   "start": 27.28,
+   "end": 28.27,
+   "label": "voice",
+   "p": 0.9189274672112651,
+   "sideband_db": -6.267088604534905
+  },
+  {
+   "start": 28.57,
+   "end": 29.1,
+   "label": "voice",
+   "p": 0.9554310714259431,
+   "sideband_db": 0.0
+  },
+  {
+   "start": 29.3,
+   "end": 30.4,
+   "label": "voice",
+   "p": 0.9385590833475556,
+   "sideband_db": -5.9380448619783905
+  },
+  {
+   "start": 30.54,
+   "end": 30.89,
+   "label": "voice",
+   "p": 0.957774913333552,
+   "sideband_db": -3.9955985417255775
+  },
+  {
+   "start": 31.06,
+   "end": 31.1,
+   "label": "stop_back",
+   "p": 0.5159383476670487,
+   "tongue_index": 0.07031436144520004
+  },
+  {
+   "start": 31.16,
+   "end": 32.03,
+   "label": "voice",
+   "p": 0.9722982622453252,
+   "sideband_db": -7.251613029036804
+  },
+  {
+   "start": 32.18,
+   "end": 32.22,
+   "label": "stop_back",
+   "p": 0.7203963146266391,
+   "tongue_index": 0.17345377826914476
+  },
+  {
+   "start": 32.38,
+   "end": 32.74,
+   "label": "voice",
+   "p": 0.9440372177829413,
+   "sideband_db": -3.5790505952880736
+  },
+  {
+   "start": 33.03,
+   "end": 37.34,
+   "label": "voice",
+   "p": 0.9644851157855685,
+   "sideband_db": 0.0
   }
  ]
 }

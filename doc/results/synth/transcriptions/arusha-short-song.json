@@ -1,108 +1,88 @@
 {
  "summary": {
   "duration_s": 22.31,
-  "voiced_fraction": 0.9413082437275986,
-  "drone_hz": 75.45090838752174,
+  "voiced_fraction": 0.9422043010752689,
+  "drone_hz": 75.56228881105125,
   "events": {
-   "voice": 2,
-   "stop_back": 4,
-   "stop_front": 2
+   "voice": 5,
+   "stop_front": 1
   },
   "events_per_s": {
-   "voice": 0.08964589870013448,
-   "stop_back": 0.17929179740026896,
-   "stop_front": 0.08964589870013448
+   "voice": 0.22411474675033619,
+   "stop_front": 0.04482294935006724
   },
   "tongue": {
-   "front": 0.5269668480950025,
-   "middle": 0.16674913409203365,
-   "back": 0.3062840178129639
+   "front": 0.3212669683257919,
+   "middle": 0.16591251885369532,
+   "back": 0.5128205128205128
   },
-  "median_fit_err_db": 7.103256219038321
+  "median_fit_err_db": 6.082218421404134
  },
  "row": {
   "recording": "arusha-short-song",
   "instrument": "Arusha",
   "duration_s": 22.3,
-  "drone_hz": 75.5,
-  "sim_drone_hz": 74.8,
+  "drone_hz": 75.6,
+  "sim_drone_hz": 74.0,
   "toots": {},
   "toot_s": 0,
-  "stops_per_s": 0.27,
-  "front_stop_share": 0.33,
+  "stops_per_s": 0.04,
+  "front_stop_share": 1.0,
   "trills": 0,
-  "voice_s": 2.1,
+  "voice_s": 3.4,
   "circular_breaths": 0,
   "breath_interval_s": null,
   "fricatives": 0,
-  "formant_p10_p50_p90_hz": [
-   808,
-   1951,
-   3550
+  "tongue_p10_p90": [
+   0.13,
+   1.0
   ],
-  "tongue": {
-   "front": 0.53,
-   "middle": 0.17,
-   "back": 0.31
-  },
-  "tongue_moves_per_s": 1.88
+  "tongue_coverage": 0.95,
+  "tongue_match": 0.68,
+  "tongue_moves_per_s": 0.76
  },
  "segments": [
   {
-   "start": 0.24,
-   "end": 0.65,
+   "start": 0.25,
+   "end": 0.67,
    "label": "voice",
-   "p": 0.8181590546278803,
-   "sideband_db": -15.731511041132158
+   "p": 0.9285691018892887,
+   "sideband_db": -15.024634013806384
   },
   {
-   "start": 0.42,
-   "end": 0.46,
-   "label": "stop_back",
-   "p": 0.7467167189757216,
-   "tongue_index": -0.25
-  },
-  {
-   "start": 3.54,
-   "end": 3.58,
-   "label": "stop_back",
-   "p": 0.9166976672571056,
-   "tongue_index": -0.25
-  },
-  {
-   "start": 10.73,
-   "end": 10.77,
-   "label": "stop_back",
-   "p": 0.888230193346581,
-   "tongue_index": -0.25
-  },
-  {
-   "start": 13.91,
-   "end": 15.56,
+   "start": 12.28,
+   "end": 12.8,
    "label": "voice",
-   "p": 0.8891934313222339,
-   "sideband_db": -17.070082877264724
+   "p": 0.8304545634992743,
+   "sideband_db": -16.990672089588045
   },
   {
-   "start": 14.15,
-   "end": 14.19,
-   "label": "stop_back",
-   "p": 0.6967047401972793,
-   "tongue_index": 0.5616733556830764
+   "start": 14.89,
+   "end": 15.53,
+   "label": "voice",
+   "p": 0.9167711419605642,
+   "sideband_db": -5.931545644908873
   },
   {
    "start": 15.8,
    "end": 15.84,
    "label": "stop_front",
-   "p": 0.9278140090834247,
-   "tongue_index": -0.25
+   "p": 0.9696771794235333,
+   "tongue_index": 0.23186155754062798
   },
   {
-   "start": 15.92,
-   "end": 15.96,
-   "label": "stop_front",
-   "p": 0.9180303825552589,
-   "tongue_index": 0.5
+   "start": 18.26,
+   "end": 18.92,
+   "label": "voice",
+   "p": 0.8416176060828241,
+   "sideband_db": -16.85958061638822
+  },
+  {
+   "start": 19.31,
+   "end": 20.51,
+   "label": "voice",
+   "p": 0.8388412254839274,
+   "sideband_db": -18.857841744759035
   }
  ]
 }
