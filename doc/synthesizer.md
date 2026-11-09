@@ -83,8 +83,8 @@ $`r_v = \sqrt{\rho\,\omega\,\bar A/(\pi\eta)}`$:
 Z_c = \frac{\rho c}{A_0}\left[1+\frac{0.369}{r_v} - j\frac{0.369}{r_v}\right].
 ```
 
-The whole bore is the product $\mathbf M = \prod_i \mathbf T_i =
-\begin{pmatrix}A&B\\C&D\end{pmatrix}$, terminated at the bell by the radiation
+The whole bore is the product $`\mathbf M = \prod_i \mathbf T_i =
+\begin{pmatrix}A&B\\C&D\end{pmatrix}`$, terminated at the bell by the radiation
 impedance $Z_r$ of an unflanged pipe (Levine & Schwinger, low $ka$) at the bell
 opening of diameter $d$ and area $S$: $`Z_r = \frac{\rho c}{S}\,[(\omega d/c)^2/16 + j\,0.3\,\omega d/c]`$. Air properties are those of DidgeLab's default: moist air
 at 28 °C ($c = 350.2$ m/s, $\rho = 1.156$ kg/m³).
@@ -115,8 +115,8 @@ sweep.
 
 ![Arusha bore, input impedance and transfer function](figures/bore_arusha.png)
 
-*Figure 1. Bore of "Arusha" from the Didge Archive, $|Z_{\text{in}}|$ from
-DidgeLab and $|H|$. Both have their peaks at the resonances.*
+*Figure 1. Bore of "Arusha" from the Didge Archive, $`|Z_{\text{in}}|`$ from
+DidgeLab and $`|H|`$. Both have their peaks at the resonances.*
 
 ---
 
@@ -299,7 +299,7 @@ directivity of the bell and the microphone. Note what the formula does:
 ![Impedances](figures/impedances.png)
 
 *Figure 4. Vocal-tract impedances for "ee" and "oo", bore input impedance (Matema)
-and the lip source impedance $Z_s$.*
+and the lip source impedance $`Z_s`$.*
 
 The played drone is the first resonance of DidgeLab; toots are played on the
 higher resonances. The Didge Archive shows that toots sound about 30–40 cents
@@ -692,7 +692,7 @@ tongue *relative to the player's average position*. Movements are measured;
 whether a player is mostly at the front or at the back cannot be determined.
 
 *An earlier tracker took the strongest (later: the lowest strong) peak of
-$R_t$ after removing an affine trend in $\log f$, and translated its frequency
+$`R_t`$ after removing an affine trend in $`\log f`$, and translated its frequency
 into a tongue position with the model. On the synthetic glides it moved in the
 wrong direction (correlation −0.2 to −0.4): when the formant falls, the trend
 removal turns the upper end of the band (3–4 kHz) into the strongest peak. The
